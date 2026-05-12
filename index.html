@@ -50,6 +50,38 @@
 .cond-loading { padding:30px; text-align:center; font-size:12px; font-family:'Courier New',monospace; color:var(--mist); }
 .cond-error { padding:16px; background:#fee2e2; border-radius:var(--radius-sm); font-size:12px; font-family:'Courier New',monospace; color:var(--danger); margin-bottom:12px; }
 .cond-updated { font-size:10px; font-family:'Courier New',monospace; color:var(--mist); text-align:right; margin-bottom:10px; }
+
+/* 17. BULK IMPORT */
+.bulk-modal-bg { display:none; position:fixed; inset:0; background:rgba(10,22,40,0.92); z-index:800; flex-direction:column; }
+.bulk-modal-bg.open { display:flex; }
+.bulk-modal { background:var(--foam); display:flex; flex-direction:column; width:100%; height:100vh; overflow:hidden; }
+.bulk-header { background:var(--ink); padding:12px 16px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+.bulk-header h2 { color:#e0f7fa; font-size:16px; font-weight:400; }
+.bulk-header-sub { color:#64b5d9; font-size:10px; font-family:'Courier New',monospace; margin-top:2px; }
+.bulk-close { background:rgba(255,255,255,0.1); border:none; color:#e0f7fa; font-size:20px; width:36px; height:36px; border-radius:50%; cursor:pointer; }
+.bulk-progress-bar-wrap { background:var(--ink2); padding:8px 16px; flex-shrink:0; }
+.bulk-progress-bar { background:var(--line); border-radius:4px; height:6px; overflow:hidden; }
+.bulk-progress-fill { height:100%; background:var(--catch); border-radius:4px; transition:width 0.2s; width:0%; }
+.bulk-progress-text { font-size:10px; font-family:'Courier New',monospace; color:#64b5d9; margin-top:4px; }
+.bulk-content { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:12px 14px 80px; }
+.bulk-group { background:var(--surface); border-radius:var(--radius); border:1px solid var(--line); margin-bottom:14px; overflow:hidden; }
+.bulk-group-header { background:var(--ink); padding:10px 14px; display:flex; align-items:center; justify-content:space-between; }
+.bulk-group-num { color:#64b5d9; font-size:10px; font-family:'Courier New',monospace; }
+.bulk-group-date { color:#e0f7fa; font-size:13px; }
+.bulk-group-gps { color:#64b5d9; font-size:10px; font-family:'Courier New',monospace; margin-top:2px; }
+.bulk-group-photos { display:flex; gap:6px; padding:10px 14px; flex-wrap:wrap; overflow-x:auto; }
+.bulk-thumb { width:64px; height:64px; object-fit:cover; border-radius:6px; border:1px solid var(--line); flex-shrink:0; }
+.bulk-thumb.no-exif { opacity:0.5; border:1px dashed var(--mist); }
+.bulk-fields { padding:10px 14px 14px; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.bulk-field label { font-size:9px; font-family:'Courier New',monospace; letter-spacing:0.1em; text-transform:uppercase; color:var(--mist); display:block; margin-bottom:4px; }
+.bulk-field input, .bulk-field select { width:100%; border:1.5px solid var(--line); border-radius:var(--radius-sm); padding:8px 10px; font-size:13px; font-family:'Georgia',serif; color:var(--ink); background:var(--foam); -webkit-appearance:none; }
+.bulk-field.full { grid-column:1/-1; }
+.bulk-skip-btn { background:none; border:none; color:var(--mist); font-size:11px; font-family:'Courier New',monospace; padding:4px 14px 10px; cursor:pointer; text-decoration:underline; }
+.bulk-footer { position:fixed; bottom:0; left:0; right:0; background:var(--ink); padding:12px 16px; z-index:801; }
+.bulk-save-btn { background:var(--catch); color:white; border:none; border-radius:var(--radius-sm); padding:14px; font-size:16px; font-family:'Georgia',serif; cursor:pointer; width:100%; letter-spacing:0.03em; }
+.bulk-save-btn:disabled { opacity:0.4; }
+.bulk-empty { text-align:center; padding:40px 20px; color:var(--mist); font-style:italic; font-size:14px; }
+.bulk-noexif-badge { background:var(--sand); border:1px solid var(--dawn); border-radius:4px; padding:2px 7px; font-size:9px; font-family:'Courier New',monospace; color:#92400e; margin-left:6px; }
 </style> — never inside it.
      JS block order mirrors CSS order above.
      ═══════════════════════════════════════════════════════════════ -->
@@ -115,19 +147,20 @@ body {
   color: #fbbf24;
 }
 
-.tabs { display: flex; }
+.tabs { display: flex; flex-wrap: wrap; }
 .tab {
-  flex: 1;
+  flex: 0 0 25%;
   background: none;
   border: none;
   color: #64b5d9;
   font-family: 'Georgia', serif;
-  font-size: 12px;
-  padding: 8px 4px 12px;
+  font-size: 11px;
+  padding: 7px 2px 9px;
   cursor: pointer;
-  border-bottom: 3px solid transparent;
+  border-bottom: 2px solid transparent;
   transition: all 0.2s;
   letter-spacing: 0.02em;
+  text-align: center;
 }
 .tab.active { color: #e0f7fa; border-bottom-color: var(--dawn); }
 
@@ -1182,6 +1215,38 @@ body.map-open .content > #view-map { display: flex; }
 .cond-loading { padding:30px; text-align:center; font-size:12px; font-family:'Courier New',monospace; color:var(--mist); }
 .cond-error { padding:16px; background:#fee2e2; border-radius:var(--radius-sm); font-size:12px; font-family:'Courier New',monospace; color:var(--danger); margin-bottom:12px; }
 .cond-updated { font-size:10px; font-family:'Courier New',monospace; color:var(--mist); text-align:right; margin-bottom:10px; }
+
+/* 17. BULK IMPORT */
+.bulk-modal-bg { display:none; position:fixed; inset:0; background:rgba(10,22,40,0.92); z-index:800; flex-direction:column; }
+.bulk-modal-bg.open { display:flex; }
+.bulk-modal { background:var(--foam); display:flex; flex-direction:column; width:100%; height:100vh; overflow:hidden; }
+.bulk-header { background:var(--ink); padding:12px 16px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+.bulk-header h2 { color:#e0f7fa; font-size:16px; font-weight:400; }
+.bulk-header-sub { color:#64b5d9; font-size:10px; font-family:'Courier New',monospace; margin-top:2px; }
+.bulk-close { background:rgba(255,255,255,0.1); border:none; color:#e0f7fa; font-size:20px; width:36px; height:36px; border-radius:50%; cursor:pointer; }
+.bulk-progress-bar-wrap { background:var(--ink2); padding:8px 16px; flex-shrink:0; }
+.bulk-progress-bar { background:var(--line); border-radius:4px; height:6px; overflow:hidden; }
+.bulk-progress-fill { height:100%; background:var(--catch); border-radius:4px; transition:width 0.2s; width:0%; }
+.bulk-progress-text { font-size:10px; font-family:'Courier New',monospace; color:#64b5d9; margin-top:4px; }
+.bulk-content { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:12px 14px 80px; }
+.bulk-group { background:var(--surface); border-radius:var(--radius); border:1px solid var(--line); margin-bottom:14px; overflow:hidden; }
+.bulk-group-header { background:var(--ink); padding:10px 14px; display:flex; align-items:center; justify-content:space-between; }
+.bulk-group-num { color:#64b5d9; font-size:10px; font-family:'Courier New',monospace; }
+.bulk-group-date { color:#e0f7fa; font-size:13px; }
+.bulk-group-gps { color:#64b5d9; font-size:10px; font-family:'Courier New',monospace; margin-top:2px; }
+.bulk-group-photos { display:flex; gap:6px; padding:10px 14px; flex-wrap:wrap; overflow-x:auto; }
+.bulk-thumb { width:64px; height:64px; object-fit:cover; border-radius:6px; border:1px solid var(--line); flex-shrink:0; }
+.bulk-thumb.no-exif { opacity:0.5; border:1px dashed var(--mist); }
+.bulk-fields { padding:10px 14px 14px; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.bulk-field label { font-size:9px; font-family:'Courier New',monospace; letter-spacing:0.1em; text-transform:uppercase; color:var(--mist); display:block; margin-bottom:4px; }
+.bulk-field input, .bulk-field select { width:100%; border:1.5px solid var(--line); border-radius:var(--radius-sm); padding:8px 10px; font-size:13px; font-family:'Georgia',serif; color:var(--ink); background:var(--foam); -webkit-appearance:none; }
+.bulk-field.full { grid-column:1/-1; }
+.bulk-skip-btn { background:none; border:none; color:var(--mist); font-size:11px; font-family:'Courier New',monospace; padding:4px 14px 10px; cursor:pointer; text-decoration:underline; }
+.bulk-footer { position:fixed; bottom:0; left:0; right:0; background:var(--ink); padding:12px 16px; z-index:801; }
+.bulk-save-btn { background:var(--catch); color:white; border:none; border-radius:var(--radius-sm); padding:14px; font-size:16px; font-family:'Georgia',serif; cursor:pointer; width:100%; letter-spacing:0.03em; }
+.bulk-save-btn:disabled { opacity:0.4; }
+.bulk-empty { text-align:center; padding:40px 20px; color:var(--mist); font-style:italic; font-size:14px; }
+.bulk-noexif-badge { background:var(--sand); border:1px solid var(--dawn); border-radius:4px; padding:2px 7px; font-size:9px; font-family:'Courier New',monospace; color:#92400e; margin-left:6px; }
 </style>
 
 <!-- ─────────────────────────────────────────────────────────────
@@ -1203,14 +1268,14 @@ body.map-open .content > #view-map { display: flex; }
     <div class="offline-badge" id="onlineBadge">● Online</div>
   </div>
   <div class="tabs">
-    <button class="tab active" id="tab-log"      onclick="showView('log')">Log</button>
-    <button class="tab"        id="tab-catches"  onclick="showView('catches')">Catches</button>
-    <button class="tab"        id="tab-reports"  onclick="showView('reports')">Reports</button>
-    <button class="tab"        id="tab-map"      onclick="showView('map')">🗺 Map</button>
-    <button class="tab"        id="tab-moon"     onclick="showView('moon')">🌕 Moon</button>
-    <button class="tab"        id="tab-conditions" onclick="showView('conditions')">🌊 Now</button>
-    <button class="tab"        id="tab-species"  onclick="showView('species')">Species</button>
-    <button class="tab"        id="tab-settings" onclick="showView('settings')">Settings</button>
+    <button class="tab active" id="tab-log"        onclick="showView('log')">Log</button>
+    <button class="tab"        id="tab-catches"    onclick="showView('catches')">Catches</button>
+    <button class="tab"        id="tab-reports"    onclick="showView('reports')">Reports</button>
+    <button class="tab"        id="tab-map"        onclick="showView('map')">Map</button>
+    <button class="tab"        id="tab-conditions" onclick="showView('conditions')">Conditions</button>
+    <button class="tab"        id="tab-moon"       onclick="showView('moon')">Moon</button>
+    <button class="tab"        id="tab-species"    onclick="showView('species')">Species</button>
+    <button class="tab"        id="tab-settings"   onclick="showView('settings')">Settings</button>
   </div>
 </div>
 
@@ -1232,7 +1297,16 @@ body.map-open .content > #view-map { display: flex; }
     </div>
     <input type="file" id="exifInput"   accept="image/*"                   style="display:none" onchange="importFromPhoto(event)">
     <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" onchange="importFromPhoto(event)">
+    <input type="file" id="bulkInput"   accept="image/*" multiple          style="display:none" onchange="startBulkImport(event)">
   </div>
+
+  <button onclick="document.getElementById('bulkInput').click()" style="width:100%;background:linear-gradient(135deg,#0e2a4a,#0e4d6b);border:1px solid rgba(14,116,144,0.4);border-radius:var(--radius);padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;cursor:pointer;">
+    <span style="font-size:22px">📚</span>
+    <div style="text-align:left">
+      <div style="font-size:14px;font-family:'Georgia',serif;color:#e0f7fa">Bulk photo import</div>
+      <div style="font-size:10px;font-family:'Courier New',monospace;color:#64b5d9;margin-top:2px">Select 50+ photos — auto-grouped by location &amp; time</div>
+    </div>
+  </button>
 
   <div class="exif-result" id="exifResult">
     <h4>✓ Data extracted from photo</h4>
@@ -1729,6 +1803,27 @@ body.map-open .content > #view-map { display: flex; }
       <div class="brag-tab-panel" id="bragPanelMap" style="padding:8px">
         <div id="bragMapContainer" style="width:100%;height:320px;border-radius:12px;overflow:hidden;margin-top:4px"></div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- BULK IMPORT MODAL -->
+<div class="bulk-modal-bg" id="bulkModal">
+  <div class="bulk-modal">
+    <div class="bulk-header">
+      <div>
+        <h2>Bulk Photo Import</h2>
+        <div class="bulk-header-sub" id="bulkHeaderSub">Reading photos...</div>
+      </div>
+      <button class="bulk-close" onclick="closeBulkModal()">×</button>
+    </div>
+    <div class="bulk-progress-bar-wrap" id="bulkProgressWrap">
+      <div class="bulk-progress-bar"><div class="bulk-progress-fill" id="bulkProgressFill"></div></div>
+      <div class="bulk-progress-text" id="bulkProgressText">Starting...</div>
+    </div>
+    <div class="bulk-content" id="bulkContent"></div>
+    <div class="bulk-footer">
+      <button class="bulk-save-btn" id="bulkSaveBtn" onclick="saveBulkCatches()" disabled>Save All Catches</button>
     </div>
   </div>
 </div>
@@ -4253,8 +4348,9 @@ function renderConditions(data, loc) {
     const dateStr  = (swellDay||windDay||wxDay||tideDay||{}).dateTime || '';
     const label    = dayLabel(dateStr, di);
 
-    // Day header
-    html += '<div style="font-size:13px;font-family:Courier New,monospace;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink2);padding:12px 0 6px;font-weight:600;">' + label + '</div>';
+    // Day header with yellow dashed divider between days
+    if (di > 0) html += '<div style="border-top:2px dashed #d97706;margin:16px 0 0;"></div>';
+    html += '<div style="font-size:13px;font-family:Courier New,monospace;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink2);padding:10px 0 6px;font-weight:600;">' + label + '</div>';
 
     // Swell
     if (swellDay && swellDay.entries) {
@@ -4313,6 +4409,249 @@ function renderConditions(data, loc) {
 
   el.innerHTML = html || '<div class="cond-loading">No data available.</div>';
 }
+
+/* BULK PHOTO IMPORT */
+let bulkGroups = [];
+
+function haversineKm(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2-lat1)*Math.PI/180;
+  const dLon = (lon2-lon1)*Math.PI/180;
+  const a = Math.sin(dLat/2)*Math.sin(dLat/2) +
+            Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+async function startBulkImport(e) {
+  const files = Array.from(e.target.files);
+  if (!files.length) return;
+  bulkGroups = [];
+  document.getElementById('bulkModal').classList.add('open');
+  document.getElementById('bulkProgressWrap').style.display = 'block';
+  document.getElementById('bulkContent').innerHTML = '';
+  document.getElementById('bulkSaveBtn').disabled = true;
+  document.getElementById('bulkHeaderSub').textContent = 'Reading ' + files.length + ' photos...';
+
+  const setProgress = (i, t, msg) => {
+    document.getElementById('bulkProgressFill').style.width = Math.round(i/t*100) + '%';
+    document.getElementById('bulkProgressText').textContent = msg;
+  };
+
+  // Step 1 — read EXIF from all photos
+  const photoData = [];
+  for (let i = 0; i < files.length; i++) {
+    setProgress(i+1, files.length, 'Reading EXIF ' + (i+1) + ' of ' + files.length + '...');
+    try {
+      const result = await readPhotoExif(files[i]);
+      photoData.push(result);
+    } catch(err) {
+      photoData.push({file: files[i], dataUrl: null, dateTime: null, lat: null, lon: null, error: true});
+    }
+    await new Promise(r => setTimeout(r, 10)); // keep UI responsive
+  }
+
+  // Step 2 — group by proximity (500m) and time (5 hours)
+  document.getElementById('bulkHeaderSub').textContent = 'Grouping ' + files.length + ' photos...';
+  setProgress(1, 1, 'Grouping by location and time...');
+  const groups = groupPhotos(photoData);
+  bulkGroups = groups;
+
+  // Step 3 — render review UI
+  document.getElementById('bulkProgressWrap').style.display = 'none';
+  document.getElementById('bulkHeaderSub').textContent = groups.length + ' catch groups found from ' + files.length + ' photos';
+  renderBulkGroups(groups);
+  document.getElementById('bulkSaveBtn').disabled = false;
+  document.getElementById('bulkSaveBtn').textContent = 'Save ' + groups.length + ' Catches';
+  e.target.value = '';
+}
+
+async function readPhotoExif(file) {
+  return new Promise((res) => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const buf = ev.target.result;
+        // Get compressed dataUrl
+        compressPhotoFromBase64(arrayBufferToBase64(buf), dataUrl => {
+          try {
+            const exif = parseExif(buf);
+            res({file, dataUrl, dateTime: exif.dateTime, lat: exif.gpsLat, lon: exif.gpsLon});
+          } catch(e) {
+            res({file, dataUrl, dateTime: null, lat: null, lon: null});
+          }
+        });
+      } catch(e) {
+        res({file, dataUrl: null, dateTime: null, lat: null, lon: null, error: true});
+      }
+    };
+    reader.onerror = () => res({file, dataUrl: null, dateTime: null, lat: null, lon: null, error: true});
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+function arrayBufferToBase64(buf) {
+  const bytes = new Uint8Array(buf);
+  let binary = '';
+  const chunkSize = 8192;
+  for (let i = 0; i < bytes.byteLength; i += chunkSize)
+    binary += String.fromCharCode.apply(null, bytes.subarray(i, i+chunkSize));
+  return 'data:image/jpeg;base64,' + btoa(binary);
+}
+
+function groupPhotos(photos) {
+  // Sort by dateTime
+  const withTime = photos.filter(p => p.dateTime).sort((a,b) => a.dateTime.localeCompare(b.dateTime));
+  const noTime   = photos.filter(p => !p.dateTime);
+  const groups   = [];
+
+  withTime.forEach(photo => {
+    const pTime = exifToMs(photo.dateTime);
+    // Try to find an existing group within 5hrs and 500m
+    let placed = false;
+    for (const g of groups) {
+      const gTime = exifToMs(g.photos[0].dateTime);
+      const timeDiffHrs = Math.abs(pTime - gTime) / (1000*60*60);
+      if (timeDiffHrs > 5) continue;
+      // Check distance if both have GPS
+      if (photo.lat && photo.lon && g.lat && g.lon) {
+        const dist = haversineKm(photo.lat, photo.lon, g.lat, g.lon);
+        if (dist > 0.5) continue; // more than 500m apart
+      }
+      g.photos.push(photo);
+      // Update group GPS to first photo with GPS
+      if (!g.lat && photo.lat) { g.lat = photo.lat; g.lon = photo.lon; }
+      placed = true;
+      break;
+    }
+    if (!placed) {
+      groups.push({
+        photos: [photo],
+        lat: photo.lat, lon: photo.lon,
+        dateTime: photo.dateTime,
+        species: '', weight: '', length: '', method: '', disposition: 'Kept', notes: '', skip: false
+      });
+    }
+  });
+
+  // Add no-time photos as individual groups
+  noTime.forEach(photo => {
+    groups.push({
+      photos: [photo],
+      lat: null, lon: null, dateTime: null,
+      species: '', weight: '', length: '', method: '', disposition: 'Kept', notes: '', skip: false
+    });
+  });
+
+  return groups;
+}
+
+function exifToMs(exifStr) {
+  if (!exifStr) return 0;
+  const s = exifStr.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3');
+  return new Date(s).getTime();
+}
+
+function renderBulkGroups(groups) {
+  const el = document.getElementById('bulkContent');
+  if (!groups.length) { el.innerHTML = '<div class="bulk-empty">No photos could be read.</div>'; return; }
+
+  el.innerHTML = groups.map((g, gi) => {
+    const hasExif = g.dateTime || g.lat;
+    const d = g.dateTime ? g.dateTime.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3') : '';
+    const dateDisplay = d ? new Date(d).toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short',year:'numeric'}) + ' ' + (g.dateTime||'').slice(11,16) : 'No date';
+    const gpsDisplay  = g.lat ? g.lat.toFixed(4) + ', ' + g.lon.toFixed(4) : 'No GPS';
+    const thumbsHtml  = g.photos.map(p =>
+      p.dataUrl ? '<img class="bulk-thumb' + (!p.dateTime&&!p.lat?' no-exif':'') + '" src="' + p.dataUrl + '">' : ''
+    ).join('');
+
+    return '<div class="bulk-group" id="bulkGroup' + gi + '">'
+      + '<div class="bulk-group-header">'
+      + '<div>'
+      + '<div class="bulk-group-num">Group ' + (gi+1) + ' of ' + groups.length + ' · ' + g.photos.length + ' photo' + (g.photos.length!==1?'s':'') + (!hasExif?'<span class="bulk-noexif-badge">No EXIF</span>':'') + '</div>'
+      + '<div class="bulk-group-date">' + dateDisplay + '</div>'
+      + '<div class="bulk-group-gps">' + gpsDisplay + '</div>'
+      + '</div>'
+      + '</div>'
+      + '<div class="bulk-group-photos">' + thumbsHtml + '</div>'
+      + '<div class="bulk-fields">'
+      + '<div class="bulk-field full"><label>Species</label><input type="text" id="bg_sp_' + gi + '" placeholder="e.g. Snapper" value="' + h(g.species) + '" oninput="bulkGroups[' + gi + '].species=this.value"></div>'
+      + '<div class="bulk-field"><label>Weight (kg)</label><input type="number" id="bg_wt_' + gi + '" placeholder="0.0" step="0.1" min="0" value="' + g.weight + '" oninput="bulkGroups[' + gi + '].weight=this.value"></div>'
+      + '<div class="bulk-field"><label>Length (cm)</label><input type="number" id="bg_ln_' + gi + '" placeholder="0" step="1" min="0" value="' + g.length + '" oninput="bulkGroups[' + gi + '].length=this.value"></div>'
+      + '<div class="bulk-field"><label>Method</label><select id="bg_me_' + gi + '" onchange="bulkGroups[' + gi + '].method=this.value"><option value="">— Select —</option><option>Lure — Hard body</option><option>Lure — Soft plastic</option><option>Lure — Metal</option><option>Live bait</option><option>Cut bait</option><option>Prawns</option><option>Worms</option><option>Squid</option><option>Fly</option><option>Trolling</option><option>Jigging</option><option>Spinning</option></select></div>'
+      + '<div class="bulk-field"><label>Disposition</label><select id="bg_di_' + gi + '" onchange="bulkGroups[' + gi + '].disposition=this.value"><option value="Kept">Kept</option><option value="Released">Released</option><option value="Released — undersized">Released — undersized</option></select></div>'
+      + '</div>'
+      + '<button class="bulk-skip-btn" onclick="toggleBulkSkip(' + gi + ')">Skip this group</button>'
+      + '</div>';
+  }).join('');
+}
+
+function toggleBulkSkip(gi) {
+  bulkGroups[gi].skip = !bulkGroups[gi].skip;
+  const el = document.getElementById('bulkGroup' + gi);
+  el.style.opacity = bulkGroups[gi].skip ? '0.35' : '1';
+  const btn = el.querySelector('.bulk-skip-btn');
+  btn.textContent = bulkGroups[gi].skip ? 'Undo skip' : 'Skip this group';
+}
+
+async function saveBulkCatches() {
+  const btn = document.getElementById('bulkSaveBtn');
+  btn.disabled = true;
+  const toSave = bulkGroups.filter(g => !g.skip);
+  btn.textContent = 'Saving ' + toSave.length + ' catches...';
+  let saved = 0;
+
+  for (const g of toSave) {
+    try {
+      const d = g.dateTime ? g.dateTime.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3') : '';
+      const dateStr = d ? d.slice(0,10) : new Date().toISOString().slice(0,10);
+      const timeStr = d ? d.slice(11,16) : '';
+      const gpsStr  = g.lat ? g.lat.toFixed(5) + ', ' + g.lon.toFixed(5) : '';
+      const moon    = dateStr ? getMoonPhase(dateStr, timeStr) : null;
+      const state   = gpsStr ? stateFromGPS(g.lat, g.lon) : '';
+      const id      = Date.now() + saved;
+
+      // Save photos to IDB
+      const savedPhotos = [];
+      for (let i = 0; i < g.photos.length; i++) {
+        const p = g.photos[i];
+        if (p.dataUrl) {
+          const {id: pid, thumb} = await savePhoto(id, i, p.dataUrl);
+          savedPhotos.push({id: pid, thumb});
+        }
+      }
+
+      const entry = {
+        id, timestamp: new Date().toISOString(),
+        date: dateStr, time: timeStr, moon,
+        gps: gpsStr, state,
+        species: g.species||'Unknown', speciesId: null,
+        weight: g.weight, length: g.length,
+        method: g.method, disposition: g.disposition,
+        notes: g.notes, photos: savedPhotos,
+        bulkImport: true,
+      };
+
+      catches.unshift(entry);
+      saved++;
+      btn.textContent = 'Saved ' + saved + ' of ' + toSave.length + '...';
+      await new Promise(r => setTimeout(r, 50));
+    } catch(err) {
+      console.warn('Bulk save error:', err);
+    }
+  }
+
+  saveC();
+  closeBulkModal();
+  showToast('Saved ' + saved + ' catches from bulk import');
+  showView('catches');
+}
+
+function closeBulkModal() {
+  document.getElementById('bulkModal').classList.remove('open');
+  bulkGroups = [];
+  document.getElementById('bulkContent').innerHTML = '';
+}
+
 /* ─────────────────────────────────────────────────────────────
    BOOT
    ───────────────────────────────────────────────────────────── */
