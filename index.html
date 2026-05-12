@@ -492,7 +492,7 @@ body {
 .brag-modal-bg.open { display: flex; }
 .brag-modal {
   background: var(--foam); border-radius: var(--radius) var(--radius) 0 0;
-  margin-top: auto; max-height: 92vh; display: flex; flex-direction: column; width: 100%;
+  margin-top: auto; height: 92vh; display: flex; flex-direction: column; width: 100%;
 }
 .brag-modal-header {
   background: var(--ink); padding: 14px 16px;
@@ -511,7 +511,7 @@ body {
   cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s;
 }
 .brag-tab.active { color: #e0f7fa; border-bottom-color: var(--dawn); }
-.brag-content { flex: 1; overflow-y: auto; padding: 16px; }
+.brag-content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px; min-height: 0; }
 .brag-tab-panel { display: none; }
 .brag-tab-panel.active { display: block; }
 .brag-section {
@@ -719,7 +719,7 @@ body {
 
 .photo-lightbox {
   display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.92); z-index: 300;
+  background: rgba(0,0,0,0.92); z-index: 1100;
   align-items: center; justify-content: center;
 }
 .photo-lightbox.open { display: flex; }
@@ -1068,8 +1068,8 @@ body {
 }
 .map-tab-filter:focus { outline: none; border-color: var(--water); }
 #allCatchesMap {
-  width: 100%; height: calc(100vh - 240px); min-height: 380px;
-  border-radius: var(--radius); border: 1px solid var(--line);
+  width: 100%; height: 60vh; min-height: 340px; max-height: 600px;
+  border-radius: var(--radius); border: 1px solid var(--line); display: block;
 }
 .leaflet-popup-content-wrapper { border-radius: 12px !important; padding: 0 !important; overflow: hidden; min-width: 230px; }
 .leaflet-popup-content { margin: 0 !important; width: auto !important; }
@@ -3761,44 +3761,48 @@ function initBragMap() {
   if (currentParts.length!==2||isNaN(currentParts[0])||isNaN(currentParts[1])) return;
 
   if (bragMapInstance) { bragMapInstance.remove(); bragMapInstance=null; }
-  bragMapInstance = L.map('bragMapContainer').setView(currentParts, 12);
+  bragMapInstance = L.map('bragMapContainer', {zoomControl:true}).setView(currentParts, 12);
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
     attribution:'Tiles © Esri', maxZoom:19
   }).addTo(bragMapInstance);
 
-  // Plot ALL catches with GPS — green pins
+  // All OTHER catches — small green pins, no popup
   catches.forEach(c => {
     if (!c.gps || c.id === current.id) return;
     const parts = c.gps.split(',').map(s => parseFloat(s.trim()));
     if (parts.length!==2||isNaN(parts[0])||isNaN(parts[1])) return;
     L.marker(parts, {
       icon: L.divIcon({
-        html:'<div style="width:16px;height:16px;background:#059669;border:2px solid white;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 1px 4px rgba(0,0,0,0.4)"></div>',
-        iconSize:[16,16], iconAnchor:[8,16], className:''
+        html:'<div style="width:14px;height:14px;background:#059669;border:2px solid white;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.4)"></div>',
+        iconSize:[14,14], iconAnchor:[7,7], className:''
       })
-    }).bindPopup(`<b>${h(c.species)||'Catch'}</b><br>${c.date||''}`).addTo(bragMapInstance);
+    }).addTo(bragMapInstance);
   });
 
-  // Current catch — yellow pin, no auto-popup
+  // Current catch — larger yellow teardrop pin, NO popup
   L.marker(currentParts, {
     icon: L.divIcon({
-      html:'<div style="width:22px;height:22px;background:#f59e0b;border:3px solid white;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 8px rgba(0,0,0,0.5)"></div>',
-      iconSize:[22,22], iconAnchor:[11,22], className:''
+      html:'<div style="width:24px;height:24px;background:#f59e0b;border:3px solid white;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 8px rgba(0,0,0,0.5)"></div>',
+      iconSize:[24,24], iconAnchor:[12,24], className:''
     })
   }).addTo(bragMapInstance);
 
-  setTimeout(()=>bragMapInstance.invalidateSize(), 200);
+  setTimeout(()=>bragMapInstance.invalidateSize(), 250);
 }
 
 function closeBragModal() {
   document.getElementById('bragModal').classList.remove('open');
   if (bragMapInstance) { bragMapInstance.remove(); bragMapInstance=null; }
   const returnViewId = document.getElementById('bragModal').dataset.returnView || '';
-  // If came from map tab — go back to map tab and resize the map
   if (returnViewId === 'view-map') {
+    // Destroy and rebuild the all-catches map so it renders correctly
     setTimeout(() => {
-      if (allCatchesMapInstance) allCatchesMapInstance.invalidateSize();
-    }, 150);
+      if (allCatchesMapInstance) {
+        allCatchesMapInstance.remove();
+        allCatchesMapInstance = null;
+      }
+      renderAllCatchesMap();
+    }, 200);
   }
   currentBragId = null;
 }
