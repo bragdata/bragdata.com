@@ -4574,7 +4574,12 @@ function renderBulkGroups(groups) {
       + '</div>'
       + '<div class="bulk-group-photos">' + thumbsHtml + '</div>'
       + '<div class="bulk-fields">'
-      + '<div class="bulk-field full"><label>Species</label><input type="text" id="bg_sp_' + gi + '" placeholder="e.g. Snapper" value="' + h(g.species) + '" oninput="bulkGroups[' + gi + '].species=this.value"></div>'
+      + '<div class="bulk-field full"><label>Species</label>'
+      + '<div class="species-wrap" style="position:relative">'
+      + '<input type="text" id="bg_sp_' + gi + '" placeholder="Type to search species..." autocomplete="off" value="' + h(g.species) + '" oninput="onBulkSpInput(' + gi + ',this.value)" onfocus="onBulkSpInput(' + gi + ',this.value)" onblur="schedBulkClose(' + gi + ')">'
+      + '<div class="species-dropdown" id="bg_sp_drop_' + gi + '"></div>'
+      + '</div>'
+      + '</div>'
       + '<div class="bulk-field"><label>Weight (kg)</label><input type="number" id="bg_wt_' + gi + '" placeholder="0.0" step="0.1" min="0" value="' + g.weight + '" oninput="bulkGroups[' + gi + '].weight=this.value"></div>'
       + '<div class="bulk-field"><label>Length (cm)</label><input type="number" id="bg_ln_' + gi + '" placeholder="0" step="1" min="0" value="' + g.length + '" oninput="bulkGroups[' + gi + '].length=this.value"></div>'
       + '<div class="bulk-field"><label>Method</label><select id="bg_me_' + gi + '" onchange="bulkGroups[' + gi + '].method=this.value"><option value="">— Select —</option><option>Lure — Hard body</option><option>Lure — Soft plastic</option><option>Lure — Metal</option><option>Live bait</option><option>Cut bait</option><option>Prawns</option><option>Worms</option><option>Squid</option><option>Fly</option><option>Trolling</option><option>Jigging</option><option>Spinning</option></select></div>'
@@ -4650,6 +4655,46 @@ function closeBulkModal() {
   document.getElementById('bulkModal').classList.remove('open');
   bulkGroups = [];
   document.getElementById('bulkContent').innerHTML = '';
+}
+
+
+function onBulkSpInput(gi, q) {
+  const dd = document.getElementById('bg_sp_drop_' + gi);
+  if (!dd) return;
+  const ql = q.toLowerCase().trim();
+  const hits = species.filter(s =>
+    s.name.toLowerCase().includes(ql) || (s.nicknames||[]).some(n => n.toLowerCase().includes(ql))
+  );
+  let html = hits.map(s => {
+    const safeName = s.name.replace(/'/g, "\\'");
+    return '<div class="species-option" onmousedown="pickBulkSp(' + gi + ',\'' + safeName + '\')">' + s.name
+      + (s.nicknames&&s.nicknames.length ? '<span class="sp-nick">' + s.nicknames.slice(0,2).join(', ') + '</span>' : '')
+      + '</div>';
+  }).join('');
+  const safeQ = q.trim().replace(/'/g, "\\'");
+  if (q.trim()) html += '<div class="sp-add" onmousedown="addBulkSp(' + gi + ',\'' + safeQ + '\')">+ Add "' + q.trim() + '" as new species</div>';
+  dd.innerHTML = html;
+  dd.classList.toggle('open', hits.length > 0 || q.trim().length > 0);
+}
+function pickBulkSp(gi, name) {
+  const inp = document.getElementById('bg_sp_' + gi);
+  if (inp) inp.value = name;
+  bulkGroups[gi].species = name;
+  const dd = document.getElementById('bg_sp_drop_' + gi);
+  if (dd) dd.classList.remove('open');
+}
+function addBulkSp(gi, name) {
+  if (!name) return;
+  const id = 'sp' + Date.now();
+  species.push({id, name, nicknames:[], notes:''}); saveSp();
+  pickBulkSp(gi, name);
+  showToast('"' + name + '" added to species list');
+}
+function schedBulkClose(gi) {
+  setTimeout(() => {
+    const dd = document.getElementById('bg_sp_drop_' + gi);
+    if (dd) dd.classList.remove('open');
+  }, 200);
 }
 
 /* ─────────────────────────────────────────────────────────────
