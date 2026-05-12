@@ -3869,19 +3869,21 @@ function initBragMap() {
     if (!c.gps || c.id === current.id) return;
     const parts = c.gps.split(',').map(s => parseFloat(s.trim()));
     if (parts.length!==2||isNaN(parts[0])||isNaN(parts[1])) return;
+    const otherPin = tidePinHtml(c.tide, '#059669');
     L.marker(parts, {
       icon: L.divIcon({
-        html:'<div style="width:14px;height:14px;background:#059669;border:2px solid white;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.4)"></div>',
-        iconSize:[14,14], iconAnchor:[7,7], className:''
+        html: otherPin.html,
+        iconSize:[otherPin.size, otherPin.size], iconAnchor:[otherPin.size/2, otherPin.size], className:''
       })
     }).addTo(bragMapInstance);
   });
 
-  // Current catch — larger yellow teardrop pin, NO popup
+  // Current catch — yellow pin with tide symbol
+  const curPin = tidePinHtml(current.tide, '#f59e0b');
   L.marker(currentParts, {
     icon: L.divIcon({
-      html:'<div style="width:24px;height:24px;background:#f59e0b;border:3px solid white;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 8px rgba(0,0,0,0.5)"></div>',
-      iconSize:[24,24], iconAnchor:[12,24], className:''
+      html: curPin.html,
+      iconSize:[curPin.size, curPin.size], iconAnchor:[curPin.size/2, curPin.size], className:''
     })
   }).addTo(bragMapInstance);
 
@@ -3920,6 +3922,43 @@ function stepMonth(dir) {
   const labelIdx = mapMonthStep + 1; // 0=All time, 1-12=months, 13=This year
   document.getElementById('monthStepLabel').textContent = MAP_MONTH_LABELS[labelIdx] || 'All time';
   renderAllCatchesMap();
+}
+
+function tidePinHtml(tide, colour) {
+  const bg = colour || '#059669';
+  const t  = (tide||'').toLowerCase();
+
+  const svgs = {
+    // Single shaft arrow up — incoming
+    incoming: `<svg viewBox="0 0 16 18" width="12" height="14" style="transform:rotate(45deg);display:block">
+      <polygon points="8,1 15,9 11,9 11,17 5,17 5,9 1,9" fill="white"/>
+    </svg>`,
+    // Single shaft arrow down — outgoing
+    outgoing: `<svg viewBox="0 0 16 18" width="12" height="14" style="transform:rotate(45deg);display:block">
+      <polygon points="8,17 1,9 5,9 5,1 11,1 11,9 15,9" fill="white"/>
+    </svg>`,
+    // Double shaft arrow up — slack high (two lines in shaft instead of one)
+    high: `<svg viewBox="0 0 16 18" width="12" height="14" style="transform:rotate(45deg);display:block">
+      <polygon points="8,1 15,9 11.5,9 11.5,17 9.5,17 9.5,9 6.5,9 6.5,17 4.5,17 4.5,9 1,9" fill="white"/>
+    </svg>`,
+    // Double shaft arrow down — slack low
+    low: `<svg viewBox="0 0 16 18" width="12" height="14" style="transform:rotate(45deg);display:block">
+      <polygon points="8,17 1,9 4.5,9 4.5,1 6.5,1 6.5,9 9.5,9 9.5,1 11.5,1 11.5,9 15,9" fill="white"/>
+    </svg>`,
+  };
+
+  let icon = '';
+  if      (t==='incoming') icon = svgs.incoming;
+  else if (t==='outgoing') icon = svgs.outgoing;
+  else if (t==='high')     icon = svgs.high;
+  else if (t==='low')      icon = svgs.low;
+  else if (t==='slack')    icon = svgs.low;
+
+  const size = icon ? 30 : 22;
+  return {
+    html: `<div style="width:${size}px;height:${size}px;background:${bg};border:2.5px solid white;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 6px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;overflow:hidden;">${icon}</div>`,
+    size
+  };
 }
 
 function getMapFilteredCatches() {
@@ -4001,10 +4040,11 @@ function renderAllCatchesMap() {
       </div>
     </div>`;
 
+    const pin    = tidePinHtml(c.tide, '#059669');
     const marker = L.marker(parts, {
       icon: L.divIcon({
-        html:`<div style="width:22px;height:22px;background:var(--catch);border:2.5px solid white;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 6px rgba(0,0,0,0.35)"></div>`,
-        iconSize:[22,22], iconAnchor:[11,22], className:''
+        html: pin.html,
+        iconSize:[pin.size, pin.size], iconAnchor:[pin.size/2, pin.size], className:''
       })
     }).bindPopup(popupHtml, {maxWidth:260});
     marker.addTo(allCatchesMapInstance);
