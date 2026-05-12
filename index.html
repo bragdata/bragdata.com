@@ -25,7 +25,32 @@
       13. Moon / solunar                 (line ~620)
       14. Misc utility classes           (line ~670)
      ─────────────────────────────────────────────
-     JavaScript begins after </style> — never inside it.
+     JavaScript begins after 
+/* 16. CONDITIONS TAB */
+.cond-location-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+.cond-loc-btn { flex:1; background:var(--surface); border:1.5px solid var(--line); border-radius:var(--radius-sm); padding:10px 8px; font-size:13px; font-family:'Georgia',serif; color:var(--mist); cursor:pointer; transition:all 0.15s; text-align:center; }
+.cond-loc-btn.active { background:var(--ink); border-color:var(--ink); color:#e0f7fa; }
+.cond-section { background:var(--surface); border-radius:var(--radius); border:1px solid var(--line); margin-bottom:12px; overflow:hidden; }
+.cond-section-hdr { background:var(--ink); color:#e0f7fa; padding:9px 14px; font-size:10px; letter-spacing:0.15em; text-transform:uppercase; font-family:'Courier New',monospace; }
+.cond-grid { display:grid; grid-template-columns:1fr 1fr; }
+.cond-field { padding:10px 14px; border-bottom:1px solid var(--line); border-right:1px solid var(--line); }
+.cond-field:nth-child(even) { border-right:none; }
+.cond-field:nth-last-child(-n+2) { border-bottom:none; }
+.cond-field.full { grid-column:1/-1; border-right:none; }
+.cf-lbl { font-size:9px; font-family:'Courier New',monospace; letter-spacing:0.12em; text-transform:uppercase; color:var(--mist); margin-bottom:3px; }
+.cf-val { font-size:15px; color:var(--ink); font-family:'Georgia',serif; }
+.cf-sub { font-size:11px; color:var(--mist); font-family:'Courier New',monospace; margin-top:2px; }
+.tide-row { display:flex; align-items:center; gap:10px; padding:10px 14px; border-bottom:1px solid var(--line); font-size:13px; }
+.tide-row:last-child { border-bottom:none; }
+.tr-type { width:60px; font-family:'Courier New',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; }
+.tr-type.high { color:var(--water); }
+.tr-type.low  { color:var(--mist); }
+.tr-time  { flex:1; color:var(--ink); }
+.tr-height { font-family:'Courier New',monospace; color:var(--mist); font-size:12px; }
+.cond-loading { padding:30px; text-align:center; font-size:12px; font-family:'Courier New',monospace; color:var(--mist); }
+.cond-error { padding:16px; background:#fee2e2; border-radius:var(--radius-sm); font-size:12px; font-family:'Courier New',monospace; color:var(--danger); margin-bottom:12px; }
+.cond-updated { font-size:10px; font-family:'Courier New',monospace; color:var(--mist); text-align:right; margin-bottom:10px; }
+</style> — never inside it.
      JS block order mirrors CSS order above.
      ═══════════════════════════════════════════════════════════════ -->
 <style>
@@ -1132,6 +1157,31 @@ body.map-open .content > #view-map { display: flex; }
 .map-popup-photo { width: 58px; height: 58px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); cursor: pointer; }
 .map-popup-actions { display: flex; gap: 6px; padding: 0 12px 12px; }
 .map-popup-brag { background: var(--catch); color: white; border: none; border-radius: var(--radius-sm); padding: 7px 0; font-size: 12px; font-family: 'Courier New', monospace; cursor: pointer; flex: 1; font-weight: 600; letter-spacing: 0.05em; }
+
+/* 16. CONDITIONS TAB */
+.cond-location-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+.cond-loc-btn { flex:1; background:var(--surface); border:1.5px solid var(--line); border-radius:var(--radius-sm); padding:10px 8px; font-size:13px; font-family:'Georgia',serif; color:var(--mist); cursor:pointer; transition:all 0.15s; text-align:center; }
+.cond-loc-btn.active { background:var(--ink); border-color:var(--ink); color:#e0f7fa; }
+.cond-section { background:var(--surface); border-radius:var(--radius); border:1px solid var(--line); margin-bottom:12px; overflow:hidden; }
+.cond-section-hdr { background:var(--ink); color:#e0f7fa; padding:9px 14px; font-size:10px; letter-spacing:0.15em; text-transform:uppercase; font-family:'Courier New',monospace; }
+.cond-grid { display:grid; grid-template-columns:1fr 1fr; }
+.cond-field { padding:10px 14px; border-bottom:1px solid var(--line); border-right:1px solid var(--line); }
+.cond-field:nth-child(even) { border-right:none; }
+.cond-field:nth-last-child(-n+2) { border-bottom:none; }
+.cond-field.full { grid-column:1/-1; border-right:none; }
+.cf-lbl { font-size:9px; font-family:'Courier New',monospace; letter-spacing:0.12em; text-transform:uppercase; color:var(--mist); margin-bottom:3px; }
+.cf-val { font-size:15px; color:var(--ink); font-family:'Georgia',serif; }
+.cf-sub { font-size:11px; color:var(--mist); font-family:'Courier New',monospace; margin-top:2px; }
+.tide-row { display:flex; align-items:center; gap:10px; padding:10px 14px; border-bottom:1px solid var(--line); font-size:13px; }
+.tide-row:last-child { border-bottom:none; }
+.tr-type { width:60px; font-family:'Courier New',monospace; font-size:11px; text-transform:uppercase; letter-spacing:0.08em; }
+.tr-type.high { color:var(--water); }
+.tr-type.low  { color:var(--mist); }
+.tr-time  { flex:1; color:var(--ink); }
+.tr-height { font-family:'Courier New',monospace; color:var(--mist); font-size:12px; }
+.cond-loading { padding:30px; text-align:center; font-size:12px; font-family:'Courier New',monospace; color:var(--mist); }
+.cond-error { padding:16px; background:#fee2e2; border-radius:var(--radius-sm); font-size:12px; font-family:'Courier New',monospace; color:var(--danger); margin-bottom:12px; }
+.cond-updated { font-size:10px; font-family:'Courier New',monospace; color:var(--mist); text-align:right; margin-bottom:10px; }
 </style>
 
 <!-- ─────────────────────────────────────────────────────────────
@@ -1158,6 +1208,7 @@ body.map-open .content > #view-map { display: flex; }
     <button class="tab"        id="tab-reports"  onclick="showView('reports')">Reports</button>
     <button class="tab"        id="tab-map"      onclick="showView('map')">🗺 Map</button>
     <button class="tab"        id="tab-moon"     onclick="showView('moon')">🌕 Moon</button>
+    <button class="tab"        id="tab-conditions" onclick="showView('conditions')">🌊 Now</button>
     <button class="tab"        id="tab-species"  onclick="showView('species')">Species</button>
     <button class="tab"        id="tab-settings" onclick="showView('settings')">Settings</button>
   </div>
@@ -1486,6 +1537,21 @@ body.map-open .content > #view-map { display: flex; }
   <div id="moonPhaseGroups"></div>
 </div><!-- /view-moon -->
 
+
+
+<!-- CONDITIONS VIEW -->
+<div class="view" id="view-conditions">
+  <div style="margin-bottom:6px">
+    <h2 style="font-size:18px;font-weight:400;margin-bottom:2px">Current Conditions</h2>
+    <p style="font-size:12px;color:var(--mist);font-style:italic">Live data from Willyweather</p>
+  </div>
+  <div class="cond-location-tabs">
+    <button class="cond-loc-btn active" id="condLocBtn0" onclick="selectCondLocation(0)">Port Kembla</button>
+    <button class="cond-loc-btn"        id="condLocBtn1" onclick="selectCondLocation(1)">Bellambi</button>
+  </div>
+  <div class="cond-updated" id="condUpdated"></div>
+  <div id="condContent"><div class="cond-loading">Loading conditions...</div></div>
+</div>
 
 <!-- ═══ SPECIES VIEW ═══ -->
 <div class="view" id="view-species">
@@ -4082,6 +4148,103 @@ function initMapTabFilters() {
 }
 
 
+
+/* CONDITIONS TAB */
+const WW_KEY = 'NGVkM2ViZmJlMWE3MzI4NjcwNzhlNW';
+const WW_LOCATIONS = [
+  {id:38437, name:'Port Kembla Offshore', label:'Port Kembla'},
+  {id:19180, name:'Bellambi Beach',        label:'Bellambi'},
+];
+let condLocationIdx = 0;
+let condCache = {};
+
+function selectCondLocation(idx) {
+  condLocationIdx = idx;
+  document.querySelectorAll('.cond-loc-btn').forEach((b,i) => b.classList.toggle('active', i===idx));
+  loadConditions();
+}
+
+async function loadConditions() {
+  const loc = WW_LOCATIONS[condLocationIdx];
+  const el  = document.getElementById('condContent');
+  const upd = document.getElementById('condUpdated');
+  const cached = condCache[loc.id];
+  if (cached && Date.now() - cached.ts < 10*60*1000) { renderConditions(cached.data, loc); return; }
+  el.innerHTML = '<div class="cond-loading">Fetching latest conditions...</div>';
+  upd.textContent = '';
+  try {
+    const url = 'https://api.willyweather.com.au/v2/' + WW_KEY + '/locations/' + loc.id + '/weather.json?forecasts=swell,tides,wind,weather&days=1';
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    condCache[loc.id] = {data, ts:Date.now()};
+    renderConditions(data, loc);
+  } catch(e) {
+    el.innerHTML = '<div class="cond-error">Could not load conditions. Check internet connection. ' + e.message + '</div>';
+  }
+}
+
+function renderConditions(data, loc) {
+  const el  = document.getElementById('condContent');
+  const upd = document.getElementById('condUpdated');
+  const now = new Date();
+  upd.textContent = 'Updated ' + now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
+  const hour = now.getHours();
+  let html = '';
+
+  const swellDay = data.forecasts && data.forecasts.swell && data.forecasts.swell.days && data.forecasts.swell.days[0];
+  if (swellDay) {
+    const e = swellDay.entries[Math.min(hour, swellDay.entries.length-1)];
+    if (e) html += '<div class="cond-section"><div class="cond-section-hdr">Swell</div><div class="cond-grid">'
+      + '<div class="cond-field"><div class="cf-lbl">Height</div><div class="cf-val">' + e.height + 'm</div></div>'
+      + '<div class="cond-field"><div class="cf-lbl">Period</div><div class="cf-val">' + e.period + 's</div></div>'
+      + '<div class="cond-field"><div class="cf-lbl">Direction</div><div class="cf-val">' + e.directionText + '</div><div class="cf-sub">' + Math.round(e.direction) + 'deg</div></div>'
+      + '</div></div>';
+  }
+
+  const windDay = data.forecasts && data.forecasts.wind && data.forecasts.wind.days && data.forecasts.wind.days[0];
+  if (windDay) {
+    const e = windDay.entries[Math.min(hour, windDay.entries.length-1)];
+    if (e) html += '<div class="cond-section"><div class="cond-section-hdr">Wind</div><div class="cond-grid">'
+      + '<div class="cond-field"><div class="cf-lbl">Speed</div><div class="cf-val">' + Math.round(e.speed) + ' km/h</div></div>'
+      + '<div class="cond-field"><div class="cf-lbl">Direction</div><div class="cf-val">' + e.directionText + '</div><div class="cf-sub">' + Math.round(e.direction) + 'deg</div></div>'
+      + '</div></div>';
+  }
+
+  const wxDay = data.forecasts && data.forecasts.weather && data.forecasts.weather.days && data.forecasts.weather.days[0];
+  if (wxDay) {
+    const e = wxDay.entries[0];
+    if (e) html += '<div class="cond-section"><div class="cond-section-hdr">Weather</div><div class="cond-grid">'
+      + '<div class="cond-field"><div class="cf-lbl">Conditions</div><div class="cf-val">' + e.precis + '</div></div>'
+      + '<div class="cond-field"><div class="cf-lbl">Temperature</div><div class="cf-val">' + e.min + ' - ' + e.max + 'C</div></div>'
+      + '</div></div>';
+  }
+
+  const tideDay = data.forecasts && data.forecasts.tides && data.forecasts.tides.days && data.forecasts.tides.days[0];
+  if (tideDay && tideDay.entries && tideDay.entries.length) {
+    const nowMs = now.getTime();
+    let nextTide = null;
+    for (const e of tideDay.entries) {
+      if (new Date(e.dateTime.replace(' ','T')).getTime() > nowMs) { nextTide = e; break; }
+    }
+    let tideHtml = '<div class="cond-section"><div class="cond-section-hdr">Tides - ' + loc.label + '</div>';
+    tideDay.entries.forEach(e => {
+      const t = new Date(e.dateTime.replace(' ','T'));
+      const isPast = t.getTime() < nowMs;
+      const time = t.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
+      const isNext = nextTide && e.dateTime === nextTide.dateTime;
+      tideHtml += '<div class="tide-row" style="' + (isPast?'opacity:0.4':'') + '">'
+        + '<span class="tr-type ' + e.type + '">' + e.type + '</span>'
+        + '<span class="tr-time">' + time + (isNext ? ' next' : '') + '</span>'
+        + '<span class="tr-height">' + e.height + 'm</span>'
+        + '</div>';
+    });
+    tideHtml += '</div>';
+    html += tideHtml;
+  }
+
+  el.innerHTML = html || '<div class="cond-loading">No data available.</div>';
+}
 /* ─────────────────────────────────────────────────────────────
    BOOT
    ───────────────────────────────────────────────────────────── */
