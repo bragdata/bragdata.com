@@ -1076,13 +1076,16 @@ body {
 }
 
 /* ── 15. ALL-CATCHES MAP TAB ─────────────────────────────────── */
-.map-tab-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; align-items: center; }
+.map-tab-filters { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
 .map-tab-filter {
   background: var(--surface); border: 1.5px solid var(--line);
-  border-radius: var(--radius-sm); padding: 7px 11px;
-  font-size: 12px; font-family: 'Courier New', monospace;
-  color: var(--mist); cursor: pointer; transition: all 0.15s;
+  border-radius: var(--radius-sm); padding: 10px 12px;
+  font-size: 14px; font-family: 'Georgia', serif;
+  color: var(--ink); cursor: pointer; transition: all 0.15s;
   -webkit-appearance: none; appearance: none;
+  width: 100%; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394a3b8' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center;
+  padding-right: 32px;
 }
 .map-tab-filter:focus { outline: none; border-color: var(--water); }
 #allCatchesMap {
@@ -1432,12 +1435,20 @@ body {
     </select>
     <select class="map-tab-filter" id="mapFilterDate" onchange="renderAllCatchesMap()">
       <option value="">All time</option>
-      <option value="thisMonth">This month</option>
-      <option value="lastMonth">Last month</option>
+      <option value="month-0">All Januarys</option>
+      <option value="month-1">All Februarys</option>
+      <option value="month-2">All Marchs</option>
+      <option value="month-3">All Aprils</option>
+      <option value="month-4">All Mays</option>
+      <option value="month-5">All Junes</option>
+      <option value="month-6">All Julys</option>
+      <option value="month-7">All Augusts</option>
+      <option value="month-8">All Septembers</option>
+      <option value="month-9">All Octobers</option>
+      <option value="month-10">All Novembers</option>
+      <option value="month-11">All Decembers</option>
       <option value="thisYear">This year</option>
-      <option value="pickMonth">Pick a month…</option>
     </select>
-    <input type="month" class="map-tab-filter" id="mapFilterMonth" style="display:none" onchange="renderAllCatchesMap()">
   </div>
   <div id="allCatchesMap"></div>
 </div><!-- /view-map -->
@@ -3892,26 +3903,18 @@ let allCatchesMarkers     = [];
 function getMapFilteredCatches() {
   const spFilter   = document.getElementById('mapFilterSpecies').value;
   const dateFilter = document.getElementById('mapFilterDate').value;
-  const monthPick  = document.getElementById('mapFilterMonth').value;
   const now = new Date();
   return catches.filter(c => {
     if (!c.gps) return false;
     const parts = c.gps.split(',').map(s=>parseFloat(s.trim()));
     if (parts.length!==2||isNaN(parts[0])||isNaN(parts[1])) return false;
     if (spFilter && c.speciesId !== spFilter && c.species !== spFilter) return false;
-    if (dateFilter==='thisMonth') {
-      const d=new Date(c.date+'T12:00:00');
-      if (d.getMonth()!==now.getMonth()||d.getFullYear()!==now.getFullYear()) return false;
-    } else if (dateFilter==='lastMonth') {
-      const lm = new Date(now.getFullYear(), now.getMonth()-1, 1);
-      const d  = new Date(c.date+'T12:00:00');
-      if (d.getMonth()!==lm.getMonth()||d.getFullYear()!==lm.getFullYear()) return false;
+    if (dateFilter.startsWith('month-')) {
+      // Calendar month filter — all years e.g. all Aprils ever
+      const mo = parseInt(dateFilter.split('-')[1]);
+      if (new Date(c.date+'T12:00:00').getMonth() !== mo) return false;
     } else if (dateFilter==='thisYear') {
-      if (new Date(c.date+'T12:00:00').getFullYear()!==now.getFullYear()) return false;
-    } else if (dateFilter==='pickMonth' && monthPick) {
-      const [yr,mo] = monthPick.split('-').map(Number);
-      const d = new Date(c.date+'T12:00:00');
-      if (d.getFullYear()!==yr||d.getMonth()!==mo-1) return false;
+      if (new Date(c.date+'T12:00:00').getFullYear() !== now.getFullYear()) return false;
     }
     return true;
   });
@@ -3919,18 +3922,25 @@ function getMapFilteredCatches() {
 
 function renderAllCatchesMap() {
   if (typeof L === 'undefined') { setTimeout(renderAllCatchesMap, 500); return; }
-  const dateFilter = document.getElementById('mapFilterDate').value;
-  document.getElementById('mapFilterMonth').style.display = dateFilter==='pickMonth' ? 'block' : 'none';
 
   if (!allCatchesMapInstance) {
     allCatchesMapInstance = L.map('allCatchesMap').setView([-25,134],5);
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
       attribution:'Tiles © Esri', maxZoom:19
     }).addTo(allCatchesMapInstance);
-    // Centre on user location
+    // Centre on user location and show position pin
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(p => {
-        allCatchesMapInstance.setView([p.coords.latitude, p.coords.longitude], 10);
+        const lat = p.coords.latitude, lng = p.coords.longitude;
+        allCatchesMapInstance.setView([lat, lng], 10);
+        // Blue pulsing dot for current location
+        L.marker([lat, lng], {
+          icon: L.divIcon({
+            html: '<div style="width:18px;height:18px;background:#3b82f6;border:3px solid white;border-radius:50%;box-shadow:0 0 0 4px rgba(59,130,246,0.3)"></div>',
+            iconSize:[18,18], iconAnchor:[9,9], className:''
+          }),
+          zIndexOffset: 1000
+        }).bindPopup('📍 You are here').addTo(allCatchesMapInstance);
       }, ()=>{});
     }
   }
