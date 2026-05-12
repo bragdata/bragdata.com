@@ -454,18 +454,93 @@ body {
   grid-template-columns: 1fr 1fr;
   gap: 7px;
 }
+.catch-body .cd { min-height: 36px; }
 .cd .lbl {
   color: var(--mist); font-size: 10px;
   font-family: 'Courier New', monospace;
   letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 1px;
 }
 .cd .val { color: var(--ink); font-size: 12px; }
+.cd .val.dash { color: var(--line); }
 .catch-notes {
   padding: 8px 14px 10px;
   font-size: 12px; color: var(--mist); font-style: italic;
   border-top: 1px solid var(--line);
 }
-.catch-actions { padding: 0 14px 10px; display: flex; justify-content: flex-end; }
+.catch-actions { padding: 0 14px 10px; display: flex; gap: 6px; justify-content: flex-end; }
+.btn-brag {
+  background: var(--catch); color: white; border: none;
+  border-radius: var(--radius-sm); padding: 6px 12px; font-size: 11px;
+  font-family: 'Courier New', monospace; letter-spacing: 0.08em;
+  text-transform: uppercase; cursor: pointer; font-weight: 600;
+}
+.btn-map-pin {
+  background: var(--water); color: white; border: none;
+  border-radius: var(--radius-sm); padding: 6px 10px;
+  font-size: 11px; font-family: 'Courier New', monospace; cursor: pointer;
+}
+.btn-edit-card {
+  background: var(--foam); border: 1px solid var(--line); color: var(--ink2);
+  border-radius: var(--radius-sm); padding: 6px 12px; font-size: 11px;
+  font-family: 'Courier New', monospace; cursor: pointer;
+}
+/* ── BRAG MODAL ──────────────────────────────────────────────── */
+.brag-modal-bg {
+  display: none; position: fixed; inset: 0;
+  background: rgba(10,22,40,0.85); z-index: 300; flex-direction: column;
+}
+.brag-modal-bg.open { display: flex; }
+.brag-modal {
+  background: var(--foam); border-radius: var(--radius) var(--radius) 0 0;
+  margin-top: auto; max-height: 92vh; display: flex; flex-direction: column; width: 100%;
+}
+.brag-modal-header {
+  background: var(--ink); padding: 14px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-radius: var(--radius) var(--radius) 0 0; flex-shrink: 0;
+}
+.brag-modal-header h2 { color: #e0f7fa; font-size: 17px; font-weight: 400; }
+.brag-modal-close {
+  background: rgba(255,255,255,0.1); border: none; color: #e0f7fa;
+  font-size: 20px; width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+}
+.brag-tabs { display: flex; background: var(--ink2); flex-shrink: 0; }
+.brag-tab {
+  flex: 1; background: none; border: none; color: #64b5d9;
+  font-family: 'Georgia', serif; font-size: 13px; padding: 10px 4px;
+  cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s;
+}
+.brag-tab.active { color: #e0f7fa; border-bottom-color: var(--dawn); }
+.brag-content { flex: 1; overflow-y: auto; padding: 16px; }
+.brag-tab-panel { display: none; }
+.brag-tab-panel.active { display: block; }
+.brag-section {
+  background: var(--surface); border-radius: var(--radius);
+  border: 1px solid var(--line); margin-bottom: 12px; overflow: hidden;
+}
+.brag-section-hdr {
+  background: var(--ink); color: #e0f7fa; padding: 8px 14px;
+  font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+}
+.brag-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+.brag-field {
+  padding: 9px 14px; border-bottom: 1px solid var(--line); border-right: 1px solid var(--line);
+}
+.brag-field:nth-child(even) { border-right: none; }
+.brag-field:nth-last-child(-n+2) { border-bottom: none; }
+.brag-field.full { grid-column: 1 / -1; border-right: none; }
+.brag-field .bf-lbl {
+  font-size: 9px; font-family: 'Courier New', monospace;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--mist); margin-bottom: 3px;
+}
+.brag-field .bf-val { font-size: 13px; color: var(--ink); font-family: 'Georgia', serif; }
+.brag-field .bf-val.mono { font-family: 'Courier New', monospace; font-size: 11px; }
+.brag-field .bf-val.dash { color: var(--line); font-family: 'Courier New', monospace; }
+.brag-photos-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; padding: 12px; }
+.brag-photo { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--line); cursor: pointer; }
+.brag-no-photos { padding: 20px; text-align: center; font-size: 12px; color: var(--mist); font-style: italic; }
+.brag-map { width: 100%; height: 300px; border-radius: var(--radius-sm); }
 .no-catches { text-align: center; padding: 40px 20px; color: var(--mist); font-style: italic; font-size: 14px; }
 
 /* ── 8. REPORTS ──────────────────────────────────────────────── */
@@ -981,6 +1056,34 @@ body {
   margin-bottom: 8px; padding: 6px 10px;
   background: var(--foam); border-radius: 6px; border: 1px solid var(--line);
 }
+
+/* ── 15. ALL-CATCHES MAP TAB ─────────────────────────────────── */
+.map-tab-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; align-items: center; }
+.map-tab-filter {
+  background: var(--surface); border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm); padding: 7px 11px;
+  font-size: 12px; font-family: 'Courier New', monospace;
+  color: var(--mist); cursor: pointer; transition: all 0.15s;
+  -webkit-appearance: none; appearance: none;
+}
+.map-tab-filter:focus { outline: none; border-color: var(--water); }
+#allCatchesMap {
+  width: 100%; height: calc(100vh - 240px); min-height: 380px;
+  border-radius: var(--radius); border: 1px solid var(--line);
+}
+.leaflet-popup-content-wrapper { border-radius: 12px !important; padding: 0 !important; overflow: hidden; min-width: 230px; }
+.leaflet-popup-content { margin: 0 !important; width: auto !important; }
+.map-popup-card { font-family: 'Georgia', serif; }
+.map-popup-header { background: var(--ink); padding: 10px 12px; }
+.map-popup-species { color: #e0f7fa; font-size: 14px; }
+.map-popup-date { color: #64b5d9; font-size: 10px; font-family: 'Courier New', monospace; margin-top: 2px; }
+.map-popup-body { padding: 10px 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.map-popup-field .lbl { font-size: 9px; font-family: 'Courier New', monospace; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mist); }
+.map-popup-field .val { font-size: 12px; color: var(--ink); }
+.map-popup-photos { display: flex; gap: 6px; padding: 0 12px 8px; flex-wrap: wrap; }
+.map-popup-photo { width: 58px; height: 58px; object-fit: cover; border-radius: 6px; border: 1px solid var(--line); cursor: pointer; }
+.map-popup-actions { display: flex; gap: 6px; padding: 0 12px 12px; }
+.map-popup-brag { background: var(--catch); color: white; border: none; border-radius: var(--radius-sm); padding: 7px 0; font-size: 12px; font-family: 'Courier New', monospace; cursor: pointer; flex: 1; font-weight: 600; letter-spacing: 0.05em; }
 </style>
 
 <!-- ─────────────────────────────────────────────────────────────
@@ -1005,6 +1108,7 @@ body {
     <button class="tab active" id="tab-log"      onclick="showView('log')">Log</button>
     <button class="tab"        id="tab-catches"  onclick="showView('catches')">Catches</button>
     <button class="tab"        id="tab-reports"  onclick="showView('reports')">Reports</button>
+    <button class="tab"        id="tab-map"      onclick="showView('map')">🗺 Map</button>
     <button class="tab"        id="tab-moon"     onclick="showView('moon')">🌕 Moon</button>
     <button class="tab"        id="tab-species"  onclick="showView('species')">Species</button>
     <button class="tab"        id="tab-settings" onclick="showView('settings')">Settings</button>
@@ -1301,6 +1405,25 @@ body {
 </div><!-- /view-reports -->
 
 
+<!-- ═══ MAP VIEW ═══ -->
+<div class="view" id="view-map">
+  <div class="map-tab-filters">
+    <select class="map-tab-filter" id="mapFilterSpecies" onchange="renderAllCatchesMap()">
+      <option value="">All species</option>
+    </select>
+    <select class="map-tab-filter" id="mapFilterDate" onchange="renderAllCatchesMap()">
+      <option value="">All time</option>
+      <option value="thisMonth">This month</option>
+      <option value="lastMonth">Last month</option>
+      <option value="thisYear">This year</option>
+      <option value="pickMonth">Pick a monthu2026</option>
+    </select>
+    <input type="month" class="map-tab-filter" id="mapFilterMonth" style="display:none" onchange="renderAllCatchesMap()">
+  </div>
+  <div id="allCatchesMap"></div>
+</div><!-- /view-map -->
+
+
 <!-- ═══ MOON VIEW ═══ -->
 <div class="view" id="view-moon">
   <div class="moon-header">
@@ -1474,6 +1597,27 @@ body {
      MODALS  (outside .content so z-index stacking is clean)
      ════════════════════════════════════════════════════════════ -->
 
+<!-- BRAG full-view modal -->
+<div class="brag-modal-bg" id="bragModal">
+  <div class="brag-modal">
+    <div class="brag-modal-header">
+      <h2 id="bragModalTitle">🎣 Brag</h2>
+      <button class="brag-modal-close" onclick="closeBragModal()">×</button>
+    </div>
+    <div class="brag-tabs">
+      <button class="brag-tab active" id="bragTabDetails" onclick="switchBragTab('details')">Details</button>
+      <button class="brag-tab"        id="bragTabPhotos"  onclick="switchBragTab('photos')">Photos</button>
+      <button class="brag-tab"        id="bragTabMap"     onclick="switchBragTab('map')">📍 Location</button>
+    </div>
+    <div class="brag-content">
+      <div class="brag-tab-panel active" id="bragPanelDetails"></div>
+      <div class="brag-tab-panel"        id="bragPanelPhotos"></div>
+      <div class="brag-tab-panel"        id="bragPanelMap">
+        <div id="bragMapContainer" style="width:100%;height:320px;border-radius:12px;overflow:hidden;margin-top:4px"></div>
+      </div>
+    </div>
+  </div>
+</div>
 <!-- Edit Species modal -->
 <div class="modal-bg" id="editSpModal">
   <div class="modal">
@@ -1873,6 +2017,8 @@ function showView(v) {
   if (v === 'reports')  buildRptFilters();
   if (v === 'species')  renderSpMgr();
   if (v === 'settings') loadSettingsView();
+  if (v === 'map')      { initMapTabFilters(); setTimeout(renderAllCatchesMap, 100); }
+  if (v === 'map')      { initMapTabFilters(); setTimeout(renderAllCatchesMap, 100); }
 }
 
 /* ─────────────────────────────────────────────────────────────
@@ -3040,7 +3186,9 @@ function renderCatches() {
   if (!f.length) { list.innerHTML = '<div class="no-catches">No catches here yet. Go get \'em! 🎣</div>'; return; }
   list.innerHTML = f.map(c => {
     const d = c.date ? new Date(c.date+'T12:00:00').toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short',year:'numeric'}) : '';
-    const wx = [c.weather, c.windDir&&c.windSpeed?`${c.windDir} ${c.windSpeed}km/h`:(c.windDir||'')].filter(Boolean).join(' · ');
+    const v = x => x ? `<span class="val">${h(x)}</span>` : `<span class="val dash">—</span>`;
+    const wx = [c.weather, c.windDir&&c.windSpeed?`${c.windDir} ${c.windSpeed}km/h`:(c.windDir||'')].filter(Boolean).join(' · ') || '';
+    const swell = c.swellHeight ? `${c.swellHeight}m${c.swellDir?' '+c.swellDir:''}${c.swellPeriod?' @'+c.swellPeriod+'s':''}` : '';
     const photoHtml = c.photos && c.photos.length
       ? `<div class="catch-photos">${c.photos.map((p,i) => {
           if (!p) return '';
@@ -3049,29 +3197,32 @@ function renderCatches() {
           if (!thumb) return '';
           return `<img class="catch-photo" src="${thumb}" alt="Photo" data-photoid="${pid||''}" data-catchid="${c.id}" onclick="openFullPhoto(this)">`;
         }).join('')}</div>` : '';
+    const hasGps = c.gps && c.gps.trim();
     return `<div class="catch-card">
       <div class="catch-header">
         <div>
-          <div class="catch-species">${h(c.species)}${c.count>1?' ×'+c.count:''}${c.state?`<span class="catch-state-badge">${h(c.state)}</span>`:''}</div>
+          <div class="catch-species">${h(c.species)}${c.count>1?' x'+c.count:''}${c.state?`<span class="catch-state-badge">${h(c.state)}</span>`:''}</div>
           <div class="catch-date">${h(d)} ${h(c.time||'')} ${c.spotName?'· '+h(c.spotName):''} ${c.moon?'· '+c.moon.emoji+' '+c.moon.name:''}</div>
         </div>
         ${c.weight ? `<div class="catch-wt">${h(c.weight)}kg</div>` : ''}
       </div>
       <div class="catch-body">
-        ${c.method    ? `<div class="cd"><div class="lbl">Method</div><div class="val">${h(c.method)}</div></div>` : ''}
-        ${c.bait      ? `<div class="cd"><div class="lbl">Bait / Lure</div><div class="val">${h(c.bait)}</div></div>` : ''}
-        ${c.length    ? `<div class="cd"><div class="lbl">Length</div><div class="val">${h(c.length)}cm</div></div>` : ''}
-        ${c.depth     ? `<div class="cd"><div class="lbl">Depth</div><div class="val">${h(c.depth)}m</div></div>` : ''}
-        ${wx          ? `<div class="cd"><div class="lbl">Conditions</div><div class="val">${h(wx)}</div></div>` : ''}
-        ${c.tide      ? `<div class="cd"><div class="lbl">Tide</div><div class="val">${h(c.tide)}</div></div>` : ''}
-        ${c.swellHeight ? `<div class="cd"><div class="lbl">Swell</div><div class="val">${h(c.swellHeight)}m${c.swellDir?' '+h(c.swellDir):''}${c.swellPeriod?' @'+h(c.swellPeriod)+'s':''}</div></div>` : ''}
-        ${c.gps       ? `<div class="cd" style="grid-column:1/-1"><div class="lbl">GPS</div><div class="val" style="font-family:'Courier New',monospace;font-size:11px">${h(c.gps)}</div></div>` : ''}
-        ${(c.waypointId||c.waypointName) ? `<div class="cd" style="grid-column:1/-1"><div class="lbl">Waypoint</div><div class="val" style="font-family:'Courier New',monospace;font-size:11px">${h([c.waypointId,c.waypointName].filter(Boolean).join(' — '))}</div></div>` : ''}
-        ${c.disposition ? `<div class="cd"><div class="lbl">Disposition</div><div class="val">${h(c.disposition)}</div></div>` : ''}
+        <div class="cd"><div class="lbl">Method</div>${v(c.method)}</div>
+        <div class="cd"><div class="lbl">Bait / Lure</div>${v(c.bait)}</div>
+        <div class="cd"><div class="lbl">Length</div>${c.length ? `<span class="val">${h(c.length)}cm</span>` : `<span class="val dash">—</span>`}</div>
+        <div class="cd"><div class="lbl">Depth</div>${c.depth ? `<span class="val">${h(c.depth)}m</span>` : `<span class="val dash">—</span>`}</div>
+        <div class="cd"><div class="lbl">Conditions</div>${v(wx||null)}</div>
+        <div class="cd"><div class="lbl">Tide</div>${v(c.tide)}</div>
+        <div class="cd"><div class="lbl">Swell</div>${v(swell||null)}</div>
+        <div class="cd"><div class="lbl">Disposition</div>${v(c.disposition)}</div>
       </div>
       ${c.notes ? `<div class="catch-notes">${h(c.notes)}</div>` : ''}
       ${photoHtml}
-      <div class="catch-actions"><button class="btn btn-sm" style="background:var(--foam);border:1px solid var(--line);color:var(--ink2)" data-id="${c.id}" onclick="openEditCatch(Number(this.dataset.id))">Edit</button></div>
+      <div class="catch-actions">
+        <button class="btn-brag"      data-id="${c.id}" onclick="openBragModal(Number(this.dataset.id))">BRAG</button>
+        ${hasGps ? `<button class="btn-map-pin" data-id="${c.id}" onclick="openBragModal(Number(this.dataset.id),'map')" title="View on map">Map</button>` : ''}
+        <button class="btn-edit-card" data-id="${c.id}" onclick="openEditCatch(Number(this.dataset.id))">Edit</button>
+      </div>
     </div>`;
   }).join('');
 }
@@ -3493,6 +3644,233 @@ async function importData(e) {
     e.target.value = '';
   } catch(err) { statusEl.style.color = 'var(--danger)'; statusEl.textContent = '✗ Import failed — ' + err.message; }
 }
+
+
+/* ─────────────────────────────────────────────────────────────
+   BRAG MODAL — full view of a single catch
+   ───────────────────────────────────────────────────────────── */
+let bragMapInstance = null;
+let currentBragId   = null;
+
+function openBragModal(id, tab) {
+  const c = catches.find(x => x.id === id); if (!c) return;
+  currentBragId = id;
+  const d = c.date ? new Date(c.date+'T12:00:00').toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : '—';
+  document.getElementById('bragModalTitle').textContent = '🎣 ' + (c.species||'Catch') + (c.weight?' — '+c.weight+'kg':'');
+  // Details panel
+  const f = (lbl, val, full) => `<div class="brag-field${full?' full':''}"><div class="bf-lbl">${lbl}</div><div class="bf-val${!val?' dash':''}">${val||'—'}</div></div>`;
+  const fm = (lbl, val) => `<div class="brag-field"><div class="bf-lbl">${lbl}</div><div class="bf-val mono${!val?' dash':''}">${val||'—'}</div></div>`;
+  const wx = [c.weather, c.windDir&&c.windSpeed?`${c.windDir} ${c.windSpeed}km/h`:(c.windDir||'')].filter(Boolean).join(' · ')||null;
+  const swell = c.swellHeight ? `${c.swellHeight}m${c.swellDir?' '+c.swellDir:''}${c.swellPeriod?' @'+c.swellPeriod+'s':''}` : null;
+  const moon = c.moon ? `${c.moon.emoji} ${c.moon.name} · ${c.moon.illumination}% · ${c.moon.solunar.stars} ${c.moon.solunar.rating}` : null;
+  document.getElementById('bragPanelDetails').innerHTML = `
+    <div class="brag-section">
+      <div class="brag-section-hdr">🐟 The Catch</div>
+      <div class="brag-grid">
+        ${f('Species',    h(c.species))}
+        ${f('Weight',     c.weight  ? c.weight+'kg' : null)}
+        ${f('Length',     c.length  ? c.length+'cm' : null)}
+        ${f('Count',      c.count   ? String(c.count) : null)}
+        ${f('Method',     h(c.method))}
+        ${f('Bait / Lure',h(c.bait))}
+        ${f('Line',       c.lineWeight ? c.lineWeight+'lb' : null)}
+        ${f('Leader',     c.leader     ? c.leader+'lb'     : null)}
+        ${f('Disposition',h(c.disposition))}
+        ${f('Water Temp', c.waterTemp  ? c.waterTemp+'°C'  : null)}
+      </div>
+    </div>
+    <div class="brag-section">
+      <div class="brag-section-hdr">📍 Location &amp; Time</div>
+      <div class="brag-grid">
+        ${f('Date', h(d))}
+        ${f('Time', h(c.time))}
+        ${f('Spot Name', h(c.spotName))}
+        ${f('State', h(c.state))}
+        ${f('Depth', c.depth ? c.depth+'m' : null)}
+        ${f('Moon', moon)}
+        ${fm('GPS', h(c.gps))}
+        ${c.waypointId||c.waypointName ? fm('Waypoint', h([c.waypointId,c.waypointName].filter(Boolean).join(' — '))) : f('Waypoint', null)}
+      </div>
+    </div>
+    <div class="brag-section">
+      <div class="brag-section-hdr">🌤 Conditions</div>
+      <div class="brag-grid">
+        ${f('Weather',    h(c.weather))}
+        ${f('Air Temp',   c.airTemp   ? c.airTemp+'°C'   : null)}
+        ${f('Wind',       wx)}
+        ${f('Tide',       h(c.tide))}
+        ${f('Swell',      swell)}
+        ${f('Wave Height',c.waveHeight ? c.waveHeight+'m' : null)}
+      </div>
+    </div>
+    ${c.notes ? `<div class="brag-section"><div class="brag-section-hdr">📝 Notes</div><div style="padding:12px 14px;font-size:13px;color:var(--ink);font-style:italic">${h(c.notes)}</div></div>` : ''}
+  `;
+  // Photos panel
+  const photos = c.photos||[];
+  if (photos.length) {
+    document.getElementById('bragPanelPhotos').innerHTML =
+      `<div class="brag-photos-grid">${photos.map((p,i) => {
+        const thumb = typeof p==='object' ? p.thumb : (typeof p==='string'&&p.startsWith('data:') ? p : null);
+        const pid   = typeof p==='object' ? p.id    : (typeof p==='string'&&p.startsWith('data:') ? p : null);
+        if (!thumb) return '';
+        return `<img class="brag-photo" src="${thumb}" data-photoid="${pid||''}" onclick="openFullPhoto(this)" alt="Photo ${i+1}">`;
+      }).join('')}</div>`;
+  } else {
+    document.getElementById('bragPanelPhotos').innerHTML = '<div class="brag-no-photos">No photos for this catch yet.</div>';
+  }
+  document.getElementById('bragModal').classList.add('open');
+  switchBragTab(tab||'details');
+}
+
+function switchBragTab(tab) {
+  ['details','photos','map'].forEach(t => {
+    document.getElementById('bragTab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle('active', t===tab);
+    document.getElementById('bragPanel'+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle('active', t===tab);
+  });
+  if (tab==='map') setTimeout(() => initBragMap(), 100);
+}
+
+function initBragMap() {
+  if (typeof L === 'undefined') return;
+  const c = catches.find(x => x.id === currentBragId); if (!c || !c.gps) {
+    document.getElementById('bragMapContainer').innerHTML = '<div style="padding:20px;text-align:center;font-size:12px;color:var(--mist);font-family:Courier New,monospace">No GPS data for this catch.</div>';
+    return;
+  }
+  const parts = c.gps.split(',').map(s => parseFloat(s.trim()));
+  if (parts.length!==2||isNaN(parts[0])||isNaN(parts[1])) return;
+  if (bragMapInstance) { bragMapInstance.remove(); bragMapInstance=null; }
+  bragMapInstance = L.map('bragMapContainer').setView(parts, 14);
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
+    attribution:'Tiles © Esri', maxZoom:19
+  }).addTo(bragMapInstance);
+  L.marker(parts, {
+    icon: L.divIcon({
+      html:`<div style="width:26px;height:26px;background:var(--catch);border:3px solid white;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 8px rgba(0,0,0,0.4)"></div>`,
+      iconSize:[26,26], iconAnchor:[13,26], className:''
+    })
+  }).addTo(bragMapInstance).bindPopup(`<b>${c.species||'Catch'}</b><br>${c.date||''}`).openPopup();
+  setTimeout(()=>bragMapInstance.invalidateSize(),200);
+}
+
+function closeBragModal() {
+  document.getElementById('bragModal').classList.remove('open');
+  if (bragMapInstance) { bragMapInstance.remove(); bragMapInstance=null; }
+  currentBragId = null;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   ALL-CATCHES MAP TAB
+   ───────────────────────────────────────────────────────────── */
+let allCatchesMapInstance = null;
+let allCatchesMarkers     = [];
+
+function getMapFilteredCatches() {
+  const spFilter   = document.getElementById('mapFilterSpecies').value;
+  const dateFilter = document.getElementById('mapFilterDate').value;
+  const monthPick  = document.getElementById('mapFilterMonth').value;
+  const now = new Date();
+  return catches.filter(c => {
+    if (!c.gps) return false;
+    const parts = c.gps.split(',').map(s=>parseFloat(s.trim()));
+    if (parts.length!==2||isNaN(parts[0])||isNaN(parts[1])) return false;
+    if (spFilter && c.speciesId !== spFilter && c.species !== spFilter) return false;
+    if (dateFilter==='thisMonth') {
+      const d=new Date(c.date+'T12:00:00');
+      if (d.getMonth()!==now.getMonth()||d.getFullYear()!==now.getFullYear()) return false;
+    } else if (dateFilter==='lastMonth') {
+      const lm = new Date(now.getFullYear(), now.getMonth()-1, 1);
+      const d  = new Date(c.date+'T12:00:00');
+      if (d.getMonth()!==lm.getMonth()||d.getFullYear()!==lm.getFullYear()) return false;
+    } else if (dateFilter==='thisYear') {
+      if (new Date(c.date+'T12:00:00').getFullYear()!==now.getFullYear()) return false;
+    } else if (dateFilter==='pickMonth' && monthPick) {
+      const [yr,mo] = monthPick.split('-').map(Number);
+      const d = new Date(c.date+'T12:00:00');
+      if (d.getFullYear()!==yr||d.getMonth()!==mo-1) return false;
+    }
+    return true;
+  });
+}
+
+function renderAllCatchesMap() {
+  if (typeof L === 'undefined') { setTimeout(renderAllCatchesMap, 500); return; }
+  const dateFilter = document.getElementById('mapFilterDate').value;
+  document.getElementById('mapFilterMonth').style.display = dateFilter==='pickMonth' ? 'block' : 'none';
+
+  if (!allCatchesMapInstance) {
+    allCatchesMapInstance = L.map('allCatchesMap').setView([-25,134],5);
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
+      attribution:'Tiles © Esri', maxZoom:19
+    }).addTo(allCatchesMapInstance);
+    // Centre on user location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(p => {
+        allCatchesMapInstance.setView([p.coords.latitude, p.coords.longitude], 10);
+      }, ()=>{});
+    }
+  }
+
+  // Clear existing markers
+  allCatchesMarkers.forEach(m => m.remove());
+  allCatchesMarkers = [];
+
+  const filtered = getMapFilteredCatches();
+  filtered.forEach(c => {
+    const parts = c.gps.split(',').map(s=>parseFloat(s.trim()));
+    const d = c.date ? new Date(c.date+'T12:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}) : '';
+    const wx = [c.weather, c.windDir&&c.windSpeed?`${c.windDir} ${c.windSpeed}km/h`:(c.windDir||'')].filter(Boolean).join(' · ')||'—';
+    // Build photo thumbnails HTML
+    const photoThumbsHtml = (c.photos||[]).slice(0,3).map(p => {
+      const thumb = typeof p==='object' ? p.thumb : (typeof p==='string'&&p.startsWith('data:') ? p : null);
+      const pid   = typeof p==='object' ? p.id    : (typeof p==='string'&&p.startsWith('data:') ? p : null);
+      if (!thumb) return '';
+      return `<img class="map-popup-photo" src="${thumb}" data-photoid="${pid||''}" onclick="openFullPhoto(this)" alt="photo">`;
+    }).join('');
+
+    const popupHtml = `<div class="map-popup-card">
+      <div class="map-popup-header">
+        <div class="map-popup-species">${h(c.species)}${c.weight?' — '+c.weight+'kg':''}</div>
+        <div class="map-popup-date">${h(d)} ${h(c.time||'')} ${c.spotName?'· '+h(c.spotName):''}</div>
+      </div>
+      <div class="map-popup-body">
+        <div class="map-popup-field"><div class="lbl">Method</div><div class="val">${h(c.method)||'—'}</div></div>
+        <div class="map-popup-field"><div class="lbl">Tide</div><div class="val">${h(c.tide)||'—'}</div></div>
+        <div class="map-popup-field"><div class="lbl">Conditions</div><div class="val">${h(wx)}</div></div>
+        <div class="map-popup-field"><div class="lbl">Length</div><div class="val">${c.length?c.length+'cm':'—'}</div></div>
+      </div>
+      ${photoThumbsHtml ? `<div class="map-popup-photos">${photoThumbsHtml}</div>` : ''}
+      <div class="map-popup-actions">
+        <button class="map-popup-brag" onclick="openBragModal(${c.id})">BRAG</button>
+      </div>
+    </div>`;
+
+    const marker = L.marker(parts, {
+      icon: L.divIcon({
+        html:`<div style="width:22px;height:22px;background:var(--catch);border:2.5px solid white;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 6px rgba(0,0,0,0.35)"></div>`,
+        iconSize:[22,22], iconAnchor:[11,22], className:''
+      })
+    }).bindPopup(popupHtml, {maxWidth:260});
+    marker.addTo(allCatchesMapInstance);
+    allCatchesMarkers.push(marker);
+  });
+
+  setTimeout(()=>allCatchesMapInstance.invalidateSize(), 150);
+}
+
+function initMapTabFilters() {
+  const sel = document.getElementById('mapFilterSpecies');
+  sel.innerHTML = '<option value="">All species</option>';
+  const seen = new Set();
+  catches.forEach(c => {
+    if (c.species && !seen.has(c.species)) {
+      seen.add(c.species);
+      const opt = document.createElement('option');
+      opt.value = c.speciesId||c.species; opt.textContent = c.species;
+      sel.appendChild(opt);
+    }
+  });
+}
+
 
 /* ─────────────────────────────────────────────────────────────
    BOOT
