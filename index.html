@@ -4193,7 +4193,7 @@ const WW_LOCATIONS = [
   {id:19180, name:'Bellambi Beach',        label:'Bellambi'},
 ];
 let condLocationIdx = 0;
-let condCache = {};
+let condCache = {}; // v2 — 3 day forecast
 
 function selectCondLocation(idx) {
   condLocationIdx = idx;
@@ -4206,7 +4206,7 @@ async function loadConditions() {
   const el  = document.getElementById('condContent');
   const upd = document.getElementById('condUpdated');
   const cached = condCache[loc.id];
-  if (cached && Date.now() - cached.ts < 10*60*1000) { renderConditions(cached.data, loc); return; }
+  if (cached && Date.now() - cached.ts < 2*60*1000) { renderConditions(cached.data, loc); return; }
   el.innerHTML = '<div class="cond-loading">Fetching latest conditions...</div>';
   upd.textContent = '';
   try {
