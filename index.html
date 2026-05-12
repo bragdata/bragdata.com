@@ -492,7 +492,7 @@ body {
 .brag-modal-bg.open { display: flex; }
 .brag-modal {
   background: var(--foam); border-radius: var(--radius) var(--radius) 0 0;
-  margin-top: auto; height: 92vh; display: flex; flex-direction: column; width: 100%;
+  margin-top: auto; height: calc(100vh - 80px); max-height: calc(100vh - 80px); display: flex; flex-direction: column; width: 100%;
   isolation: isolate;
 }
 .brag-modal-header {
@@ -720,15 +720,32 @@ body {
 
 .photo-lightbox {
   display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.92); z-index: 1100;
+  background: rgba(0,0,0,0.95); z-index: 1100;
   align-items: center; justify-content: center;
+  user-select: none;
 }
 .photo-lightbox.open { display: flex; }
-.photo-lightbox img { max-width: 95vw; max-height: 90vh; border-radius: var(--radius-sm); object-fit: contain; }
+.photo-lightbox img { max-width: 92vw; max-height: 80vh; border-radius: var(--radius-sm); object-fit: contain; touch-action: none; }
 .photo-lightbox-close {
   position: absolute; top: 16px; right: 16px;
   background: rgba(255,255,255,0.15); border: none; color: white;
-  font-size: 22px; width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
+  font-size: 22px; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; z-index: 2;
+}
+.lb-prev, .lb-next {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  background: rgba(255,255,255,0.15); border: none; color: white;
+  font-size: 32px; width: 48px; height: 64px; border-radius: 8px;
+  cursor: pointer; z-index: 2; display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.lb-prev { left: 12px; }
+.lb-next { right: 12px; }
+.lb-prev:active, .lb-next:active { background: rgba(255,255,255,0.3); }
+.lb-prev.hidden, .lb-next.hidden { display: none; }
+.lb-counter {
+  position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,0.5); color: white; font-size: 12px;
+  font-family: 'Courier New', monospace; padding: 4px 12px; border-radius: 20px;
 }
 
 /* EXIF result panels */
@@ -1714,9 +1731,12 @@ body {
 </div>
 
 <!-- Photo lightbox -->
-<div class="photo-lightbox" id="photoLightbox" onclick="closeLightbox()">
-  <img id="lightboxImg" src="" alt="Catch photo">
+<div class="photo-lightbox" id="photoLightbox">
+  <img id="lightboxImg" src="" alt="Catch photo" onclick="lbNext(1)">
   <button class="photo-lightbox-close" onclick="closeLightbox()">×</button>
+  <button class="lb-prev" id="lbPrev" onclick="lbNext(-1)">‹</button>
+  <button class="lb-next" id="lbNext" onclick="lbNext(1)">›</button>
+  <div class="lb-counter" id="lbCounter"></div>
 </div>
 
 <!-- Map picker modal -->
@@ -2336,21 +2356,77 @@ function renderPhotoPreviews() {
 }
 function removePhoto(i) { pendingPhotos.splice(i, 1); renderPhotoPreviews(); }
 
+// Lightbox state
+let lbImages  = [];  // array of {src, pid}
+let lbIndex   = 0;
+let lbSwipeX  = null;
+
 async function openFullPhoto(imgEl) {
-  const lb = document.getElementById('lightboxImg');
-  lb.src = imgEl.src;
+  // Build image set from siblings in the same photo container
+  const container = imgEl.closest('.brag-photos-grid, .catch-photos, .map-popup-photos');
+  if (container) {
+    const imgs = Array.from(container.querySelectorAll('img'));
+    lbImages = imgs.map(i => ({
+      src: i.src,
+      pid: i.dataset.photoid || null
+    }));
+    lbIndex = imgs.indexOf(imgEl);
+  } else {
+    lbImages = [{src: imgEl.src, pid: imgEl.dataset.photoid || null}];
+    lbIndex  = 0;
+  }
+  await lbShow(lbIndex);
   document.getElementById('photoLightbox').classList.add('open');
-  const pid = imgEl.dataset.photoid;
-  if (pid) {
-    const full = await getFullPhoto(pid);
-    if (full) lb.src = full;
+  lbUpdateNav();
+  lbBindSwipe();
+}
+async function lbShow(idx) {
+  const lb = document.getElementById('lightboxImg');
+  const item = lbImages[idx];
+  if (!item) return;
+  lb.src = item.src;
+  if (item.pid && !item.pid.startsWith('data:')) {
+    const full = await getFullPhoto(item.pid);
+    if (full) { lb.src = full; lbImages[idx].src = full; }
   }
 }
+async function lbNext(dir) {
+  const newIdx = lbIndex + dir;
+  if (newIdx < 0 || newIdx >= lbImages.length) return;
+  lbIndex = newIdx;
+  await lbShow(lbIndex);
+  lbUpdateNav();
+}
+function lbUpdateNav() {
+  const prev = document.getElementById('lbPrev');
+  const next = document.getElementById('lbNext');
+  const ctr  = document.getElementById('lbCounter');
+  if (prev) prev.classList.toggle('hidden', lbIndex === 0);
+  if (next) next.classList.toggle('hidden', lbIndex === lbImages.length - 1);
+  if (ctr)  ctr.textContent = lbImages.length > 1 ? `${lbIndex + 1} / ${lbImages.length}` : '';
+}
+function lbBindSwipe() {
+  const el = document.getElementById('photoLightbox');
+  el.ontouchstart = e => { lbSwipeX = e.touches[0].clientX; };
+  el.ontouchend   = e => {
+    if (lbSwipeX === null) return;
+    const diff = lbSwipeX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) lbNext(diff > 0 ? 1 : -1);
+    lbSwipeX = null;
+  };
+}
 function openLightbox(src) {
+  lbImages = [{src, pid: null}];
+  lbIndex  = 0;
   document.getElementById('lightboxImg').src = src;
   document.getElementById('photoLightbox').classList.add('open');
+  lbUpdateNav();
+  lbBindSwipe();
 }
-function closeLightbox() { document.getElementById('photoLightbox').classList.remove('open'); }
+function closeLightbox() {
+  document.getElementById('photoLightbox').classList.remove('open');
+  lbSwipeX = null;
+}
 
 /* ─────────────────────────────────────────────────────────────
    PHOTO MEASUREMENT TOOL
