@@ -3064,34 +3064,71 @@ function wmoToWeather(code) {
 }
 async function fetchHistoricalWeather(lat, lon, date, time) {
   const hour = time ? parseInt(time.split(':')[0]) : 12;
-  const [atmosResp, marineResp] = await Promise.allSettled([
-    fetch(`https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${date}&end_date=${date}&hourly=temperature_2m,windspeed_10m,winddirection_10m,weathercode&timezone=auto&windspeed_unit=kmh`),
-    fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&start_date=${date}&end_date=${date}&hourly=wave_height,swell_wave_height,swell_wave_direction,swell_wave_period&timezone=auto`),
-  ]);
   const result = {};
-  if (atmosResp.status === 'fulfilled') {
-    const data = await atmosResp.value.json();
+
+  // Open-Meteo for atmosphere — air temp, wind, weather code
+  try {
+    const atmosResp = await fetch('https://archive-api.open-meteo.com/v1/archive?latitude=' + lat + '&longitude=' + lon + '&start_date=' + date + '&end_date=' + date + '&hourly=temperature_2m,windspeed_10m,winddirection_10m,weathercode&timezone=auto&windspeed_unit=kmh');
+    const data = await atmosResp.json();
     if (data.hourly) {
       const hd = data.hourly, idx = Math.min(hour, (hd.time||[]).length-1);
-      result.airTemp   = hd.temperature_2m?.[idx]     ? Math.round(hd.temperature_2m[idx])  : null;
-      result.windSpeed = hd.windspeed_10m?.[idx]      ? Math.round(hd.windspeed_10m[idx])   : null;
-      result.windDir   = hd.winddirection_10m?.[idx] != null ? degToCompass(hd.winddirection_10m[idx]) : null;
+      result.airTemp   = hd.temperature_2m?.[idx]     ? Math.round(hd.temperature_2m[idx])              : null;
+      result.windSpeed = hd.windspeed_10m?.[idx]      ? Math.round(hd.windspeed_10m[idx])               : null;
+      result.windDir   = hd.winddirection_10m?.[idx] != null ? degToCompass(hd.winddirection_10m[idx])  : null;
       result.weather   = wmoToWeather(hd.weathercode?.[idx]);
     }
-  }
-  if (marineResp.status === 'fulfilled') {
-    try {
-      const mdata = await marineResp.value.json();
-      if (mdata.hourly) {
-        const hm = mdata.hourly, idx = Math.min(hour, (hm.time||[]).length-1);
-        result.swellHeight = hm.swell_wave_height?.[idx]     ? parseFloat(hm.swell_wave_height[idx].toFixed(1))     : null;
-        result.swellDir    = hm.swell_wave_direction?.[idx] != null ? degToCompass(hm.swell_wave_direction[idx])    : null;
-        result.swellPeriod = hm.swell_wave_period?.[idx]    ? Math.round(hm.swell_wave_period[idx])                : null;
-        result.waveHeight  = hm.wave_height?.[idx]          ? parseFloat(hm.wave_height[idx].toFixed(1))            : null;
-      }
-    } catch(e) {}
-  }
+  } catch(e) {}
+
+  // Willyweather for swell — find nearest WW location to catch GPS
+  try {
+    const wwSwell = await fetchWWSwell(lat, lon, date, hour);
+    if (wwSwell) {
+      result.swellHeight = wwSwell.swellHeight;
+      result.swellDir    = wwSwell.swellDir;
+      result.swellPeriod = wwSwell.swellPeriod;
+    }
+  } catch(e) {}
+
   return Object.keys(result).length ? result : null;
+}
+
+// Find nearest Willyweather location and fetch swell for a given date/hour
+async function fetchWWSwell(lat, lon, date, hour) {
+  // Find nearest of our known WW locations
+  const wwLocs = [
+    {id:38437, lat:-34.4816, lon:150.9966, name:'Port Kembla Offshore'},
+    {id:19180, lat:-34.3641, lon:150.9214, name:'Bellambi Beach'},
+  ];
+  let nearest = wwLocs[0], minDist = Infinity;
+  wwLocs.forEach(l => {
+    const d = Math.sqrt(Math.pow(lat-l.lat,2)+Math.pow(lon-l.lon,2));
+    if (d < minDist) { minDist=d; nearest=l; }
+  });
+
+  // Only use WW swell if within ~50km (0.45 degrees)
+  if (minDist > 0.45) return null;
+
+  // Fetch swell forecast — works for today and near future
+  // For historical, WW doesn't support past swell via free API
+  // So we only enrich if the date is within the last 7 days
+  const catchDate = new Date(date + 'T12:00:00');
+  const daysAgo   = (Date.now() - catchDate.getTime()) / (1000*60*60*24);
+  if (daysAgo > 7) return null; // WW forecast doesn't go back far enough
+
+  const url = 'https://api.willyweather.com.au/v2/' + WW_KEY + '/locations/' + nearest.id + '/weather.json?forecasts=swell&days=1&startDate=' + date;
+  const resp = await fetch(url);
+  const data = await resp.json();
+  const swellDay = data.forecasts && data.forecasts.swell && data.forecasts.swell.days && data.forecasts.swell.days[0];
+  if (!swellDay || !swellDay.entries) return null;
+
+  const entry = swellDay.entries[Math.min(hour, swellDay.entries.length-1)];
+  if (!entry) return null;
+
+  return {
+    swellHeight: parseFloat(entry.height.toFixed(1)),
+    swellDir:    entry.directionText,
+    swellPeriod: entry.period,
+  };
 }
 async function reverseGeocodeSpot(lat, lon) {
   const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
