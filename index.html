@@ -1088,6 +1088,22 @@ body {
   padding-right: 32px;
 }
 .map-tab-filter:focus { outline: none; border-color: var(--water); }
+.month-stepper {
+  display: flex; align-items: center; background: var(--surface);
+  border: 1.5px solid var(--line); border-radius: var(--radius-sm); overflow: hidden;
+}
+.month-step-btn {
+  background: var(--foam); border: none; color: var(--ink2);
+  font-size: 26px; line-height: 1; width: 52px; height: 48px;
+  cursor: pointer; flex-shrink: 0; transition: background 0.1s;
+  display: flex; align-items: center; justify-content: center;
+}
+.month-step-btn:active { background: var(--line); }
+.month-step-label {
+  flex: 1; text-align: center; font-size: 15px;
+  font-family: 'Georgia', serif; color: var(--ink);
+  padding: 0 4px; user-select: none;
+}
 #allCatchesMap {
   width: 100%; height: 60vh; min-height: 340px; max-height: 600px;
   border-radius: var(--radius); border: 1px solid var(--line); display: block;
@@ -1433,22 +1449,11 @@ body {
     <select class="map-tab-filter" id="mapFilterSpecies" onchange="renderAllCatchesMap()">
       <option value="">All species</option>
     </select>
-    <select class="map-tab-filter" id="mapFilterDate" onchange="renderAllCatchesMap()">
-      <option value="">All time</option>
-      <option value="month-0">All Januarys</option>
-      <option value="month-1">All Februarys</option>
-      <option value="month-2">All Marchs</option>
-      <option value="month-3">All Aprils</option>
-      <option value="month-4">All Mays</option>
-      <option value="month-5">All Junes</option>
-      <option value="month-6">All Julys</option>
-      <option value="month-7">All Augusts</option>
-      <option value="month-8">All Septembers</option>
-      <option value="month-9">All Octobers</option>
-      <option value="month-10">All Novembers</option>
-      <option value="month-11">All Decembers</option>
-      <option value="thisYear">This year</option>
-    </select>
+    <div class="month-stepper">
+      <button class="month-step-btn" onclick="stepMonth(-1)">&#8249;</button>
+      <div class="month-step-label" id="monthStepLabel">All time</div>
+      <button class="month-step-btn" onclick="stepMonth(1)">&#8250;</button>
+    </div>
   </div>
   <div id="allCatchesMap"></div>
 </div><!-- /view-map -->
@@ -3899,23 +3904,40 @@ function closeBragModal() {
    ───────────────────────────────────────────────────────────── */
 let allCatchesMapInstance = null;
 let allCatchesMarkers     = [];
+// Month stepper: -1 = All time, 0-11 = Jan-Dec, 12 = This year
+let mapMonthStep = -1;
+const MAP_MONTH_LABELS = [
+  'All time',
+  'All Januarys','All Februarys','All Marchs','All Aprils',
+  'All Mays','All Junes','All Julys','All Augusts',
+  'All Septembers','All Octobers','All Novembers','All Decembers',
+  'This year'
+];
+function stepMonth(dir) {
+  // Steps: -1=All time, 0-11=months, 12=This year → stored as index 0-13
+  mapMonthStep = Math.max(0, Math.min(13, mapMonthStep + 1 + dir)) - 1;
+  // mapMonthStep: -1=All time, 0-11=Jan-Dec, 12=This year
+  const labelIdx = mapMonthStep + 1; // 0=All time, 1-12=months, 13=This year
+  document.getElementById('monthStepLabel').textContent = MAP_MONTH_LABELS[labelIdx] || 'All time';
+  renderAllCatchesMap();
+}
 
 function getMapFilteredCatches() {
-  const spFilter   = document.getElementById('mapFilterSpecies').value;
-  const dateFilter = document.getElementById('mapFilterDate').value;
-  const now = new Date();
+  const spFilter = document.getElementById('mapFilterSpecies').value;
+  const now      = new Date();
   return catches.filter(c => {
     if (!c.gps) return false;
     const parts = c.gps.split(',').map(s=>parseFloat(s.trim()));
     if (parts.length!==2||isNaN(parts[0])||isNaN(parts[1])) return false;
     if (spFilter && c.speciesId !== spFilter && c.species !== spFilter) return false;
-    if (dateFilter.startsWith('month-')) {
-      // Calendar month filter — all years e.g. all Aprils ever
-      const mo = parseInt(dateFilter.split('-')[1]);
-      if (new Date(c.date+'T12:00:00').getMonth() !== mo) return false;
-    } else if (dateFilter==='thisYear') {
-      if (new Date(c.date+'T12:00:00').getFullYear() !== now.getFullYear()) return false;
+    if (mapMonthStep >= 0 && mapMonthStep <= 11) {
+      // Calendar month — all years e.g. all Aprils ever
+      if (!c.date) return false;
+      if (new Date(c.date+'T12:00:00').getMonth() !== mapMonthStep) return false;
+    } else if (mapMonthStep === 12) {
+      if (!c.date || new Date(c.date+'T12:00:00').getFullYear() !== now.getFullYear()) return false;
     }
+    // mapMonthStep === -1 means All time — no date filter
     return true;
   });
 }
