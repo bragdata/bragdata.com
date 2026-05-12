@@ -493,6 +493,7 @@ body {
 .brag-modal {
   background: var(--foam); border-radius: var(--radius) var(--radius) 0 0;
   margin-top: auto; height: 92vh; display: flex; flex-direction: column; width: 100%;
+  isolation: isolate;
 }
 .brag-modal-header {
   background: var(--ink); padding: 14px 16px;
@@ -511,8 +512,8 @@ body {
   cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s;
 }
 .brag-tab.active { color: #e0f7fa; border-bottom-color: var(--dawn); }
-.brag-content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px; min-height: 0; }
-.brag-tab-panel { display: none; }
+.brag-content { flex: 1; overflow-y: scroll; -webkit-overflow-scrolling: touch; padding: 0; min-height: 0; overscroll-behavior: contain; }
+.brag-tab-panel { display: none; padding: 16px; }
 .brag-tab-panel.active { display: block; }
 .brag-section {
   background: var(--surface); border-radius: var(--radius);
@@ -1417,7 +1418,7 @@ body {
       <option value="thisMonth">This month</option>
       <option value="lastMonth">Last month</option>
       <option value="thisYear">This year</option>
-      <option value="pickMonth">Pick a monthu2026</option>
+      <option value="pickMonth">Pick a month…</option>
     </select>
     <input type="month" class="map-tab-filter" id="mapFilterMonth" style="display:none" onchange="renderAllCatchesMap()">
   </div>
@@ -1616,7 +1617,7 @@ body {
     <div class="brag-content">
       <div class="brag-tab-panel active" id="bragPanelDetails"></div>
       <div class="brag-tab-panel"        id="bragPanelPhotos"></div>
-      <div class="brag-tab-panel"        id="bragPanelMap">
+      <div class="brag-tab-panel" id="bragPanelMap" style="padding:8px">
         <div id="bragMapContainer" style="width:100%;height:320px;border-radius:12px;overflow:hidden;margin-top:4px"></div>
       </div>
     </div>
@@ -3660,7 +3661,7 @@ function openBragModal(id, tab) {
   const c = catches.find(x => x.id === id); if (!c) return;
   currentBragId = id;
 
-  // Track if opened from map tab — store view name so we can return correctly
+  // Track which view we came from
   const activeView = document.querySelector('.view.active');
   document.getElementById('bragModal').dataset.returnView = activeView ? activeView.id : '';
 
@@ -3668,8 +3669,13 @@ function openBragModal(id, tab) {
   const backBtn = document.getElementById('bragBackToMap');
   if (backBtn) backBtn.style.display = (activeView && activeView.id === 'view-map') ? 'inline-block' : 'none';
 
-  // Close any Leaflet popup on the all-catches map
-  if (allCatchesMapInstance) allCatchesMapInstance.closePopup();
+  // DESTROY the all-catches map entirely before opening brag
+  // Leaflet paints at compositor level and ignores z-index — only solution is removal
+  if (allCatchesMapInstance) {
+    allCatchesMapInstance.remove();
+    allCatchesMapInstance = null;
+    allCatchesMarkers = [];
+  }
 
   const d = c.date ? new Date(c.date+'T12:00:00').toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : '—';
   document.getElementById('bragModalTitle').textContent = '🎣 ' + (c.species||'Catch') + (c.weight?' — '+c.weight+'kg':'');
@@ -3795,14 +3801,8 @@ function closeBragModal() {
   if (bragMapInstance) { bragMapInstance.remove(); bragMapInstance=null; }
   const returnViewId = document.getElementById('bragModal').dataset.returnView || '';
   if (returnViewId === 'view-map') {
-    // Destroy and rebuild the all-catches map so it renders correctly
-    setTimeout(() => {
-      if (allCatchesMapInstance) {
-        allCatchesMapInstance.remove();
-        allCatchesMapInstance = null;
-      }
-      renderAllCatchesMap();
-    }, 200);
+    // Rebuild the all-catches map fresh — it was destroyed on brag open
+    setTimeout(() => { renderAllCatchesMap(); }, 150);
   }
   currentBragId = null;
 }
