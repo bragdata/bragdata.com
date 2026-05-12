@@ -113,9 +113,13 @@ body {
 }
 .view { display: none; }
 .view.active { display: block; }
-#view-map.active { display: flex; flex-direction: column; }
-#view-map .map-tab-filters { flex-shrink: 0; }
-#view-map #allCatchesMap { flex: none; width: 100%; height: calc(100vh - 360px); min-height: 300px; border-radius: var(--radius); border: 1px solid var(--line); }
+/* Map view — body gets class map-open to strip content padding */
+body.map-open .content { padding: 0; min-height: 0; }
+body.map-open .content > .view { display: none; }
+body.map-open .content > #view-map { display: flex; }
+#view-map { flex-direction: column; height: calc(100vh - 110px); }
+#view-map .map-tab-filters { flex-shrink: 0; padding: 12px 14px 8px; background: var(--foam); z-index: 10; position: relative; }
+#view-map #allCatchesMap { flex: 1; min-height: 0; border-radius: 0; border: none; }
 
 /* ── 3. FORM COMPONENTS ──────────────────────────────────────── */
 .form-card {
@@ -2061,8 +2065,8 @@ function showView(v) {
   if (v === 'reports')  buildRptFilters();
   if (v === 'species')  renderSpMgr();
   if (v === 'settings') loadSettingsView();
-  if (v === 'map')      { initMapTabFilters(); setTimeout(renderAllCatchesMap, 100); }
-  if (v === 'map')      { initMapTabFilters(); setTimeout(renderAllCatchesMap, 100); }
+  if (v === 'map')      { document.body.classList.add('map-open'); initMapTabFilters(); setTimeout(renderAllCatchesMap, 100); } else { document.body.classList.remove('map-open'); }
+  if (v === 'map')      { document.body.classList.add('map-open'); initMapTabFilters(); setTimeout(renderAllCatchesMap, 100); } else { document.body.classList.remove('map-open'); }
 }
 
 /* ─────────────────────────────────────────────────────────────
