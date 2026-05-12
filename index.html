@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0a1628">
-<title>BragData — Fishing Journal</title>
+<title>BragMaster — Fishing Journal</title>
 <!-- ═══════════════════════════════════════════════════════════════
      TIDELOG  —  Fishing Journal PWA
      Structure:
@@ -113,8 +113,8 @@ body {
 }
 .view { display: none; }
 .view.active { display: block; }
-#view-map.active { display: flex; flex-direction: column; margin: -16px -14px -60px; padding: 0; height: calc(100vh - 110px); }
-#view-map .map-tab-filters { flex-shrink: 0; padding: 12px 14px 0; background: var(--foam); }
+#view-map.active { display: flex; flex-direction: column; margin: -16px -14px 0; padding: 0; height: calc(100vh - 170px); min-height: 400px; }
+#view-map .map-tab-filters { flex-shrink: 0; padding: 10px 14px; background: var(--foam); }
 #view-map #allCatchesMap { flex: 1; min-height: 0; border-radius: 0; border-left: none; border-right: none; border-bottom: none; }
 
 /* ── 3. FORM COMPONENTS ──────────────────────────────────────── */
@@ -1142,7 +1142,7 @@ body {
 
 <div class="app-header">
   <div class="header-top">
-    <div class="logo"><h1>🎣 BragData</h1><span>Fishing Journal</span></div>
+    <div class="logo"><h1>🎣 BragMaster</h1><span>Fishing Journal</span></div>
     <div class="offline-badge" id="onlineBadge">● Online</div>
   </div>
   <div class="tabs">
@@ -1622,7 +1622,7 @@ body {
   <div class="settings-section">
     <div class="settings-section-hdr">ℹ️ About</div>
     <div class="settings-body">
-      <p>BragData — Fishing Journal<br>bragdata.com<br>All data stored locally on this device.<br>Works fully offline.</p>
+      <p>BragMaster — Fishing Journal<br>bragdata.com<br>All data stored locally on this device.<br>Works fully offline.</p>
       <p>Tide lookup requires an internet connection and a WorldTides API key. Each lookup costs 1 credit.</p>
     </div>
   </div>
@@ -1841,9 +1841,9 @@ body {
 /* ─────────────────────────────────────────────────────────────
    CONSTANTS
    ───────────────────────────────────────────────────────────── */
-const DB_CATCHES  = 'bragdata_catches';
-const DB_SPECIES  = 'bragdata_species';
-const IDB_NAME    = 'bragdata_photos_v1';
+const DB_CATCHES  = 'bragmaster_catches';
+const DB_SPECIES  = 'bragmaster_species';
+const IDB_NAME    = 'bragmaster_photos_v1';
 const IDB_STORE   = 'photos';
 const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const MF = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -1991,7 +1991,7 @@ function saveC() {
   }
 }
 function saveSp()  { localStorage.setItem(DB_SPECIES, JSON.stringify(species)); }
-function saveLocs(){ localStorage.setItem('bragdata_locations', JSON.stringify(locations)); }
+function saveLocs(){ localStorage.setItem('bragmaster_locations', JSON.stringify(locations)); }
 
 /* ─────────────────────────────────────────────────────────────
    INITIALISATION
@@ -2008,10 +2008,10 @@ function init() {
   document.getElementById('catchTime').value = now.toTimeString().slice(0, 5);
 
   // Seed key only if not already present (never overwrite user's key)
-  if (!localStorage.getItem('bragdata_wtkey')) {
-    localStorage.setItem('bragdata_wtkey', '');  // placeholder — user must add their own key
+  if (!localStorage.getItem('bragmaster_wtkey')) {
+    localStorage.setItem('bragmaster_wtkey', '');  // placeholder — user must add their own key
   }
-  wtApiKey = localStorage.getItem('bragdata_wtkey') || '';
+  wtApiKey = localStorage.getItem('bragmaster_wtkey') || '';
 
   loadLocations();
   updateMoonDisplay();
@@ -2036,7 +2036,7 @@ function defaultSpecies() {
 }
 
 function loadLocations() {
-  const stored = localStorage.getItem('bragdata_locations');
+  const stored = localStorage.getItem('bragmaster_locations');
   locations = stored ? JSON.parse(stored) : JSON.parse(JSON.stringify(DEFAULT_LOCATIONS));
   if (!stored) saveLocs();
 }
@@ -2887,7 +2887,7 @@ function deleteLoc(id) {
    ───────────────────────────────────────────────────────────── */
 function loadSettingsView() {
   renderLocMgr();
-  const k = localStorage.getItem('bragdata_wtkey') || '';
+  const k = localStorage.getItem('bragmaster_wtkey') || '';
   document.getElementById('wtApiKey').value = k;
   const st = document.getElementById('keyStatus');
   if (k) { st.className = 'key-status saved'; st.textContent = '✓ API key saved'; }
@@ -2895,7 +2895,7 @@ function loadSettingsView() {
 }
 function saveApiKey() {
   const k = document.getElementById('wtApiKey').value.trim();
-  localStorage.setItem('bragdata_wtkey', k);
+  localStorage.setItem('bragmaster_wtkey', k);
   wtApiKey = k;
   const st = document.getElementById('keyStatus');
   if (k) { st.className = 'key-status saved'; st.textContent = '✓ Key saved to this device'; showToast('API key saved'); }
@@ -2908,7 +2908,7 @@ function saveApiKey() {
 async function lookupTide(exifDateTime, lat, lon) {
   try {
     const el  = document.getElementById('tideLookup');
-    const key = localStorage.getItem('bragdata_wtkey') || '';
+    const key = localStorage.getItem('bragmaster_wtkey') || '';
     if (!key) {
       el.className = 'tide-lookup error show';
       el.textContent = '⚠ No WorldTides API key — add one in Settings to auto-fill tide.';
@@ -2958,7 +2958,7 @@ async function lookupTide(exifDateTime, lat, lon) {
 }
 
 async function lookupTideForEnrich(exifDateTime, lat, lon, catchObj) {
-  const key = localStorage.getItem('bragdata_wtkey') || ''; if (!key) return;
+  const key = localStorage.getItem('bragmaster_wtkey') || ''; if (!key) return;
   const dtStr = exifDateTime.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3');
   const catchUnix = Math.floor(new Date(dtStr).getTime() / 1000);
   const dateStr = dtStr.slice(0, 10);
@@ -3062,7 +3062,7 @@ async function runEnrichment() {
     let changed = false;
 
     // Tide
-    const wtKey = localStorage.getItem('bragdata_wtkey') || '';
+    const wtKey = localStorage.getItem('bragmaster_wtkey') || '';
     if (!c.tide && wtKey && c.time) {
       try {
         await lookupTideForEnrich(c.date.replace(/-/g,':') + ' ' + c.time + ':00', lat, lon, c);
@@ -3687,7 +3687,7 @@ async function exportData() {
     const exportObj = {
       version: 2, exportDate: new Date().toISOString(),
       catches: [], species, locations,
-      settings: {wtApiKey: localStorage.getItem('bragdata_wtkey')||''},
+      settings: {wtApiKey: localStorage.getItem('bragmaster_wtkey')||''},
     };
     for (const c of catches) {
       const catchCopy = {...c, photos:[]};
@@ -3702,7 +3702,7 @@ async function exportData() {
     const blob = new Blob([json], {type:'application/json'});
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
-    a.href = url; a.download = `bragdata-backup-${new Date().toISOString().slice(0,10)}.json`;
+    a.href = url; a.download = `bragmaster-backup-${new Date().toISOString().slice(0,10)}.json`;
     document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
     const sizeMB = (json.length/1024/1024).toFixed(1);
     statusEl.textContent = `✓ Exported ${exportObj.catches.length} catches (${sizeMB}MB) — file saved`;
@@ -3731,8 +3731,8 @@ async function importData(e) {
     }
     for (const s of (data.species||[])) { if (!species.find(x=>x.id===s.id)) { species.push(s); newSpecies++; } }
     for (const l of (data.locations||[])) { if (!locations.find(x=>x.id===l.id)) locations.push(l); }
-    if (data.settings && data.settings.wtApiKey && !localStorage.getItem('bragdata_wtkey')) {
-      localStorage.setItem('bragdata_wtkey', data.settings.wtApiKey);
+    if (data.settings && data.settings.wtApiKey && !localStorage.getItem('bragmaster_wtkey')) {
+      localStorage.setItem('bragmaster_wtkey', data.settings.wtApiKey);
       wtApiKey = data.settings.wtApiKey;
     }
     catches.sort((a,b) => ((b.date+' '+(b.time||'')) > (a.date+' '+(a.time||''))) ? 1 : -1);
