@@ -487,7 +487,7 @@ body {
 /* ── BRAG MODAL ──────────────────────────────────────────────── */
 .brag-modal-bg {
   display: none; position: fixed; inset: 0;
-  background: rgba(10,22,40,0.85); z-index: 300; flex-direction: column;
+  background: rgba(10,22,40,0.85); z-index: 1000; flex-direction: column;
 }
 .brag-modal-bg.open { display: flex; }
 .brag-modal {
@@ -1073,6 +1073,7 @@ body {
 }
 .leaflet-popup-content-wrapper { border-radius: 12px !important; padding: 0 !important; overflow: hidden; min-width: 230px; }
 .leaflet-popup-content { margin: 0 !important; width: auto !important; }
+.leaflet-popup-close-button { z-index: 10 !important; color: var(--ink) !important; font-size: 18px !important; top: 8px !important; right: 8px !important; }
 .map-popup-card { font-family: 'Georgia', serif; }
 .map-popup-header { background: var(--ink); padding: 10px 12px; }
 .map-popup-species { color: #e0f7fa; font-size: 14px; }
@@ -3654,6 +3655,8 @@ let currentBragId   = null;
 
 function openBragModal(id, tab) {
   const c = catches.find(x => x.id === id); if (!c) return;
+  // Close any open Leaflet popups
+  if (allCatchesMapInstance) allCatchesMapInstance.closePopup();
   currentBragId = id;
   const d = c.date ? new Date(c.date+'T12:00:00').toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : '—';
   document.getElementById('bragModalTitle').textContent = '🎣 ' + (c.species||'Catch') + (c.weight?' — '+c.weight+'kg':'');
