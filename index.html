@@ -3658,33 +3658,36 @@ let currentBragId   = null;
 
 function openBragModal(id, tab) {
   const c = catches.find(x => x.id === id); if (!c) return;
-  // If opened from the map tab, hide the map view so brag renders over it
-  const mapView = document.getElementById('view-map');
-  if (mapView && mapView.classList.contains('active')) {
-    mapView.dataset.bragSource = 'map';
-    mapView.style.visibility = 'hidden';
-  }
-  if (allCatchesMapInstance) allCatchesMapInstance.closePopup();
-  // Show back-to-map button if opened from map tab
-  const backBtn = document.getElementById('bragBackToMap');
-  if (backBtn) backBtn.style.display = mapView && mapView.dataset.bragSource === 'map' ? 'inline-block' : 'none';
   currentBragId = id;
+
+  // Track if opened from map tab — store view name so we can return correctly
+  const activeView = document.querySelector('.view.active');
+  document.getElementById('bragModal').dataset.returnView = activeView ? activeView.id : '';
+
+  // Show ← Map button only when opened from map tab
+  const backBtn = document.getElementById('bragBackToMap');
+  if (backBtn) backBtn.style.display = (activeView && activeView.id === 'view-map') ? 'inline-block' : 'none';
+
+  // Close any Leaflet popup on the all-catches map
+  if (allCatchesMapInstance) allCatchesMapInstance.closePopup();
+
   const d = c.date ? new Date(c.date+'T12:00:00').toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : '—';
   document.getElementById('bragModalTitle').textContent = '🎣 ' + (c.species||'Catch') + (c.weight?' — '+c.weight+'kg':'');
-  // Details panel
-  const f = (lbl, val, full) => `<div class="brag-field${full?' full':''}"><div class="bf-lbl">${lbl}</div><div class="bf-val${!val?' dash':''}">${val||'—'}</div></div>`;
-  const fm = (lbl, val) => `<div class="brag-field"><div class="bf-lbl">${lbl}</div><div class="bf-val mono${!val?' dash':''}">${val||'—'}</div></div>`;
-  const wx = [c.weather, c.windDir&&c.windSpeed?`${c.windDir} ${c.windSpeed}km/h`:(c.windDir||'')].filter(Boolean).join(' · ')||null;
+
+  const f  = (lbl, val, full) => `<div class="brag-field${full?' full':''}"><div class="bf-lbl">${lbl}</div><div class="bf-val${!val?' dash':''}">${val||'—'}</div></div>`;
+  const fm = (lbl, val)       => `<div class="brag-field"><div class="bf-lbl">${lbl}</div><div class="bf-val mono${!val?' dash':''}">${val||'—'}</div></div>`;
+  const wx    = [c.weather, c.windDir&&c.windSpeed?`${c.windDir} ${c.windSpeed}km/h`:(c.windDir||'')].filter(Boolean).join(' · ')||null;
   const swell = c.swellHeight ? `${c.swellHeight}m${c.swellDir?' '+c.swellDir:''}${c.swellPeriod?' @'+c.swellPeriod+'s':''}` : null;
-  const moon = c.moon ? `${c.moon.emoji} ${c.moon.name} · ${c.moon.illumination}% · ${c.moon.solunar.stars} ${c.moon.solunar.rating}` : null;
+  const moon  = c.moon ? `${c.moon.emoji} ${c.moon.name} · ${c.moon.illumination}% · ${c.moon.solunar.stars} ${c.moon.solunar.rating}` : null;
+
   document.getElementById('bragPanelDetails').innerHTML = `
     <div class="brag-section">
       <div class="brag-section-hdr">🐟 The Catch</div>
       <div class="brag-grid">
         ${f('Species',    h(c.species))}
-        ${f('Weight',     c.weight  ? c.weight+'kg' : null)}
-        ${f('Length',     c.length  ? c.length+'cm' : null)}
-        ${f('Count',      c.count   ? String(c.count) : null)}
+        ${f('Weight',     c.weight     ? c.weight+'kg'     : null)}
+        ${f('Length',     c.length     ? c.length+'cm'     : null)}
+        ${f('Count',      c.count      ? String(c.count)   : null)}
         ${f('Method',     h(c.method))}
         ${f('Bait / Lure',h(c.bait))}
         ${f('Line',       c.lineWeight ? c.lineWeight+'lb' : null)}
@@ -3696,13 +3699,13 @@ function openBragModal(id, tab) {
     <div class="brag-section">
       <div class="brag-section-hdr">📍 Location &amp; Time</div>
       <div class="brag-grid">
-        ${f('Date', h(d))}
-        ${f('Time', h(c.time))}
-        ${f('Spot Name', h(c.spotName))}
-        ${f('State', h(c.state))}
-        ${f('Depth', c.depth ? c.depth+'m' : null)}
-        ${f('Moon', moon)}
-        ${fm('GPS', h(c.gps))}
+        ${f('Date',     h(d))}
+        ${f('Time',     h(c.time))}
+        ${f('Spot Name',h(c.spotName))}
+        ${f('State',    h(c.state))}
+        ${f('Depth',    c.depth ? c.depth+'m' : null)}
+        ${f('Moon',     moon)}
+        ${fm('GPS',     h(c.gps))}
         ${c.waypointId||c.waypointName ? fm('Waypoint', h([c.waypointId,c.waypointName].filter(Boolean).join(' — '))) : f('Waypoint', null)}
       </div>
     </div>
@@ -3710,15 +3713,16 @@ function openBragModal(id, tab) {
       <div class="brag-section-hdr">🌤 Conditions</div>
       <div class="brag-grid">
         ${f('Weather',    h(c.weather))}
-        ${f('Air Temp',   c.airTemp   ? c.airTemp+'°C'   : null)}
+        ${f('Air Temp',   c.airTemp    ? c.airTemp+'°C'    : null)}
         ${f('Wind',       wx)}
         ${f('Tide',       h(c.tide))}
         ${f('Swell',      swell)}
-        ${f('Wave Height',c.waveHeight ? c.waveHeight+'m' : null)}
+        ${f('Wave Height',c.waveHeight ? c.waveHeight+'m'  : null)}
       </div>
     </div>
     ${c.notes ? `<div class="brag-section"><div class="brag-section-hdr">📝 Notes</div><div style="padding:12px 14px;font-size:13px;color:var(--ink);font-style:italic">${h(c.notes)}</div></div>` : ''}
   `;
+
   // Photos panel
   const photos = c.photos||[];
   if (photos.length) {
@@ -3732,6 +3736,7 @@ function openBragModal(id, tab) {
   } else {
     document.getElementById('bragPanelPhotos').innerHTML = '<div class="brag-no-photos">No photos for this catch yet.</div>';
   }
+
   document.getElementById('bragModal').classList.add('open');
   switchBragTab(tab||'details');
 }
@@ -3741,40 +3746,59 @@ function switchBragTab(tab) {
     document.getElementById('bragTab'+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle('active', t===tab);
     document.getElementById('bragPanel'+t.charAt(0).toUpperCase()+t.slice(1)).classList.toggle('active', t===tab);
   });
-  if (tab==='map') setTimeout(() => initBragMap(), 100);
+  if (tab==='map') setTimeout(() => initBragMap(), 120);
 }
 
 function initBragMap() {
   if (typeof L === 'undefined') return;
-  const c = catches.find(x => x.id === currentBragId); if (!c || !c.gps) {
-    document.getElementById('bragMapContainer').innerHTML = '<div style="padding:20px;text-align:center;font-size:12px;color:var(--mist);font-family:Courier New,monospace">No GPS data for this catch.</div>';
+  const current = catches.find(x => x.id === currentBragId);
+  if (!current || !current.gps) {
+    document.getElementById('bragMapContainer').innerHTML =
+      '<div style="padding:20px;text-align:center;font-size:12px;color:var(--mist);font-family:Courier New,monospace">No GPS data for this catch.</div>';
     return;
   }
-  const parts = c.gps.split(',').map(s => parseFloat(s.trim()));
-  if (parts.length!==2||isNaN(parts[0])||isNaN(parts[1])) return;
+  const currentParts = current.gps.split(',').map(s => parseFloat(s.trim()));
+  if (currentParts.length!==2||isNaN(currentParts[0])||isNaN(currentParts[1])) return;
+
   if (bragMapInstance) { bragMapInstance.remove(); bragMapInstance=null; }
-  bragMapInstance = L.map('bragMapContainer').setView(parts, 14);
+  bragMapInstance = L.map('bragMapContainer').setView(currentParts, 12);
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
     attribution:'Tiles © Esri', maxZoom:19
   }).addTo(bragMapInstance);
-  L.marker(parts, {
+
+  // Plot ALL catches with GPS — green pins
+  catches.forEach(c => {
+    if (!c.gps || c.id === current.id) return;
+    const parts = c.gps.split(',').map(s => parseFloat(s.trim()));
+    if (parts.length!==2||isNaN(parts[0])||isNaN(parts[1])) return;
+    L.marker(parts, {
+      icon: L.divIcon({
+        html:'<div style="width:16px;height:16px;background:#059669;border:2px solid white;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 1px 4px rgba(0,0,0,0.4)"></div>',
+        iconSize:[16,16], iconAnchor:[8,16], className:''
+      })
+    }).bindPopup(`<b>${h(c.species)||'Catch'}</b><br>${c.date||''}`).addTo(bragMapInstance);
+  });
+
+  // Current catch — yellow pin, no auto-popup
+  L.marker(currentParts, {
     icon: L.divIcon({
-      html:`<div style="width:26px;height:26px;background:var(--catch);border:3px solid white;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 8px rgba(0,0,0,0.4)"></div>`,
-      iconSize:[26,26], iconAnchor:[13,26], className:''
+      html:'<div style="width:22px;height:22px;background:#f59e0b;border:3px solid white;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 8px rgba(0,0,0,0.5)"></div>',
+      iconSize:[22,22], iconAnchor:[11,22], className:''
     })
-  }).addTo(bragMapInstance).bindPopup(`<b>${c.species||'Catch'}</b><br>${c.date||''}`).openPopup();
-  setTimeout(()=>bragMapInstance.invalidateSize(),200);
+  }).addTo(bragMapInstance);
+
+  setTimeout(()=>bragMapInstance.invalidateSize(), 200);
 }
 
 function closeBragModal() {
   document.getElementById('bragModal').classList.remove('open');
   if (bragMapInstance) { bragMapInstance.remove(); bragMapInstance=null; }
-  // Restore map view if that's where we came from
-  const mapView = document.getElementById('view-map');
-  if (mapView && mapView.dataset.bragSource === 'map') {
-    mapView.style.visibility = 'visible';
-    mapView.dataset.bragSource = '';
-    setTimeout(() => { if (allCatchesMapInstance) allCatchesMapInstance.invalidateSize(); }, 100);
+  const returnViewId = document.getElementById('bragModal').dataset.returnView || '';
+  // If came from map tab — go back to map tab and resize the map
+  if (returnViewId === 'view-map') {
+    setTimeout(() => {
+      if (allCatchesMapInstance) allCatchesMapInstance.invalidateSize();
+    }, 150);
   }
   currentBragId = null;
 }
