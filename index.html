@@ -1602,7 +1602,10 @@ body {
 <div class="brag-modal-bg" id="bragModal">
   <div class="brag-modal">
     <div class="brag-modal-header">
-      <h2 id="bragModalTitle">🎣 Brag</h2>
+      <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+        <button id="bragBackToMap" onclick="closeBragModal()" style="display:none;background:rgba(255,255,255,0.15);border:none;color:#e0f7fa;font-size:11px;font-family:'Courier New',monospace;padding:5px 10px;border-radius:20px;cursor:pointer;white-space:nowrap">← Map</button>
+        <h2 id="bragModalTitle" style="font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🎣 Brag</h2>
+      </div>
       <button class="brag-modal-close" onclick="closeBragModal()">×</button>
     </div>
     <div class="brag-tabs">
@@ -3655,8 +3658,16 @@ let currentBragId   = null;
 
 function openBragModal(id, tab) {
   const c = catches.find(x => x.id === id); if (!c) return;
-  // Close any open Leaflet popups
+  // If opened from the map tab, hide the map view so brag renders over it
+  const mapView = document.getElementById('view-map');
+  if (mapView && mapView.classList.contains('active')) {
+    mapView.dataset.bragSource = 'map';
+    mapView.style.visibility = 'hidden';
+  }
   if (allCatchesMapInstance) allCatchesMapInstance.closePopup();
+  // Show back-to-map button if opened from map tab
+  const backBtn = document.getElementById('bragBackToMap');
+  if (backBtn) backBtn.style.display = mapView && mapView.dataset.bragSource === 'map' ? 'inline-block' : 'none';
   currentBragId = id;
   const d = c.date ? new Date(c.date+'T12:00:00').toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long',year:'numeric'}) : '—';
   document.getElementById('bragModalTitle').textContent = '🎣 ' + (c.species||'Catch') + (c.weight?' — '+c.weight+'kg':'');
@@ -3758,6 +3769,13 @@ function initBragMap() {
 function closeBragModal() {
   document.getElementById('bragModal').classList.remove('open');
   if (bragMapInstance) { bragMapInstance.remove(); bragMapInstance=null; }
+  // Restore map view if that's where we came from
+  const mapView = document.getElementById('view-map');
+  if (mapView && mapView.dataset.bragSource === 'map') {
+    mapView.style.visibility = 'visible';
+    mapView.dataset.bragSource = '';
+    setTimeout(() => { if (allCatchesMapInstance) allCatchesMapInstance.invalidateSize(); }, 100);
+  }
   currentBragId = null;
 }
 
