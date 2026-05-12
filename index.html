@@ -4471,14 +4471,18 @@ async function readPhotoExif(file) {
     reader.onload = ev => {
       try {
         const buf = ev.target.result;
-        // Get compressed dataUrl
-        compressPhotoFromBase64(arrayBufferToBase64(buf), dataUrl => {
-          try {
-            const exif = parseExif(buf);
-            res({file, dataUrl, dateTime: exif.dateTime, lat: exif.gpsLat, lon: exif.gpsLon});
-          } catch(e) {
-            res({file, dataUrl, dateTime: null, lat: null, lon: null});
-          }
+        // Parse EXIF immediately before any async operations
+        let exifData = {dateTime: null, gpsLat: null, gpsLon: null};
+        try { exifData = parseExif(buf); } catch(e) {}
+        // Then compress
+        const b64 = arrayBufferToBase64(buf);
+        compressPhotoFromBase64(b64, dataUrl => {
+          res({
+            file, dataUrl,
+            dateTime: exifData.dateTime,
+            lat: exifData.gpsLat,
+            lon: exifData.gpsLon
+          });
         });
       } catch(e) {
         res({file, dataUrl: null, dateTime: null, lat: null, lon: null, error: true});
