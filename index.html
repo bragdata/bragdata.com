@@ -4558,6 +4558,43 @@ function renderConditions(data, loc) {
 }
 
 /* BULK PHOTO IMPORT — Tile grid with long-press grouping */
+async function readPhotoExif(file) {
+  return new Promise((res) => {
+    const bufReader = new FileReader();
+    bufReader.onload = bufEv => {
+      const buf = bufEv.target.result;
+      let exifData = {dateTime:null, gpsLat:null, gpsLon:null};
+      try { exifData = parseExif(buf); } catch(e) {}
+      const urlReader = new FileReader();
+      urlReader.onload = urlEv => {
+        const rawB64 = urlEv.target.result;
+        try {
+          const img = new Image();
+          img.onload = () => {
+            try {
+              const MAX = 400;
+              let w = img.width, h = img.height;
+              if (w > MAX) { h = Math.round(h*MAX/w); w = MAX; }
+              const c = document.createElement('canvas');
+              c.width = w; c.height = h;
+              c.getContext('2d').drawImage(img, 0, 0, w, h);
+              const thumb = c.toDataURL('image/jpeg', 0.7);
+              res({file, dataUrl:thumb, dateTime:exifData.dateTime, lat:exifData.gpsLat, lon:exifData.gpsLon});
+            } catch(e) { res({file, dataUrl:rawB64, dateTime:exifData.dateTime, lat:exifData.gpsLat, lon:exifData.gpsLon}); }
+          };
+          img.onerror = () => res({file, dataUrl:rawB64, dateTime:exifData.dateTime, lat:exifData.gpsLat, lon:exifData.gpsLon});
+          img.src = rawB64;
+        } catch(e) { res({file, dataUrl:rawB64, dateTime:exifData.dateTime, lat:exifData.gpsLat, lon:exifData.gpsLon}); }
+      };
+      urlReader.onerror = () => res({file, dataUrl:null, dateTime:exifData.dateTime, lat:exifData.gpsLat, lon:exifData.gpsLon});
+      urlReader.readAsDataURL(file);
+    };
+    bufReader.onerror = () => res({file, dataUrl:null, dateTime:null, lat:null, lon:null, error:true});
+    bufReader.readAsArrayBuffer(file);
+  });
+}
+
+
 let bulkTiles        = [];   // [{idx, dataUrl, dateTime, lat, lon, groupId}]
 let bulkGroups       = [];   // [{photoIdxs:[], species, weight, length, method, disposition, rampLocId}]
 let bulkSelMode      = false;
@@ -4665,14 +4702,23 @@ function renderBulkTileGrid() {
       + '</div>';
   }).join('');
 
-  // Bind long press on each tile
-  bulkTiles.forEach((t, i) => {
-    const el = document.getElementById('btile' + i); if (!el) return;
-    el.addEventListener('touchstart', e => { bulkLongPressTimer = setTimeout(() => enterBulkSelMode(i), 500); }, {passive:true});
-    el.addEventListener('touchend',   () => clearTimeout(bulkLongPressTimer));
-    el.addEventListener('touchmove',  () => clearTimeout(bulkLongPressTimer));
-    el.addEventListener('click', () => { if (bulkSelMode) toggleBulkSel(i); });
-  });
+  // Use event delegation on the grid for long press — more reliable on iOS
+  const grid2 = document.getElementById('bulkTileGrid');
+  grid2.ontouchstart = e => {
+    const tile = e.target.closest('.bulk-tile'); if (!tile) return;
+    const idx = parseInt(tile.dataset.idx);
+    bulkLongPressTimer = setTimeout(() => {
+      if (!bulkSelMode) enterBulkSelMode(idx);
+      else toggleBulkSel(idx);
+    }, 500);
+  };
+  grid2.ontouchend  = () => clearTimeout(bulkLongPressTimer);
+  grid2.ontouchmove = () => clearTimeout(bulkLongPressTimer);
+  grid2.onclick = e => {
+    const tile = e.target.closest('.bulk-tile'); if (!tile) return;
+    const idx = parseInt(tile.dataset.idx);
+    if (bulkSelMode) toggleBulkSel(idx);
+  };
 }
 
 function enterBulkSelMode(firstIdx) {
