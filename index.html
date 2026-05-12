@@ -1,0 +1,3503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a1628">
+<title>BragData — Fishing Journal</title>
+<!-- ═══════════════════════════════════════════════════════════════
+     TIDELOG  —  Fishing Journal PWA
+     Structure:
+       1. CSS variables & reset          (line ~20)
+       2. Layout — header, tabs, content (line ~50)
+       3. Form components                (line ~90)
+       4. Species autocomplete           (line ~180)
+       5. Buttons & GPS                  (line ~210)
+       6. Weather & compass              (line ~240)
+       7. Catch cards & filters          (line ~280)
+       8. Reports                        (line ~340)
+       9. Modals & overlays              (line ~400)
+      10. Photo / EXIF UI               (line ~480)
+      11. Settings                       (line ~530)
+      12. Map picker                     (line ~570)
+      13. Moon / solunar                 (line ~620)
+      14. Misc utility classes           (line ~670)
+     ─────────────────────────────────────────────
+     JavaScript begins after </style> — never inside it.
+     JS block order mirrors CSS order above.
+     ═══════════════════════════════════════════════════════════════ -->
+<style>
+
+/* ── 1. VARIABLES & RESET ─────────────────────────────────────── */
+:root {
+  --ink:         #0a1628;
+  --ink2:        #1e3a5f;
+  --ink3:        #2d5a8e;
+  --water:       #0e7490;
+  --water-light: #e0f7fa;
+  --dawn:        #d97706;
+  --sand:        #fef3c7;
+  --foam:        #f8fafc;
+  --mist:        #94a3b8;
+  --line:        #e2e8f0;
+  --catch:       #059669;
+  --catch-light: #d1fae5;
+  --danger:      #dc2626;
+  --surface:     #ffffff;
+  --radius:      12px;
+  --radius-sm:   8px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--ink);
+  color: var(--ink);
+  min-height: 100vh;
+  font-family: 'Georgia', serif;
+}
+
+/* ── 2. LAYOUT ───────────────────────────────────────────────── */
+.app-header {
+  background: linear-gradient(160deg, #0a1628 0%, #0e2a4a 60%, #0e4d6b 100%);
+  padding: 16px 16px 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.logo h1  { font-size: 20px; font-weight: 400; color: #e0f7fa; letter-spacing: 0.05em; }
+.logo span { font-size: 10px; color: #64b5d9; letter-spacing: 0.15em; text-transform: uppercase; display: block; }
+
+.offline-badge {
+  background: rgba(14,116,144,0.3);
+  border: 1px solid rgba(14,116,144,0.6);
+  color: #67e8f9;
+  font-size: 10px;
+  font-family: 'Courier New', monospace;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+.offline-badge.offline {
+  background: rgba(217,119,6,0.2);
+  border-color: rgba(217,119,6,0.5);
+  color: #fbbf24;
+}
+
+.tabs { display: flex; }
+.tab {
+  flex: 1;
+  background: none;
+  border: none;
+  color: #64b5d9;
+  font-family: 'Georgia', serif;
+  font-size: 12px;
+  padding: 8px 4px 12px;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+  letter-spacing: 0.02em;
+}
+.tab.active { color: #e0f7fa; border-bottom-color: var(--dawn); }
+
+.content {
+  background: var(--foam);
+  min-height: calc(100vh - 110px);
+  padding: 16px 14px 60px;
+}
+.view { display: none; }
+.view.active { display: block; }
+
+/* ── 3. FORM COMPONENTS ──────────────────────────────────────── */
+.form-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.form-section-header {
+  background: var(--ink);
+  color: #e0f7fa;
+  padding: 9px 14px;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.form-body { padding: 14px; }
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.form-row.single { grid-template-columns: 1fr; }
+.form-row.triple { grid-template-columns: 1fr 1fr 1fr; }
+.form-row:last-child { margin-bottom: 0; }
+
+.field label {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--mist);
+  font-family: 'Courier New', monospace;
+  margin-bottom: 5px;
+}
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 9px 11px;
+  font-size: 15px;
+  font-family: 'Georgia', serif;
+  color: var(--ink);
+  background: var(--foam);
+  transition: border-color 0.2s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: var(--water);
+  background: #fff;
+}
+.field textarea { resize: vertical; min-height: 70px; }
+
+/* ── 4. SPECIES AUTOCOMPLETE ─────────────────────────────────── */
+.species-wrap { position: relative; }
+.species-dropdown {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0; right: 0;
+  background: var(--surface);
+  border: 1.5px solid var(--water);
+  border-radius: var(--radius-sm);
+  z-index: 50;
+  max-height: 200px;
+  overflow-y: auto;
+  display: none;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+.species-dropdown.open { display: block; }
+.species-option {
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: 'Georgia', serif;
+  border-bottom: 1px solid var(--line);
+}
+.species-option:last-child { border-bottom: none; }
+.species-option:hover,
+.species-option.hi { background: var(--water-light); color: var(--ink2); }
+.sp-nick { font-size: 10px; color: var(--mist); font-family: 'Courier New', monospace; margin-left: 6px; }
+.sp-add {
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--water);
+  font-family: 'Courier New', monospace;
+  border-top: 1px dashed var(--line);
+}
+.sp-add:hover { background: var(--water-light); }
+.sp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--catch-light);
+  border: 1px solid var(--catch);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 13px;
+  color: var(--catch);
+  font-family: 'Courier New', monospace;
+  margin-top: 6px;
+}
+.sp-badge button {
+  background: none;
+  border: none;
+  color: var(--catch);
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  padding: 0;
+}
+
+/* Spot autocomplete */
+.spot-wrap { position: relative; }
+.spot-dropdown {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0; right: 0;
+  background: var(--surface);
+  border: 1.5px solid var(--water);
+  border-radius: var(--radius-sm);
+  z-index: 50;
+  max-height: 200px;
+  overflow-y: auto;
+  display: none;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+.spot-dropdown.open { display: block; }
+.spot-option {
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: 'Georgia', serif;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.spot-option:last-child { border-bottom: none; }
+.spot-option:hover,
+.spot-option.hi { background: var(--water-light); color: var(--ink2); }
+.spot-option .spot-opt-count { font-size: 10px; color: var(--mist); font-family: 'Courier New', monospace; }
+
+/* ── 5. BUTTONS & GPS ────────────────────────────────────────── */
+.btn {
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 9px 16px;
+  font-size: 13px;
+  font-family: 'Georgia', serif;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-gps {
+  background: var(--ink2);
+  color: #e0f7fa;
+  white-space: nowrap;
+  padding: 9px 12px;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.btn-gps:active { transform: scale(0.97); }
+.btn-save {
+  background: var(--catch);
+  color: white;
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  border-radius: var(--radius);
+  letter-spacing: 0.05em;
+  margin-top: 6px;
+}
+.btn-save:active { transform: scale(0.98); }
+.btn-primary { background: var(--ink2); color: #e0f7fa; }
+.btn-danger  { background: var(--danger); color: white; font-size: 11px; padding: 5px 10px; }
+.btn-cancel  { background: var(--foam); border: 1.5px solid var(--line); color: var(--mist); }
+.btn-sm      { font-size: 11px; padding: 5px 10px; }
+
+.gps-field { display: flex; gap: 8px; align-items: flex-end; }
+.gps-field input { flex: 1; }
+.gps-status {
+  font-size: 10px;
+  font-family: 'Courier New', monospace;
+  margin-top: 4px;
+  padding: 3px 7px;
+  border-radius: 4px;
+}
+.gps-status.acq { color: var(--dawn);    background: var(--sand); }
+.gps-status.got { color: var(--catch);   background: var(--catch-light); }
+.gps-status.err { color: var(--danger);  background: #fee2e2; }
+
+/* ── 6. WEATHER & COMPASS ────────────────────────────────────── */
+.weather-tiles { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; }
+.weather-tile {
+  background: var(--foam);
+  border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 7px 4px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 10px;
+  color: var(--mist);
+  font-family: 'Courier New', monospace;
+}
+.weather-tile .wi { font-size: 18px; display: block; margin-bottom: 2px; }
+.weather-tile.selected { background: var(--water-light); border-color: var(--water); color: var(--ink2); }
+
+.compass-wrap { display: flex; align-items: center; justify-content: center; gap: 14px; padding: 8px 0 2px; }
+.compass {
+  width: 84px; height: 84px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  position: relative;
+  background: #fff;
+  flex-shrink: 0;
+}
+.cl { position: absolute; font-size: 10px; font-family: 'Courier New', monospace; color: var(--mist); font-weight: bold; }
+.cl.n { top: 3px;    left: 50%; transform: translateX(-50%); }
+.cl.s { bottom: 3px; left: 50%; transform: translateX(-50%); }
+.cl.e { right: 5px;  top: 50%;  transform: translateY(-50%); }
+.cl.w { left: 5px;   top: 50%;  transform: translateY(-50%); }
+.needle {
+  position: absolute;
+  width: 3px; height: 34px;
+  background: linear-gradient(to bottom, var(--danger) 50%, #94a3b8 50%);
+  top: 50%; left: 50%;
+  transform-origin: bottom center;
+  transform: translateX(-50%) translateY(-100%) rotate(0deg);
+  border-radius: 2px;
+  transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+.dot {
+  position: absolute;
+  width: 7px; height: 7px;
+  background: var(--ink);
+  border-radius: 50%;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+}
+.dir-buttons { display: grid; grid-template-columns: repeat(4,1fr); gap: 5px; }
+.dir-btn {
+  background: var(--foam);
+  border: 1.5px solid var(--line);
+  border-radius: 5px;
+  padding: 6px 2px;
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  color: var(--mist);
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+}
+.dir-btn.selected { background: var(--ink); border-color: var(--ink); color: #e0f7fa; }
+
+/* ── 7. CATCH CARDS & FILTERS ────────────────────────────────── */
+.filter-bar {
+  display: flex; gap: 6px;
+  margin-bottom: 12px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+.filter-chip {
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: 20px;
+  padding: 5px 11px;
+  font-size: 11px;
+  font-family: 'Courier New', monospace;
+  color: var(--mist);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.filter-chip.active { background: var(--ink); border-color: var(--ink); color: #e0f7fa; }
+
+.sort-bar {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 10px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+.sort-label {
+  font-size: 10px; font-family: 'Courier New', monospace;
+  color: var(--mist); letter-spacing: 0.1em; text-transform: uppercase; flex-shrink: 0;
+}
+.sort-chip {
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: 20px;
+  padding: 5px 11px;
+  font-size: 11px; font-family: 'Courier New', monospace;
+  color: var(--mist); cursor: pointer; white-space: nowrap;
+  transition: all 0.15s; display: flex; align-items: center; gap: 4px;
+}
+.sort-chip.active { background: var(--ink2); border-color: var(--ink2); color: #e0f7fa; }
+.sort-chip .arrow { font-size: 10px; opacity: 0.7; }
+
+.log-count { font-family: 'Courier New', monospace; font-size: 11px; color: var(--mist); margin-bottom: 10px; }
+
+.catch-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+.catch-header {
+  background: var(--ink);
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.catch-species { color: #e0f7fa; font-size: 15px; }
+.catch-date    { color: #64b5d9; font-size: 10px; font-family: 'Courier New', monospace; margin-top: 2px; }
+.catch-wt {
+  background: var(--dawn); color: white;
+  font-size: 11px; padding: 3px 9px;
+  border-radius: 20px; font-family: 'Courier New', monospace;
+  white-space: nowrap;
+}
+.catch-state-badge {
+  background: rgba(255,255,255,0.1); color: #94b8d9;
+  font-size: 10px; font-family: 'Courier New', monospace;
+  padding: 2px 7px; border-radius: 10px; margin-left: 6px;
+}
+.catch-body {
+  padding: 11px 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+.cd .lbl {
+  color: var(--mist); font-size: 10px;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 1px;
+}
+.cd .val { color: var(--ink); font-size: 12px; }
+.catch-notes {
+  padding: 8px 14px 10px;
+  font-size: 12px; color: var(--mist); font-style: italic;
+  border-top: 1px solid var(--line);
+}
+.catch-actions { padding: 0 14px 10px; display: flex; justify-content: flex-end; }
+.no-catches { text-align: center; padding: 40px 20px; color: var(--mist); font-style: italic; font-size: 14px; }
+
+/* ── 8. REPORTS ──────────────────────────────────────────────── */
+.rpt-header { margin-bottom: 14px; }
+.rpt-header h2 { font-size: 18px; font-weight: 400; margin-bottom: 3px; }
+.rpt-header p  { font-size: 13px; color: #4b5563; font-style: italic; }
+.rpt-builder {
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  padding: 14px; margin-bottom: 14px;
+}
+.rpt-builder h3 {
+  font-size: 10px; font-family: 'Courier New', monospace;
+  letter-spacing: 0.15em; text-transform: uppercase;
+  color: #374151; margin-bottom: 10px; font-weight: 600;
+}
+.filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.filter-grid .field label { font-size: 10px; }
+.filter-grid .field select,
+.filter-grid .field input  { font-size: 13px; padding: 8px 10px; }
+.run-btn {
+  background: var(--ink); color: #e0f7fa; border: none;
+  border-radius: var(--radius-sm); padding: 12px 20px;
+  font-size: 14px; font-family: 'Georgia', serif;
+  cursor: pointer; width: 100%; letter-spacing: 0.03em;
+  transition: background 0.15s;
+}
+.run-btn:active { background: var(--ink2); }
+
+.res-summary { background: var(--ink); color: #e0f7fa; border-radius: var(--radius) var(--radius) 0 0; padding: 14px 16px; }
+.res-summary h3 { font-size: 16px; font-weight: 400; margin-bottom: 4px; }
+.res-summary p  { font-size: 11px; color: #64b5d9; font-family: 'Courier New', monospace; }
+.res-stats {
+  display: grid; grid-template-columns: repeat(3,1fr);
+  background: var(--ink2); padding: 12px 14px; gap: 10px;
+  border-radius: 0 0 var(--radius) var(--radius); margin-bottom: 12px;
+}
+.rs           { text-align: center; }
+.rs .num      { font-size: 22px; color: #e0f7fa; font-family: 'Courier New', monospace; }
+.rs .lbl      { font-size: 9px; color: #64b5d9; letter-spacing: 0.1em; text-transform: uppercase; font-family: 'Courier New', monospace; }
+
+.isec { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--line); margin-bottom: 10px; overflow: hidden; }
+.isec-hdr {
+  background: #e8edf2; padding: 9px 14px; font-size: 10px;
+  letter-spacing: 0.12em; text-transform: uppercase; color: #3d5166;
+  font-family: 'Courier New', monospace; border-bottom: 1px solid var(--line); font-weight: 600;
+}
+.isec-body { padding: 12px 14px; font-size: 14px; }
+.stat-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 5px 0; border-bottom: 1px dashed var(--line); font-size: 13px;
+}
+.stat-row:last-child { border-bottom: none; }
+.sl { color: #374151; }
+.sv { color: #111827; font-family: 'Courier New', monospace; font-weight: 600; }
+.sv.hi { color: var(--catch); }
+.br { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; }
+.bl { width: 72px; color: #374151; font-family: 'Courier New', monospace; font-size: 10px; text-align: right; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bt { flex: 1; background: var(--line); border-radius: 4px; height: 7px; overflow: hidden; }
+.bf { height: 100%; background: var(--water); border-radius: 4px; transition: width 0.6s ease; }
+.bf.gold { background: var(--dawn); }
+.bc { width: 20px; color: #1f2937; text-align: right; font-family: 'Courier New', monospace; font-size: 10px; font-weight: 600; }
+
+.spot-card { background: var(--foam); border-radius: var(--radius-sm); border: 1px solid var(--line); padding: 9px 12px; margin-bottom: 7px; }
+.spot-name { font-size: 14px; color: var(--ink); margin-bottom: 3px; }
+.spot-meta { font-size: 10px; color: #374151; font-family: 'Courier New', monospace; }
+.spot-gps  { font-size: 10px; color: var(--water); font-family: 'Courier New', monospace; margin-top: 2px; }
+.no-results { text-align: center; padding: 40px 20px; color: var(--mist); font-style: italic; font-size: 14px; }
+
+/* ── 9. MODALS & OVERLAYS ────────────────────────────────────── */
+.modal-bg {
+  display: none; position: fixed; inset: 0;
+  background: rgba(10,22,40,0.75); z-index: 200;
+  align-items: flex-end; justify-content: center;
+}
+.modal-bg.open { display: flex; }
+.modal {
+  background: var(--surface);
+  border-radius: var(--radius) var(--radius) 0 0;
+  padding: 20px 16px 40px;
+  width: 100%; max-height: 85vh; overflow-y: auto;
+}
+.modal h2 { font-size: 17px; font-weight: 400; margin-bottom: 14px; }
+.modal-actions { display: flex; gap: 8px; margin-top: 14px; }
+.modal-actions .btn { flex: 1; padding: 12px; font-size: 14px; text-align: center; }
+
+.confirm-bg {
+  display: none; position: fixed; inset: 0;
+  background: rgba(10,22,40,0.75); z-index: 600;
+  align-items: flex-end; justify-content: center;
+}
+.confirm-bg.open { display: flex; }
+.confirm-box {
+  background: var(--surface);
+  border-radius: var(--radius) var(--radius) 0 0;
+  padding: 24px 16px 40px; width: 100%; text-align: center;
+}
+.confirm-box p { font-size: 16px; color: var(--ink); margin-bottom: 20px; font-family: 'Georgia', serif; }
+.confirm-box-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.confirm-box-btns button {
+  padding: 13px; border: none; border-radius: var(--radius-sm);
+  font-size: 15px; font-family: 'Georgia', serif; cursor: pointer;
+}
+.confirm-cancel { background: var(--foam); color: var(--mist); border: 1.5px solid var(--line) !important; }
+.confirm-ok     { background: var(--danger); color: white; }
+
+.toast {
+  position: fixed; bottom: 28px; left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--ink); color: #e0f7fa;
+  padding: 10px 22px; border-radius: 30px;
+  font-size: 13px; font-family: 'Courier New', monospace;
+  transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  z-index: 999; white-space: nowrap; box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ── 10. PHOTOS & EXIF ───────────────────────────────────────── */
+.photo-hero { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+.photo-hero-btn {
+  position: relative; overflow: hidden; border-radius: 16px;
+  padding: 22px 12px 20px; text-align: center;
+  cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+}
+.photo-hero-btn:active { transform: scale(0.96); }
+.import-btn {
+  background: linear-gradient(160deg,#0e2a4a 0%,#0c4a6e 60%,#0e7490 100%);
+  border: 1px solid rgba(14,116,144,0.5);
+}
+.camera-btn {
+  background: linear-gradient(160deg,#1a0a00 0%,#7c2d12 50%,#c2410c 100%);
+  border: 1px solid rgba(194,65,12,0.5);
+}
+.photo-hero-fish { font-size: 28px; margin-bottom: 10px; display: block; }
+.photo-hero-tag {
+  display: inline-block; margin-bottom: 8px;
+  font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase;
+  font-family: 'Courier New', monospace;
+  padding: 2px 8px; border-radius: 10px;
+}
+.import-btn .photo-hero-tag {
+  background: rgba(14,116,144,0.3); color: #67e8f9;
+  border: 1px solid rgba(14,116,144,0.4);
+}
+.camera-btn .photo-hero-tag {
+  background: rgba(217,119,6,0.25); color: #fbbf24;
+  border: 1px solid rgba(217,119,6,0.35);
+}
+.photo-hero-sub { color: rgba(255,255,255,0.55); font-size: 11px; font-family: 'Courier New', monospace; letter-spacing: 0.08em; text-transform: uppercase; }
+
+.photo-upload-area {
+  border: 2px dashed var(--line); border-radius: var(--radius-sm);
+  padding: 16px; text-align: center; cursor: pointer;
+  transition: border-color 0.2s; background: var(--foam); position: relative;
+}
+.photo-upload-area:hover { border-color: var(--water); }
+.photo-upload-area input[type=file] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+.photo-upload-area .upload-icon { font-size: 28px; margin-bottom: 6px; }
+.photo-upload-area p { font-size: 12px; color: var(--mist); font-family: 'Courier New', monospace; }
+.photo-previews { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.photo-thumb-wrap { position: relative; width: 80px; height: 80px; flex-shrink: 0; }
+.photo-thumb { width: 80px; height: 80px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--line); }
+.photo-thumb-del {
+  position: absolute; top: -6px; right: -6px;
+  background: var(--danger); color: white; border: none;
+  border-radius: 50%; width: 20px; height: 20px;
+  font-size: 13px; line-height: 20px; text-align: center; cursor: pointer; padding: 0;
+}
+.catch-photos { padding: 0 14px 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+.photo-placeholder { width: 72px; height: 72px; background: var(--line); border-radius: var(--radius-sm); flex-shrink: 0; }
+.catch-photo { width: 72px; height: 72px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--line); cursor: pointer; }
+
+.photo-lightbox {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.92); z-index: 300;
+  align-items: center; justify-content: center;
+}
+.photo-lightbox.open { display: flex; }
+.photo-lightbox img { max-width: 95vw; max-height: 90vh; border-radius: var(--radius-sm); object-fit: contain; }
+.photo-lightbox-close {
+  position: absolute; top: 16px; right: 16px;
+  background: rgba(255,255,255,0.15); border: none; color: white;
+  font-size: 22px; width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
+}
+
+/* EXIF result panels */
+.import-banner {
+  background: linear-gradient(135deg,#0e2a4a 0%,#0e4d6b 100%);
+  border-radius: var(--radius); padding: 14px 16px; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 12px;
+}
+.import-banner-text h3 { color: #e0f7fa; font-size: 14px; font-weight: 400; margin-bottom: 2px; }
+.import-banner-text p  { color: #64b5d9; font-size: 11px; font-family: 'Courier New', monospace; }
+.import-banner-icon    { font-size: 28px; flex-shrink: 0; }
+.btn-import {
+  background: var(--dawn); color: white; border: none;
+  border-radius: var(--radius-sm); padding: 9px 16px;
+  font-size: 13px; font-family: 'Georgia', serif; cursor: pointer;
+  white-space: nowrap; flex-shrink: 0;
+}
+.btn-import:active { transform: scale(0.97); }
+
+.exif-result {
+  background: var(--catch-light); border: 1.5px solid var(--catch);
+  border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 12px; display: none;
+}
+.exif-result.show { display: block; }
+.exif-result h4 {
+  font-size: 11px; font-family: 'Courier New', monospace;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--catch); margin-bottom: 8px;
+}
+.exif-row {
+  display: flex; justify-content: space-between;
+  font-size: 12px; padding: 3px 0; border-bottom: 1px dashed rgba(5,150,105,0.2);
+}
+.exif-row:last-child { border-bottom: none; }
+.exif-row .ek { color: var(--mist); font-family: 'Courier New', monospace; }
+.exif-row .ev { color: var(--ink);  font-family: 'Courier New', monospace; }
+.exif-warn {
+  background: var(--sand); border: 1.5px solid var(--dawn);
+  border-radius: var(--radius-sm); padding: 10px 14px; margin-bottom: 12px; display: none;
+  font-size: 12px; color: #92400e; font-family: 'Courier New', monospace;
+}
+.exif-warn.show { display: block; }
+
+/* ── 11. SETTINGS ────────────────────────────────────────────── */
+.settings-section {
+  background: var(--surface); border-radius: var(--radius);
+  border: 1px solid var(--line); overflow: hidden; margin-bottom: 14px;
+}
+.settings-section-hdr {
+  background: var(--ink); color: #e0f7fa;
+  padding: 9px 14px; font-size: 10px;
+  letter-spacing: 0.15em; text-transform: uppercase; font-family: 'Courier New', monospace;
+}
+.settings-body { padding: 14px; }
+.settings-body p { font-size: 12px; color: var(--mist); font-family: 'Courier New', monospace; line-height: 1.6; margin-bottom: 12px; }
+.settings-body a { color: var(--water); }
+.api-key-row { display: flex; gap: 8px; align-items: flex-end; }
+.api-key-row input { flex: 1; font-family: 'Courier New', monospace; font-size: 13px; }
+.btn-save-key {
+  background: var(--catch); color: white; border: none;
+  border-radius: var(--radius-sm); padding: 9px 14px;
+  font-size: 13px; font-family: 'Georgia', serif; cursor: pointer; white-space: nowrap;
+}
+.key-status { font-size: 11px; font-family: 'Courier New', monospace; margin-top: 6px; padding: 4px 8px; border-radius: 4px; }
+.key-status.saved { color: var(--catch); background: var(--catch-light); }
+.key-status.empty { color: var(--mist); }
+
+.tide-lookup {
+  background: var(--foam); border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm); padding: 10px 12px; margin-top: 8px;
+  font-size: 12px; font-family: 'Courier New', monospace; color: var(--mist); display: none;
+}
+.tide-lookup.show    { display: block; }
+.tide-lookup.success { background: var(--catch-light); border-color: var(--catch); color: #065f46; }
+.tide-lookup.error   { background: #fee2e2; border-color: var(--danger); color: #991b1b; }
+.tide-lookup.loading { background: var(--sand); border-color: var(--dawn); color: #92400e; }
+
+.loc-picker-wrap {
+  background: var(--sand); border: 1.5px solid var(--dawn);
+  border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 12px; display: none;
+}
+.loc-picker-wrap.show { display: block; }
+.loc-picker-wrap h4 {
+  font-size: 11px; font-family: 'Courier New', monospace;
+  letter-spacing: 0.12em; text-transform: uppercase; color: #92400e; margin-bottom: 10px;
+}
+.loc-picker-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin-bottom: 10px; }
+.loc-btn {
+  background: var(--surface); border: 1.5px solid var(--line);
+  border-radius: var(--radius-sm); padding: 8px 10px;
+  text-align: left; cursor: pointer; transition: all 0.15s; font-family: 'Georgia', serif;
+}
+.loc-btn:hover,
+.loc-btn.selected         { background: var(--ink); border-color: var(--ink); color: #e0f7fa; }
+.loc-btn .loc-name        { font-size: 13px; display: block; }
+.loc-btn .loc-state       { font-size: 10px; color: var(--mist); font-family: 'Courier New', monospace; }
+.loc-btn.selected .loc-state { color: #64b5d9; }
+.loc-lookup-btn {
+  background: var(--water); color: white; border: none;
+  border-radius: var(--radius-sm); padding: 9px;
+  font-size: 13px; font-family: 'Georgia', serif; cursor: pointer; width: 100%; margin-top: 4px;
+}
+.loc-lookup-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.loc-item {
+  background: var(--surface); border-radius: var(--radius-sm);
+  border: 1px solid var(--line); padding: 9px 12px; margin-bottom: 7px;
+  display: flex; justify-content: space-between; align-items: flex-start;
+}
+.loc-item-name   { font-size: 14px; color: var(--ink); }
+.loc-item-coords { font-size: 10px; color: var(--mist); font-family: 'Courier New', monospace; margin-top: 2px; }
+.loc-item-actions { display: flex; gap: 5px; flex-shrink: 0; margin-left: 8px; }
+.add-loc-form {
+  background: var(--surface); border-radius: var(--radius);
+  border: 2px dashed var(--line); padding: 14px; margin-bottom: 12px;
+}
+.add-loc-form h3 {
+  font-size: 10px; font-family: 'Courier New', monospace;
+  letter-spacing: 0.15em; text-transform: uppercase; color: var(--mist); margin-bottom: 10px;
+}
+
+/* Species manager */
+.sp-mgr-hdr { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.sp-mgr-hdr h2 { font-size: 17px; font-weight: 400; }
+.sp-item {
+  background: var(--surface); border-radius: var(--radius-sm);
+  border: 1px solid var(--line); padding: 10px 12px; margin-bottom: 8px;
+  display: flex; justify-content: space-between; align-items: flex-start;
+}
+.sp-item-name    { font-size: 15px; color: var(--ink); }
+.sp-item-nick    { font-size: 10px; color: var(--mist); font-family: 'Courier New', monospace; margin-top: 2px; }
+.sp-item-cnt     { font-size: 10px; color: var(--water); font-family: 'Courier New', monospace; margin-top: 2px; }
+.sp-item-actions { display: flex; gap: 5px; flex-shrink: 0; margin-left: 8px; }
+.add-sp-form {
+  background: var(--surface); border-radius: var(--radius);
+  border: 2px dashed var(--line); padding: 14px; margin-bottom: 12px;
+}
+.add-sp-form h3 {
+  font-size: 10px; font-family: 'Courier New', monospace;
+  letter-spacing: 0.15em; text-transform: uppercase; color: var(--mist); margin-bottom: 10px;
+}
+
+/* Backup & restore */
+.export-btn {
+  display: flex; align-items: center; gap: 12px;
+  background: linear-gradient(135deg,#0e2a4a,#0e4d6b);
+  border: 1px solid rgba(14,116,144,0.4);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+  width: 100%; cursor: pointer; transition: all 0.15s; text-align: left;
+}
+.export-btn:active { transform: scale(0.98); }
+.import-btn-label {
+  display: flex; align-items: center; gap: 12px;
+  background: linear-gradient(135deg,#1a2a1a,#1a4a1a);
+  border: 1px solid rgba(5,150,105,0.4);
+  border-radius: var(--radius-sm); padding: 12px 14px;
+  width: 100%; cursor: pointer; transition: all 0.15s;
+}
+.import-btn-label:active { transform: scale(0.98); }
+
+/* ── 12. MAP PICKER ──────────────────────────────────────────── */
+.map-modal-bg {
+  display: none; position: fixed; inset: 0;
+  background: rgba(10,22,40,0.85); z-index: 400; flex-direction: column;
+}
+.map-modal-bg.open { display: flex; }
+.map-modal-header {
+  background: var(--ink); padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.map-modal-header h3 { color: #e0f7fa; font-size: 15px; font-weight: 400; }
+.map-modal-header p  { color: #64b5d9; font-size: 11px; font-family: 'Courier New', monospace; margin-top: 2px; }
+.map-modal-close {
+  background: rgba(255,255,255,0.1); border: none; color: #e0f7fa;
+  font-size: 20px; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; flex-shrink: 0;
+}
+#mapContainer { flex: 1; width: 100%; min-height: 0; }
+.map-modal-footer { background: var(--ink); padding: 12px 16px; flex-shrink: 0; }
+.map-pin-info { font-size: 12px; font-family: 'Courier New', monospace; color: #64b5d9; margin-bottom: 10px; min-height: 18px; }
+.map-pin-info.has-pin { color: #6ee7b7; }
+.map-confirm-btn {
+  background: var(--catch); color: white; border: none;
+  border-radius: var(--radius-sm); padding: 12px;
+  font-size: 15px; font-family: 'Georgia', serif; cursor: pointer;
+  width: 100%; letter-spacing: 0.03em;
+}
+.map-confirm-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.map-search-wrap {
+  padding: 10px 16px; background: var(--ink2); flex-shrink: 0; display: flex; gap: 8px;
+}
+.map-search-wrap input {
+  flex: 1; border: 1.5px solid rgba(255,255,255,0.2);
+  border-radius: var(--radius-sm); padding: 8px 11px;
+  font-size: 14px; font-family: 'Georgia', serif; color: #e0f7fa;
+  background: rgba(255,255,255,0.1);
+}
+.map-search-wrap input::placeholder { color: #64b5d9; }
+.map-search-wrap input:focus { outline: none; border-color: var(--water); }
+.map-search-btn {
+  background: var(--water); color: white; border: none;
+  border-radius: var(--radius-sm); padding: 8px 14px;
+  font-size: 13px; font-family: 'Georgia', serif; cursor: pointer; white-space: nowrap;
+}
+.map-layer-btn {
+  background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+  color: #94b8d9; font-size: 11px; font-family: 'Courier New', monospace;
+  padding: 5px 10px; border-radius: 20px; cursor: pointer; transition: all 0.15s; white-space: nowrap;
+}
+.map-layer-btn.active { background: var(--water); border-color: var(--water); color: white; }
+.map-navionics-btn {
+  background: linear-gradient(160deg,#00305a,#005494);
+  border: 1px solid rgba(0,120,200,0.5); color: #7dd3fc;
+  border-radius: var(--radius-sm); padding: 10px 12px;
+  font-size: 11px; font-family: 'Courier New', monospace; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  letter-spacing: 0.05em; text-transform: uppercase; transition: all 0.15s; white-space: nowrap;
+}
+.map-navionics-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.map-navionics-btn:not(:disabled):active { transform: scale(0.97); }
+
+/* Photo measurement modal */
+.measure-modal-bg {
+  display: none; position: fixed; inset: 0;
+  background: #000; z-index: 500; flex-direction: column;
+}
+.measure-modal-bg.open { display: flex; }
+.measure-header {
+  background: var(--ink); padding: 12px 16px;
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.measure-header h3 { color: #e0f7fa; font-size: 15px; font-weight: 400; }
+.measure-header p  { color: #64b5d9; font-size: 11px; font-family: 'Courier New', monospace; margin-top: 2px; }
+.measure-close {
+  background: rgba(255,255,255,0.1); border: none; color: #e0f7fa;
+  font-size: 20px; width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+}
+.measure-canvas-wrap {
+  flex: 1; position: relative; overflow: hidden; background: #000;
+  display: flex; align-items: center; justify-content: center;
+}
+#measureCanvas { max-width: 100%; max-height: 100%; touch-action: none; }
+.measure-footer { background: var(--ink); padding: 12px 16px; flex-shrink: 0; }
+.measure-instructions {
+  font-size: 12px; font-family: 'Courier New', monospace;
+  color: #64b5d9; text-align: center; margin-bottom: 10px; min-height: 32px; line-height: 1.5;
+}
+.measure-result-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.measure-result-row label {
+  font-size: 11px; color: var(--mist); font-family: 'Courier New', monospace;
+  letter-spacing: 0.1em; text-transform: uppercase; white-space: nowrap;
+}
+.measure-result-row input {
+  flex: 1; background: rgba(255,255,255,0.08); border: 1.5px solid rgba(255,255,255,0.2);
+  border-radius: var(--radius-sm); padding: 8px 12px;
+  font-size: 18px; font-family: 'Courier New', monospace; color: #e0f7fa; text-align: center;
+}
+.measure-result-row input:focus { outline: none; border-color: var(--water); }
+.measure-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.measure-btn { border: none; border-radius: var(--radius-sm); padding: 11px; font-size: 14px; font-family: 'Georgia', serif; cursor: pointer; }
+.measure-btn-reset   { background: rgba(255,255,255,0.1); color: #e0f7fa; }
+.measure-btn-confirm { background: var(--catch); color: white; }
+
+/* ── 13. MOON / SOLUNAR ──────────────────────────────────────── */
+.moon-header { margin-bottom: 12px; }
+.moon-header h2 { font-size: 18px; font-weight: 400; color: var(--ink); }
+.moon-header p  { font-size: 13px; color: var(--mist); font-style: italic; }
+
+.moon-controls { display: flex; align-items: center; justify-content: flex-end; margin-bottom: 14px; }
+.compact-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+.compact-toggle input { display: none; }
+.compact-toggle-track {
+  width: 40px; height: 22px; background: var(--line); border-radius: 11px;
+  position: relative; transition: background 0.2s; flex-shrink: 0;
+}
+.compact-toggle-track::after {
+  content: ''; position: absolute; top: 3px; left: 3px;
+  width: 16px; height: 16px; background: white; border-radius: 50%;
+  transition: transform 0.2s; box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+}
+.compact-toggle input:checked ~ .compact-toggle-track { background: var(--water); }
+.compact-toggle input:checked ~ .compact-toggle-track::after { transform: translateX(18px); }
+.compact-toggle-label { font-size: 12px; font-family: 'Courier New', monospace; color: var(--mist); }
+
+.solunar-tiles { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 16px; }
+.solunar-tile {
+  border-radius: var(--radius-sm); padding: 10px 6px;
+  text-align: center; border: 1px solid rgba(255,255,255,0.1);
+}
+.solunar-tile .st-emoji  { font-size: 22px; display: block; margin-bottom: 4px; }
+.solunar-tile .st-count  { font-size: 18px; font-family: 'Courier New', monospace; display: block; color: white; }
+.solunar-tile .st-label  { font-size: 9px; font-family: 'Courier New', monospace; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.1em; }
+.st-peak { background: linear-gradient(135deg,#7c2d12,#c2410c); }
+.st-good { background: linear-gradient(135deg,#713f12,#a16207); }
+.st-fair { background: linear-gradient(135deg,#0c4a6e,#0369a1); }
+.st-slow { background: linear-gradient(135deg,#1e293b,#334155); }
+
+.phase-group { margin-bottom: 20px; }
+.phase-group-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; background: var(--ink);
+  border-radius: var(--radius) var(--radius) 0 0; margin-bottom: 0;
+}
+.phase-group-header .ph-emoji   { font-size: 24px; }
+.phase-group-header .ph-name    { color: #e0f7fa; font-size: 15px; font-family: 'Georgia', serif; flex: 1; }
+.phase-group-header .ph-count   { font-size: 11px; font-family: 'Courier New', monospace; color: #64b5d9; }
+.phase-group-header .ph-solunar { font-size: 11px; font-family: 'Courier New', monospace; padding: 2px 8px; border-radius: 10px; }
+.phase-group-cards {
+  border: 1px solid var(--line); border-top: none;
+  border-radius: 0 0 var(--radius) var(--radius); overflow: hidden;
+}
+
+.compact-row {
+  display: flex; align-items: center; gap: 10px; padding: 9px 14px;
+  border-bottom: 1px solid var(--line); background: var(--surface);
+}
+.compact-row:last-child { border-bottom: none; }
+.compact-row .cr-species { font-size: 13px; color: var(--ink); font-family: 'Georgia', serif; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.compact-row .cr-size    { font-size: 11px; font-family: 'Courier New', monospace; color: var(--mist); white-space: nowrap; }
+.compact-row .cr-method  { font-size: 10px; font-family: 'Courier New', monospace; color: var(--water); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100px; }
+.compact-row .cr-date    { font-size: 10px; font-family: 'Courier New', monospace; color: var(--mist); white-space: nowrap; }
+
+.moon-empty { text-align: center; padding: 40px 20px; color: var(--mist); font-style: italic; font-size: 14px; }
+
+/* ── 14. MISC UTILITY ────────────────────────────────────────── */
+#moonDisplay {
+  font-size: 12px; font-family: 'Courier New', monospace; color: var(--mist);
+  margin-bottom: 8px; padding: 6px 10px;
+  background: var(--foam); border-radius: 6px; border: 1px solid var(--line);
+}
+</style>
+
+<!-- ─────────────────────────────────────────────────────────────
+     Leaflet map library — loaded from CDN, not part of app logic
+     ───────────────────────────────────────────────────────────── -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="" defer></script>
+
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════
+     HTML STRUCTURE
+     ════════════════════════════════════════════════════════════ -->
+
+<div class="app-header">
+  <div class="header-top">
+    <div class="logo"><h1>🎣 BragData</h1><span>Fishing Journal</span></div>
+    <div class="offline-badge" id="onlineBadge">● Online</div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" id="tab-log"      onclick="showView('log')">Log</button>
+    <button class="tab"        id="tab-catches"  onclick="showView('catches')">Catches</button>
+    <button class="tab"        id="tab-reports"  onclick="showView('reports')">Reports</button>
+    <button class="tab"        id="tab-moon"     onclick="showView('moon')">🌕 Moon</button>
+    <button class="tab"        id="tab-species"  onclick="showView('species')">Species</button>
+    <button class="tab"        id="tab-settings" onclick="showView('settings')">Settings</button>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- ═══ LOG VIEW ═══ -->
+<div class="view active" id="view-log">
+
+  <div class="photo-hero">
+    <div class="photo-hero-btn import-btn" onclick="document.getElementById('exifInput').click()">
+      <div class="photo-hero-fish">🐟</div>
+      <div class="photo-hero-tag">Tight Lines</div>
+      <div class="photo-hero-sub">Import from gallery</div>
+    </div>
+    <div class="photo-hero-btn camera-btn" onclick="document.getElementById('cameraInput').click()">
+      <div class="photo-hero-fish">🎣</div>
+      <div class="photo-hero-tag">Fish On!</div>
+      <div class="photo-hero-sub">Take photo now</div>
+    </div>
+    <input type="file" id="exifInput"   accept="image/*"                   style="display:none" onchange="importFromPhoto(event)">
+    <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" onchange="importFromPhoto(event)">
+  </div>
+
+  <div class="exif-result" id="exifResult">
+    <h4>✓ Data extracted from photo</h4>
+    <div id="exifRows"></div>
+  </div>
+  <div class="exif-warn" id="exifWarn"></div>
+  <div class="tide-lookup" id="tideLookup"></div>
+  <div class="loc-picker-wrap" id="locPickerWrap">
+    <h4>📍 No GPS in photo — pick a location for tide lookup</h4>
+    <div class="loc-picker-grid" id="locPickerGrid"></div>
+    <button class="loc-lookup-btn" id="locLookupBtn" disabled onclick="lookupTideFromPicker()">🌊 Look up tide for selected location</button>
+  </div>
+
+  <div class="form-card">
+    <div class="form-section-header">📍 Location &amp; Time</div>
+    <div class="form-body">
+      <div class="form-row">
+        <div class="field">
+          <label>Spot Name</label>
+          <div class="spot-wrap">
+            <input type="text" id="spotName" placeholder="e.g. North Ramp, Hawkesbury"
+              oninput="onSpotInput()" onfocus="onSpotInput()" onblur="schedSpotClose()" autocomplete="off">
+            <div class="spot-dropdown" id="spotDrop"></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>State</label>
+          <select id="catchState">
+            <option value="">— Select —</option>
+            <option>NSW</option><option>QLD</option><option>VIC</option>
+            <option>WA</option><option>SA</option><option>TAS</option>
+            <option>NT</option><option>ACT</option><option>NZ</option><option>OS</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Date</label><input type="date" id="catchDate" onchange="updateMoonDisplay()" oninput="updateMoonDisplay()"></div>
+        <div class="field"><label>Time</label><input type="time" id="catchTime" onchange="updateMoonDisplay()"></div>
+      </div>
+      <div id="moonDisplay"></div>
+      <div class="field">
+        <label>GPS Coordinates</label>
+        <div class="gps-field">
+          <input type="text" id="gpsCoords" placeholder="Tap GPS to acquire" readonly>
+          <button class="btn btn-gps" onclick="getGPS()">📡 GPS</button>
+          <button class="btn btn-gps" style="background:var(--water)" onclick="openMapPicker()">🗺 Pin</button>
+        </div>
+        <div class="gps-status" id="gpsStatus" style="display:none"></div>
+      </div>
+      <div class="form-row" style="margin-top:10px">
+        <div class="field"><label>Fishfinder Waypoint ID</label><input type="text" id="waypointId" placeholder="e.g. WPT-042"></div>
+        <div class="field"><label>Waypoint Name</label><input type="text" id="waypointName" placeholder="e.g. The Bombora"></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Water Depth (m)</label><input type="number" id="depth" placeholder="4.5" step="0.5" min="0"></div>
+        <div class="field"><label>Water Temp (°C)</label><input type="number" id="waterTemp" placeholder="18" step="0.5"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-section-header">🌤 Conditions</div>
+    <div class="form-body">
+      <div class="field" style="margin-bottom:12px">
+        <label>Weather</label>
+        <div class="weather-tiles">
+          <div class="weather-tile" onclick="selWeather(event.currentTarget,'Sunny')"><span class="wi">☀️</span>Sunny</div>
+          <div class="weather-tile" onclick="selWeather(event.currentTarget,'Cloudy')"><span class="wi">⛅</span>Cloudy</div>
+          <div class="weather-tile" onclick="selWeather(event.currentTarget,'Overcast')"><span class="wi">☁️</span>Overcast</div>
+          <div class="weather-tile" onclick="selWeather(event.currentTarget,'Rain')"><span class="wi">🌧</span>Rain</div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Air Temp (°C)</label><input type="number" id="airTemp" placeholder="22" step="1"></div>
+        <div class="field"><label>Wind Speed (km/h)</label><input type="number" id="windSpeed" placeholder="15" step="1" min="0"></div>
+      </div>
+      <div class="field">
+        <label>Wind Direction</label>
+        <div class="compass-wrap">
+          <div class="compass">
+            <span class="cl n">N</span><span class="cl s">S</span>
+            <span class="cl e">E</span><span class="cl w">W</span>
+            <div class="needle" id="needle"></div>
+            <div class="dot"></div>
+          </div>
+          <div class="dir-buttons">
+            <div class="dir-btn" onclick="selDir(event.currentTarget,'N')">N</div>
+            <div class="dir-btn" onclick="selDir(event.currentTarget,'NE')">NE</div>
+            <div class="dir-btn" onclick="selDir(event.currentTarget,'E')">E</div>
+            <div class="dir-btn" onclick="selDir(event.currentTarget,'SE')">SE</div>
+            <div class="dir-btn" onclick="selDir(event.currentTarget,'S')">S</div>
+            <div class="dir-btn" onclick="selDir(event.currentTarget,'SW')">SW</div>
+            <div class="dir-btn" onclick="selDir(event.currentTarget,'W')">W</div>
+            <div class="dir-btn" onclick="selDir(event.currentTarget,'NW')">NW</div>
+          </div>
+        </div>
+      </div>
+      <div class="field" style="margin-top:10px">
+        <label>Tide</label>
+        <select id="tide">
+          <option value="">— Select —</option>
+          <option>Incoming</option><option>High</option><option>Outgoing</option>
+          <option>Low</option><option>Slack</option>
+        </select>
+      </div>
+      <div class="form-row" style="margin-top:10px">
+        <div class="field"><label>Swell Height (m)</label><input type="number" id="swellHeight" placeholder="e.g. 1.2" step="0.1" min="0"></div>
+        <div class="field"><label>Swell Direction</label>
+          <select id="swellDir"><option value="">— Select —</option>
+            <option>N</option><option>NE</option><option>E</option><option>SE</option>
+            <option>S</option><option>SW</option><option>W</option><option>NW</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Swell Period (s)</label><input type="number" id="swellPeriod" placeholder="e.g. 8" step="1" min="0"></div>
+        <div class="field"><label>Wave Height (m)</label><input type="number" id="waveHeight" placeholder="e.g. 1.5" step="0.1" min="0"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-section-header">🐟 The Catch</div>
+    <div class="form-body">
+      <div class="form-row single">
+        <div class="field">
+          <label>Species</label>
+          <div class="species-wrap">
+            <input type="text" id="spSearch" placeholder="Type to search species…" autocomplete="off"
+              oninput="onSpInput()" onfocus="onSpInput()" onblur="schedClose()">
+            <div class="species-dropdown" id="spDrop"></div>
+          </div>
+          <div id="spBadge" style="display:none">
+            <span class="sp-badge"><span id="spBadgeName"></span><button onclick="clearSp()">×</button></span>
+          </div>
+          <input type="hidden" id="spId"><input type="hidden" id="spName">
+        </div>
+      </div>
+      <div class="form-row triple">
+        <div class="field"><label>Weight (kg)</label><input type="number" id="weight" placeholder="0.0" step="0.1" min="0"></div>
+        <div class="field"><label>Length (cm)</label><input type="number" id="length" placeholder="0" step="1" min="0"></div>
+        <div class="field"><label>Count</label><input type="number" id="count" placeholder="1" min="1" value="1"></div>
+      </div>
+      <div class="form-row">
+        <div class="field">
+          <label>Method</label>
+          <select id="method"><option value="">— Select —</option>
+            <option>Lure — Hard body</option><option>Lure — Soft plastic</option><option>Lure — Metal</option>
+            <option>Live bait</option><option>Cut bait</option><option>Prawns</option><option>Worms</option>
+            <option>Squid</option><option>Fly</option><option>Trolling</option><option>Jigging</option><option>Spinning</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Kept / Released</label>
+          <select id="disposition"><option value="">— Select —</option>
+            <option>Kept</option><option>Released</option><option>Released — undersized</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row single">
+        <div class="field"><label>Bait / Lure Detail</label><input type="text" id="bait" placeholder="e.g. 4in pearl ZMan, #2 hook, 1/4oz jig"></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Line (lb)</label><input type="number" id="lineWeight" placeholder="10" step="1" min="0"></div>
+        <div class="field"><label>Leader (lb)</label><input type="number" id="leader" placeholder="20" step="1" min="0"></div>
+      </div>
+      <div class="form-row single">
+        <div class="field"><label>Notes</label><textarea id="notes" placeholder="What worked, structure, how you found them…"></textarea></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-section-header">📷 Photos</div>
+    <div class="form-body">
+      <div class="photo-upload-area" id="photoUploadArea">
+        <input type="file" id="photoInput" accept="image/*" multiple onchange="handlePhotoUpload(event)">
+        <div class="upload-icon">📷</div>
+        <p>Tap to add photos<br>from camera or gallery</p>
+      </div>
+      <div class="photo-previews" id="photoPreviews"></div>
+    </div>
+  </div>
+
+  <button class="btn btn-save" onclick="saveCatch()">✓ Save to Journal</button>
+</div><!-- /view-log -->
+
+
+<!-- ═══ CATCHES VIEW ═══ -->
+<div class="view" id="view-catches">
+  <div class="filter-bar">
+    <div class="filter-chip active" onclick="filterC(event.currentTarget,'all')">All</div>
+    <div class="filter-chip" onclick="filterC(event.currentTarget,'thisMonth')">This Month</div>
+    <div class="filter-chip" onclick="filterC(event.currentTarget,'thisYear')">This Year</div>
+    <div class="filter-chip" onclick="filterC(event.currentTarget,'kept')">Kept</div>
+    <div class="filter-chip" onclick="filterC(event.currentTarget,'released')">Released</div>
+  </div>
+  <div class="sort-bar">
+    <span class="sort-label">Sort:</span>
+    <div class="sort-chip active" id="sort-date"    onclick="setSort('date')"   ><span>Date</span>   <span class="arrow" id="sort-date-arrow">↓</span></div>
+    <div class="sort-chip"        id="sort-species" onclick="setSort('species')"><span>Species</span><span class="arrow" id="sort-species-arrow"></span></div>
+    <div class="sort-chip"        id="sort-length"  onclick="setSort('length')" ><span>Length</span> <span class="arrow" id="sort-length-arrow"></span></div>
+    <div class="sort-chip"        id="sort-state"   onclick="setSort('state')"  ><span>State</span>  <span class="arrow" id="sort-state-arrow"></span></div>
+  </div>
+  <div class="log-count" id="catchCount"></div>
+  <div id="catchList"></div>
+</div><!-- /view-catches -->
+
+
+<!-- ═══ REPORTS VIEW ═══ -->
+<div class="view" id="view-reports">
+  <div class="rpt-header"><h2>Reports</h2><p>Filter your history — find what works</p></div>
+  <div class="rpt-builder">
+    <h3>Build a report</h3>
+    <div class="filter-grid">
+      <div class="field"><label>Species</label><select id="rSp"><option value="">All species</option></select></div>
+      <div class="field"><label>Month</label>
+        <select id="rMo"><option value="">All months</option>
+          <option value="0">January</option><option value="1">February</option><option value="2">March</option>
+          <option value="3">April</option><option value="4">May</option><option value="5">June</option>
+          <option value="6">July</option><option value="7">August</option><option value="8">September</option>
+          <option value="9">October</option><option value="10">November</option><option value="11">December</option>
+        </select>
+      </div>
+      <div class="field"><label>Method</label>
+        <select id="rMe"><option value="">All methods</option>
+          <option>Lure — Hard body</option><option>Lure — Soft plastic</option><option>Lure — Metal</option>
+          <option>Live bait</option><option>Cut bait</option><option>Prawns</option><option>Worms</option>
+          <option>Squid</option><option>Fly</option><option>Trolling</option><option>Jigging</option><option>Spinning</option>
+        </select>
+      </div>
+      <div class="field"><label>Tide</label>
+        <select id="rTi"><option value="">All tides</option>
+          <option>Incoming</option><option>High</option><option>Outgoing</option><option>Low</option><option>Slack</option>
+        </select>
+      </div>
+      <div class="field"><label>Wind Direction</label>
+        <select id="rWd"><option value="">Any</option>
+          <option>N</option><option>NE</option><option>E</option><option>SE</option>
+          <option>S</option><option>SW</option><option>W</option><option>NW</option>
+        </select>
+      </div>
+      <div class="field"><label>Disposition</label>
+        <select id="rDi"><option value="">All</option>
+          <option>Kept</option><option>Released</option><option>Released — undersized</option>
+        </select>
+      </div>
+      <div class="field"><label>Year</label><select id="rYr"><option value="">All years</option></select></div>
+      <div class="field"><label>Spot (keyword)</label><input type="text" id="rSn" placeholder="e.g. Hawkesbury" style="font-size:13px;padding:8px 10px;"></div>
+      <div class="field"><label>Moon Phase</label>
+        <select id="rMoon" style="font-size:13px;padding:8px 10px;">
+          <option value="">Any phase</option>
+          <option value="New Moon">🌑 New Moon</option>
+          <option value="Waxing Crescent">🌒 Waxing Crescent</option>
+          <option value="First Quarter">🌓 First Quarter</option>
+          <option value="Waxing Gibbous">🌔 Waxing Gibbous</option>
+          <option value="Full Moon">🌕 Full Moon</option>
+          <option value="Waning Gibbous">🌖 Waning Gibbous</option>
+          <option value="Last Quarter">🌗 Last Quarter</option>
+          <option value="Waning Crescent">🌘 Waning Crescent</option>
+          <option value="Peak">★★★ Peak (New/Full)</option>
+          <option value="Good">★★☆ Good</option>
+        </select>
+      </div>
+    </div>
+    <button class="run-btn" onclick="runReport()">Run Report</button>
+  </div>
+  <div id="rptResults"></div>
+</div><!-- /view-reports -->
+
+
+<!-- ═══ MOON VIEW ═══ -->
+<div class="view" id="view-moon">
+  <div class="moon-header">
+    <h2>Solunar Report</h2>
+    <p>Catches grouped by lunar phase</p>
+  </div>
+  <div class="moon-controls">
+    <label class="compact-toggle">
+      <input type="checkbox" id="moonCompact" onchange="renderMoonView()">
+      <span class="compact-toggle-track"></span>
+      <span class="compact-toggle-label">Compact view</span>
+    </label>
+  </div>
+  <div class="solunar-tiles" id="solunarTiles"></div>
+  <div id="moonPhaseGroups"></div>
+</div><!-- /view-moon -->
+
+
+<!-- ═══ SPECIES VIEW ═══ -->
+<div class="view" id="view-species">
+  <div class="sp-mgr-hdr">
+    <h2>Species List</h2>
+    <button class="btn btn-primary btn-sm" onclick="openAddSp()">+ Add Species</button>
+  </div>
+  <div class="add-sp-form" id="addSpForm" style="display:none">
+    <h3>New Species</h3>
+    <div class="form-row single" style="margin-bottom:10px"><div class="field"><label>Species Name</label><input type="text" id="nSpName" placeholder="e.g. Snapper"></div></div>
+    <div class="form-row single" style="margin-bottom:10px"><div class="field"><label>Nicknames (comma separated)</label><input type="text" id="nSpNick" placeholder="e.g. Pinkies, Red snapper, Squire"></div></div>
+    <div class="form-row single" style="margin-bottom:10px"><div class="field"><label>Notes — size, bag limit, habitat</label><textarea id="nSpNotes" style="min-height:50px" placeholder="e.g. Legal size 30cm, bag limit 8"></textarea></div></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-save" style="margin:0;flex:1;padding:11px" onclick="saveNewSp()">Save Species</button>
+      <button class="btn btn-cancel" style="padding:11px 16px" onclick="closeAddSp()">Cancel</button>
+    </div>
+  </div>
+  <div id="spMgrList"></div>
+</div><!-- /view-species -->
+
+
+<!-- ═══ SETTINGS VIEW ═══ -->
+<div class="view" id="view-settings">
+  <div class="settings-section">
+    <div class="settings-section-hdr">🌊 WorldTides API Key</div>
+    <div class="settings-body">
+      <p>Used to automatically look up tide state when importing a photo. Get a free key (100 credits) at <strong>worldtides.info</strong> — takes 2 minutes to register.</p>
+      <p>Your key is stored on this device only and never sent anywhere except directly to WorldTides.</p>
+      <div class="field">
+        <label>API Key</label>
+        <div class="api-key-row">
+          <input type="password" id="wtApiKey" placeholder="Paste your WorldTides API key…" autocomplete="off">
+          <button class="btn-save-key" onclick="saveApiKey()">Save</button>
+        </div>
+        <div class="key-status" id="keyStatus"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-section-hdr">📍 My Fishing Locations</div>
+    <div class="settings-body">
+      <p>Saved locations are used for tide lookup when a photo has no GPS. Add your regular spots — boat ramps, harbours, headlands.</p>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+        <button class="btn btn-primary btn-sm" onclick="openAddLoc()">+ Add Location</button>
+      </div>
+      <div class="add-loc-form" id="addLocForm" style="display:none">
+        <h3>New Location</h3>
+        <div class="form-row single" style="margin-bottom:10px"><div class="field"><label>Location Name</label><input type="text" id="nLocName" placeholder="e.g. Bellambi Boat Ramp"></div></div>
+        <div class="form-row single" style="margin-bottom:10px"><div class="field"><label>State / Region</label><input type="text" id="nLocState" placeholder="e.g. NSW, QLD"></div></div>
+        <div class="form-row" style="margin-bottom:10px">
+          <div class="field"><label>Latitude</label><input type="number" id="nLocLat" placeholder="-34.36798" step="0.00001"></div>
+          <div class="field"><label>Longitude</label><input type="number" id="nLocLon" placeholder="150.92885" step="0.00001"></div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-save" style="margin:0;flex:1;padding:10px" onclick="saveNewLoc()">Save Location</button>
+          <button class="btn btn-cancel" style="padding:10px 14px" onclick="closeAddLoc()">Cancel</button>
+        </div>
+      </div>
+      <div id="locMgrList"></div>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-section-hdr">💾 Backup &amp; Restore</div>
+    <div class="settings-body">
+      <p>Export everything — catches, photos, species, locations — to a single backup file. Use this before moving to a new device or published app URL.</p>
+      <div style="margin-bottom:12px">
+        <button class="export-btn" onclick="exportData()">
+          <span style="font-size:18px">📤</span>
+          <div>
+            <div style="font-size:14px;font-family:'Georgia',serif;color:#e0f7fa">Export all data</div>
+            <div style="font-size:10px;font-family:'Courier New',monospace;color:#64b5d9;margin-top:2px">Catches · Photos · Species · Locations</div>
+          </div>
+        </button>
+      </div>
+      <div id="exportStatus" style="font-size:11px;font-family:'Courier New',monospace;color:var(--catch);margin-bottom:12px;display:none"></div>
+      <p style="margin-bottom:8px">To restore from a backup file:</p>
+      <label class="import-btn-label">
+        <span style="font-size:18px">📥</span>
+        <div>
+          <div style="font-size:14px;font-family:'Georgia',serif;color:#e0f7fa">Import backup file</div>
+          <div style="font-size:10px;font-family:'Courier New',monospace;color:#64b5d9;margin-top:2px">Merges with existing data</div>
+        </div>
+        <input type="file" accept=".json" style="display:none" onchange="importData(event)">
+      </label>
+      <div id="importStatus" style="font-size:11px;font-family:'Courier New',monospace;margin-top:8px;display:none"></div>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-section-hdr">✨ Enrich All Catches</div>
+    <div class="settings-body">
+      <p>Automatically fills in missing <strong>tide state</strong>, <strong>weather conditions</strong>, <strong>wind speed &amp; direction</strong>, <strong>air temperature</strong>, and <strong>spot names</strong> for every catch that has GPS coordinates and a date.</p>
+      <p style="color:var(--danger);font-family:'Courier New',monospace;font-size:11px;margin-bottom:12px">⚠ This modifies every record. A backup is mandatory before running.</p>
+      <div id="enrichBackupGate">
+        <div style="background:var(--sand);border:1.5px solid var(--dawn);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:12px">
+          <div style="font-size:12px;font-family:'Courier New',monospace;color:#92400e;margin-bottom:10px;font-weight:600">Step 1 — Back up your data first</div>
+          <button class="export-btn" onclick="exportThenEnrich()">
+            <span style="font-size:18px">📤</span>
+            <div>
+              <div style="font-size:14px;font-family:'Georgia',serif;color:#e0f7fa">Export backup &amp; continue</div>
+              <div style="font-size:10px;font-family:'Courier New',monospace;color:#64b5d9;margin-top:2px">Saves your file then unlocks enrichment</div>
+            </div>
+          </button>
+        </div>
+        <div style="opacity:0.4;pointer-events:none" id="enrichControls">
+          <div style="font-size:12px;font-family:'Courier New',monospace;color:var(--mist);margin-bottom:10px">Step 2 — Run enrichment</div>
+          <button class="export-btn" style="background:linear-gradient(135deg,#064e3b,#065f46)" onclick="runEnrichment()">
+            <span style="font-size:18px">✨</span>
+            <div>
+              <div style="font-size:14px;font-family:'Georgia',serif;color:#e0f7fa">Enrich all catches</div>
+              <div style="font-size:10px;font-family:'Courier New',monospace;color:#6ee7b7;margin-top:2px">Tide · Weather · Wind · Spot names</div>
+            </div>
+          </button>
+        </div>
+      </div>
+      <div id="enrichUnlocked" style="display:none">
+        <div style="background:var(--catch-light);border:1px solid var(--catch);border-radius:var(--radius-sm);padding:10px 12px;margin-bottom:12px;font-size:11px;font-family:'Courier New',monospace;color:#065f46">
+          ✓ Backup saved — enrichment unlocked
+        </div>
+        <button class="export-btn" style="background:linear-gradient(135deg,#064e3b,#065f46);margin-bottom:10px" onclick="runEnrichment()">
+          <span style="font-size:18px">✨</span>
+          <div>
+            <div style="font-size:14px;font-family:'Georgia',serif;color:#e0f7fa">Enrich all catches</div>
+            <div style="font-size:10px;font-family:'Courier New',monospace;color:#6ee7b7;margin-top:2px">Tide · Weather · Wind · Spot names</div>
+          </div>
+        </button>
+      </div>
+      <div id="enrichProgress" style="display:none">
+        <div style="font-size:12px;font-family:'Courier New',monospace;color:var(--mist);margin-bottom:8px" id="enrichProgressText">Starting…</div>
+        <div style="background:var(--line);border-radius:4px;height:8px;overflow:hidden;margin-bottom:8px">
+          <div id="enrichProgressBar" style="height:100%;background:var(--catch);border-radius:4px;width:0%;transition:width 0.3s"></div>
+        </div>
+        <div id="enrichLog" style="font-size:10px;font-family:'Courier New',monospace;color:var(--mist);max-height:120px;overflow-y:auto;line-height:1.8"></div>
+      </div>
+      <div id="enrichResult" style="display:none;font-size:12px;font-family:'Courier New',monospace;margin-top:8px"></div>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <div class="settings-section-hdr">ℹ️ About</div>
+    <div class="settings-body">
+      <p>BragData — Fishing Journal<br>bragdata.com<br>All data stored locally on this device.<br>Works fully offline.</p>
+      <p>Tide lookup requires an internet connection and a WorldTides API key. Each lookup costs 1 credit.</p>
+    </div>
+  </div>
+</div><!-- /view-settings -->
+
+</div><!-- /content -->
+
+
+<!-- ════════════════════════════════════════════════════════════
+     MODALS  (outside .content so z-index stacking is clean)
+     ════════════════════════════════════════════════════════════ -->
+
+<!-- Edit Species modal -->
+<div class="modal-bg" id="editSpModal">
+  <div class="modal">
+    <h2>Edit Species</h2>
+    <input type="hidden" id="eSid">
+    <div class="field" style="margin-bottom:10px"><label>Species Name</label><input type="text" id="eSpName"></div>
+    <div class="field" style="margin-bottom:10px"><label>Nicknames (comma separated)</label><input type="text" id="eSpNick"></div>
+    <div class="field"><label>Notes</label><textarea id="eSpNotes" style="min-height:50px"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeEditSp()">Cancel</button>
+      <button class="btn btn-save" style="margin:0" onclick="saveEditSp()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Catch modal -->
+<div class="modal-bg" id="editCatchModal">
+  <div class="modal" style="padding-bottom:60px">
+    <h2>Edit Catch</h2>
+    <input type="hidden" id="eCatchId">
+    <div class="field" style="margin-bottom:10px"><label>Species</label><input type="text" id="eCatchSpecies"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div class="field"><label>Weight (kg)</label><input type="number" id="eCatchWeight" step="0.1" min="0"></div>
+      <div class="field"><label>Length (cm)</label><input type="number" id="eCatchLength" step="1" min="0"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div class="field"><label>Date</label><input type="date" id="eCatchDate"></div>
+      <div class="field"><label>Time</label><input type="time" id="eCatchTime"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div class="field"><label>Spot Name</label><input type="text" id="eCatchSpot"></div>
+      <div class="field"><label>State</label>
+        <select id="eCatchState">
+          <option value="">— Select —</option>
+          <option>NSW</option><option>QLD</option><option>VIC</option>
+          <option>WA</option><option>SA</option><option>TAS</option>
+          <option>NT</option><option>ACT</option><option>NZ</option><option>OS</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div class="field"><label>Method</label>
+        <select id="eCatchMethod"><option value="">— Select —</option>
+          <option>Lure — Hard body</option><option>Lure — Soft plastic</option><option>Lure — Metal</option>
+          <option>Live bait</option><option>Cut bait</option><option>Prawns</option><option>Worms</option>
+          <option>Squid</option><option>Fly</option><option>Trolling</option><option>Jigging</option><option>Spinning</option>
+        </select>
+      </div>
+      <div class="field"><label>Bait / Lure</label><input type="text" id="eCatchBait"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div class="field"><label>Tide</label>
+        <select id="eCatchTide"><option value="">— Select —</option>
+          <option>Incoming</option><option>High</option><option>Outgoing</option><option>Low</option><option>Slack</option>
+        </select>
+      </div>
+      <div class="field"><label>Disposition</label>
+        <select id="eCatchDisp"><option value="">— Select —</option>
+          <option>Kept</option><option>Released</option><option>Released — undersized</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px">
+      <div class="field"><label>Swell H (m)</label><input type="number" id="eCatchSwellHeight" step="0.1" min="0"></div>
+      <div class="field"><label>Swell Dir</label>
+        <select id="eCatchSwellDir"><option value="">—</option>
+          <option>N</option><option>NE</option><option>E</option><option>SE</option>
+          <option>S</option><option>SW</option><option>W</option><option>NW</option>
+        </select>
+      </div>
+      <div class="field"><label>Swell P (s)</label><input type="number" id="eCatchSwellPeriod" step="1" min="0"></div>
+    </div>
+    <div class="field" style="margin-bottom:10px"><label>Wave Height (m)</label><input type="number" id="eCatchWaveHeight" step="0.1" min="0"></div>
+    <div class="field" style="margin-bottom:10px"><label>Notes</label><textarea id="eCatchNotes" style="min-height:60px"></textarea></div>
+    <div style="border-top:1px solid var(--line);padding-top:12px;margin-bottom:12px">
+      <div style="font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--mist);font-family:'Courier New',monospace;margin-bottom:8px">Photos</div>
+      <div id="eCatchPhotos" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px"></div>
+      <label style="display:inline-flex;align-items:center;gap:6px;background:var(--foam);border:1.5px solid var(--line);border-radius:var(--radius-sm);padding:7px 12px;font-size:12px;font-family:'Courier New',monospace;color:var(--mist);cursor:pointer">
+        📷 Add photo
+        <input type="file" accept="image/*" multiple style="display:none" onchange="addEditPhotos(event)">
+      </label>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-cancel" onclick="closeEditCatch()">Cancel</button>
+      <button class="btn btn-save" style="margin:0" onclick="saveEditCatch()">Save Changes</button>
+    </div>
+    <button class="btn btn-danger" style="width:100%;margin-top:10px;padding:12px;font-size:14px" onclick="delCatchFromEdit()">Delete this catch</button>
+  </div>
+</div>
+
+<!-- Photo lightbox -->
+<div class="photo-lightbox" id="photoLightbox" onclick="closeLightbox()">
+  <img id="lightboxImg" src="" alt="Catch photo">
+  <button class="photo-lightbox-close" onclick="closeLightbox()">×</button>
+</div>
+
+<!-- Map picker modal -->
+<div class="map-modal-bg" id="mapModal">
+  <div class="map-modal-header">
+    <div>
+      <h3>Drop a pin on your catch location</h3>
+      <p>Tap anywhere on the map to place a pin</p>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="map-layer-btn active" id="btnSatellite" onclick="setMapLayer('satellite')">🛰 Satellite</button>
+      <button class="map-layer-btn"        id="btnStreet"    onclick="setMapLayer('street')">🗺 Street</button>
+      <button class="map-modal-close" onclick="closeMapPicker()">×</button>
+    </div>
+  </div>
+  <div class="map-search-wrap">
+    <input type="text" id="mapSearchInput" placeholder="Search for a place…" onkeydown="if(event.key==='Enter') mapSearch()">
+    <button class="map-search-btn" onclick="mapSearch()">Search</button>
+  </div>
+  <div id="mapContainer"></div>
+  <div class="map-modal-footer">
+    <div class="map-pin-info" id="mapPinInfo">Tap the map to drop a pin</div>
+    <div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:stretch">
+      <button class="map-confirm-btn" id="mapConfirmBtn" disabled onclick="confirmMapPin()">✓ Confirm this location</button>
+      <button class="map-navionics-btn" id="navionicsBtn" disabled onclick="openNavionics()" title="View bathymetric chart">
+        <span style="font-size:16px">⚓</span>
+        <span>Navionics</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Photo measurement modal -->
+<div class="measure-modal-bg" id="measureModal">
+  <div class="measure-header">
+    <div>
+      <h3>📏 Measure your catch</h3>
+      <p id="measureStep">Tap the NOSE of the fish</p>
+    </div>
+    <button class="measure-close" onclick="skipMeasure()">×</button>
+  </div>
+  <div class="measure-canvas-wrap">
+    <canvas id="measureCanvas"></canvas>
+  </div>
+  <div class="measure-footer">
+    <div class="measure-instructions" id="measureInstructions">
+      Tap the tip of the nose, then the tip of the tail to measure.
+    </div>
+    <div class="measure-result-row">
+      <label>Length (cm)</label>
+      <input type="number" id="measureResult" placeholder="—" step="1" min="0">
+    </div>
+    <div class="measure-btns">
+      <button class="measure-btn measure-btn-reset"   onclick="resetMeasure()">↩ Reset points</button>
+      <button class="measure-btn measure-btn-confirm" onclick="confirmMeasure()">✓ Use this length</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm dialog -->
+<div class="confirm-bg" id="confirmDialog">
+  <div class="confirm-box">
+    <p id="confirmMsg"></p>
+    <div class="confirm-box-btns">
+      <button class="confirm-cancel" onclick="confirmNo()">Cancel</button>
+      <button class="confirm-ok"     onclick="confirmYes()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast notification -->
+<div class="toast" id="toast"></div>
+
+
+<!-- ════════════════════════════════════════════════════════════
+     JAVASCRIPT
+     Order: constants → storage → state → utilities → init
+            → UI helpers → GPS → forms → photos → EXIF
+            → map → tide → weather → enrichment → species
+            → catches → reports → moon → export/import
+     ════════════════════════════════════════════════════════════ -->
+<script>
+/* ─────────────────────────────────────────────────────────────
+   CONSTANTS
+   ───────────────────────────────────────────────────────────── */
+const DB_CATCHES  = 'bragdata_catches';
+const DB_SPECIES  = 'bragdata_species';
+const IDB_NAME    = 'bragdata_photos_v1';
+const IDB_STORE   = 'photos';
+const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MF = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DA = { N:0, NE:45, E:90, SE:135, S:180, SW:225, W:270, NW:315 };
+
+const PHASE_ORDER = [
+  {name:'New Moon',        emoji:'🌑', solunarRating:'Peak'},
+  {name:'Waxing Crescent', emoji:'🌒', solunarRating:'Fair'},
+  {name:'First Quarter',   emoji:'🌓', solunarRating:'Fair'},
+  {name:'Waxing Gibbous',  emoji:'🌔', solunarRating:'Good'},
+  {name:'Full Moon',       emoji:'🌕', solunarRating:'Peak'},
+  {name:'Waning Gibbous',  emoji:'🌖', solunarRating:'Good'},
+  {name:'Last Quarter',    emoji:'🌗', solunarRating:'Fair'},
+  {name:'Waning Crescent', emoji:'🌘', solunarRating:'Fair'},
+];
+
+const SOLUNAR_COLORS = {
+  Peak: {bg:'rgba(194,65,12,0.15)',  border:'rgba(194,65,12,0.4)',  text:'#f97316'},
+  Good: {bg:'rgba(161,98,7,0.15)',   border:'rgba(161,98,7,0.4)',   text:'#eab308'},
+  Fair: {bg:'rgba(3,105,161,0.15)',  border:'rgba(3,105,161,0.4)',  text:'#64b5d9'},
+  Slow: {bg:'rgba(51,65,85,0.15)',   border:'rgba(51,65,85,0.4)',   text:'#94a3b8'},
+};
+
+const DEFAULT_LOCATIONS = [
+  {id:'loc1', name:'Port Kembla Harbour', state:'NSW', lat:-34.4750, lon:150.9000},
+  {id:'loc2', name:'Bellambi Boat Ramp',  state:'NSW', lat:-34.3680, lon:150.9289},
+  {id:'loc3', name:'Yeppoon Boat Ramp',   state:'QLD', lat:-23.1268, lon:150.7441},
+];
+
+/* ─────────────────────────────────────────────────────────────
+   APP STATE
+   ───────────────────────────────────────────────────────────── */
+let catches          = [];
+let species          = [];
+let locations        = [];
+let selWx            = '';
+let selWindDir       = '';
+let selSpId          = null;
+let selSpName        = '';
+let curFilter        = 'all';
+let sortField        = 'date';
+let sortDir          = 'desc';
+let closeTimer       = null;
+let spotCloseTimer   = null;
+let pendingPhotos    = [];
+let wtApiKey         = '';
+let pickerSelectedLoc    = null;
+let pendingExifDateTime  = null;
+let enrichBackedUp   = false;
+let editPhotos       = [];
+let measureImg       = null;
+let measurePoints    = [];
+let measureImgData   = null;
+let measureTarget    = 'length';
+let _confirmCallback = null;
+let _idb             = null;
+
+/* ─────────────────────────────────────────────────────────────
+   UTILITIES
+   ───────────────────────────────────────────────────────────── */
+// XSS-safe HTML escape
+function h(str) {
+  return String(str||'')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function esc(s) { return s.replace(/'/g,"\\'"); }
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   INDEXEDDB — photo storage
+   ───────────────────────────────────────────────────────────── */
+function getIDB() {
+  return new Promise((res, rej) => {
+    if (_idb) { res(_idb); return; }
+    const req = indexedDB.open(IDB_NAME, 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore(IDB_STORE, {keyPath:'id'});
+    req.onsuccess = e => { _idb = e.target.result; res(_idb); };
+    req.onerror = () => rej(req.error);
+  });
+}
+async function idbPut(id, fullData, thumb) {
+  try {
+    const db = await getIDB();
+    await new Promise((res, rej) => {
+      const tx = db.transaction(IDB_STORE,'readwrite');
+      tx.objectStore(IDB_STORE).put({id, fullData, thumb});
+      tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+    });
+  } catch(e) { console.warn('IDB put error', e); }
+}
+async function idbGet(id) {
+  try {
+    const db = await getIDB();
+    return new Promise(res => {
+      const req = db.transaction(IDB_STORE,'readonly').objectStore(IDB_STORE).get(id);
+      req.onsuccess = () => res(req.result || null);
+      req.onerror   = () => res(null);
+    });
+  } catch(e) { return null; }
+}
+async function idbDel(id) {
+  try {
+    const db = await getIDB();
+    await new Promise(res => {
+      const tx = db.transaction(IDB_STORE,'readwrite');
+      tx.objectStore(IDB_STORE).delete(id);
+      tx.oncomplete = res; tx.onerror = res;
+    });
+  } catch(e) {}
+}
+
+/* ─────────────────────────────────────────────────────────────
+   LOCALSTORAGE — catch & species persistence
+   ───────────────────────────────────────────────────────────── */
+function saveC() {
+  const existing = localStorage.getItem(DB_CATCHES);
+  const existingCount = existing ? JSON.parse(existing).length : 0;
+  if (catches.length === 0 && existingCount > 0) {
+    console.warn('saveC blocked — catches empty but localStorage has ' + existingCount + ' records');
+    return;
+  }
+  try {
+    const slim = catches.map(c => ({
+      ...c,
+      photos: (c.photos||[]).map(p => {
+        if (!p) return null;
+        if (typeof p === 'object' && p.id) return p;
+        if (typeof p === 'string' && p.startsWith('data:') && p.length < 50000) return p;
+        if (typeof p === 'string' && p.startsWith('data:')) return null;
+        return p;
+      }).filter(Boolean),
+    }));
+    localStorage.setItem(DB_CATCHES, JSON.stringify(slim));
+  } catch(e) {
+    console.warn('localStorage save error:', e);
+    const noPhotos = catches.map(c => ({...c, photos:[]}));
+    try { localStorage.setItem(DB_CATCHES, JSON.stringify(noPhotos)); } catch(e2) {}
+  }
+}
+function saveSp()  { localStorage.setItem(DB_SPECIES, JSON.stringify(species)); }
+function saveLocs(){ localStorage.setItem('bragdata_locations', JSON.stringify(locations)); }
+
+/* ─────────────────────────────────────────────────────────────
+   INITIALISATION
+   ───────────────────────────────────────────────────────────── */
+function init() {
+  const sc = localStorage.getItem(DB_CATCHES);
+  const ss = localStorage.getItem(DB_SPECIES);
+  catches = sc ? JSON.parse(sc) : [];
+  species = ss ? JSON.parse(ss) : defaultSpecies();
+  if (!ss) saveSp();
+
+  const now = new Date();
+  document.getElementById('catchDate').value = now.toISOString().slice(0, 10);
+  document.getElementById('catchTime').value = now.toTimeString().slice(0, 5);
+
+  // Seed key only if not already present (never overwrite user's key)
+  if (!localStorage.getItem('bragdata_wtkey')) {
+    localStorage.setItem('bragdata_wtkey', '');  // placeholder — user must add their own key
+  }
+  wtApiKey = localStorage.getItem('bragdata_wtkey') || '';
+
+  loadLocations();
+  updateMoonDisplay();
+  updateNet();
+  window.addEventListener('online',  updateNet);
+  window.addEventListener('offline', updateNet);
+}
+
+function defaultSpecies() {
+  return [
+    {id:'sp1',  name:'Snapper',  nicknames:['Pinkies','Red snapper','Squire'],  notes:'Legal size 30cm'},
+    {id:'sp2',  name:'Flathead', nicknames:['Lizard','Flattie'],                notes:'Legal size 36cm'},
+    {id:'sp3',  name:'Bream',    nicknames:['Black bream'],                     notes:'Legal size 25cm'},
+    {id:'sp4',  name:'Kingfish', nicknames:['Kingie','Yellowtail'],             notes:'Legal size 65cm'},
+    {id:'sp5',  name:'Whiting',  nicknames:['Sand whiting'],                    notes:'Legal size 27cm'},
+    {id:'sp6',  name:'Mulloway', nicknames:['Jewfish','Jewie'],                 notes:'Legal size 45cm'},
+    {id:'sp7',  name:'Tailor',   nicknames:['Bluefish'],                        notes:''},
+    {id:'sp8',  name:'Luderick', nicknames:['Blackfish'],                       notes:'Legal size 27cm'},
+    {id:'sp9',  name:'Trevally', nicknames:['Silver trevally'],                 notes:''},
+    {id:'sp10', name:'Squid',    nicknames:['Calamari'],                        notes:''},
+  ];
+}
+
+function loadLocations() {
+  const stored = localStorage.getItem('bragdata_locations');
+  locations = stored ? JSON.parse(stored) : JSON.parse(JSON.stringify(DEFAULT_LOCATIONS));
+  if (!stored) saveLocs();
+}
+
+function updateNet() {
+  const b = document.getElementById('onlineBadge');
+  if (navigator.onLine) { b.textContent = '● Online'; b.classList.remove('offline'); }
+  else { b.textContent = '◉ Offline — saved locally'; b.classList.add('offline'); }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   VIEW NAVIGATION
+   ───────────────────────────────────────────────────────────── */
+function showView(v) {
+  document.querySelectorAll('.view').forEach(e => e.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(e  => e.classList.remove('active'));
+  document.getElementById('view-' + v).classList.add('active');
+  const tab = document.getElementById('tab-' + v);
+  if (tab) tab.classList.add('active');
+  if (v === 'catches')  renderCatches();
+  if (v === 'moon')     renderMoonView();
+  if (v === 'reports')  buildRptFilters();
+  if (v === 'species')  renderSpMgr();
+  if (v === 'settings') loadSettingsView();
+}
+
+/* ─────────────────────────────────────────────────────────────
+   WEATHER & COMPASS UI
+   ───────────────────────────────────────────────────────────── */
+function selWeather(el, v) {
+  document.querySelectorAll('.weather-tile').forEach(t => t.classList.remove('selected'));
+  el.classList.add('selected');
+  selWx = v;
+}
+function selDir(el, d) {
+  document.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  selWindDir = d;
+  document.getElementById('needle').style.transform =
+    `translateX(-50%) translateY(-100%) rotate(${DA[d]||0}deg)`;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   GPS
+   ───────────────────────────────────────────────────────────── */
+function getGPS() {
+  const s = document.getElementById('gpsStatus');
+  s.style.display = 'block'; s.className = 'gps-status acq'; s.textContent = '⌛ Acquiring…';
+  if (!navigator.geolocation) { s.className = 'gps-status err'; s.textContent = '✗ GPS not available'; return; }
+  navigator.geolocation.getCurrentPosition(
+    p => {
+      const lat = p.coords.latitude, lon = p.coords.longitude;
+      document.getElementById('gpsCoords').value = `${lat.toFixed(5)}, ${lon.toFixed(5)}`;
+      s.className = 'gps-status got'; s.textContent = `✓ Fix ±${Math.round(p.coords.accuracy)}m`;
+      const st = stateFromGPS(lat, lon);
+      if (st && !document.getElementById('catchState').value) document.getElementById('catchState').value = st;
+    },
+    () => { s.className = 'gps-status err'; s.textContent = '✗ Could not get location'; },
+    {enableHighAccuracy: true, timeout: 15000}
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
+   GPS → STATE LOOKUP
+   ───────────────────────────────────────────────────────────── */
+function stateFromGPS(lat, lon) {
+  const regions = [
+    ['ACT', -35.92, -35.12, 148.76, 149.40],
+    ['TAS', -43.65, -39.50, 143.80, 148.50],
+    ['NT',  -26.00, -10.95, 129.00, 138.00],
+    ['SA',  -38.10, -25.99, 129.00, 141.00],
+    ['WA',  -35.20, -13.70, 112.90, 129.00],
+    ['QLD', -29.20, -10.60, 138.00, 153.60],
+    ['NSW', -37.60, -28.15, 141.00, 153.70],
+    ['VIC', -39.20, -33.98, 140.90, 149.97],
+    ['NZ',  -47.30, -34.40, 166.40, 178.60],
+  ];
+  for (const [state, minLat, maxLat, minLon, maxLon] of regions) {
+    if (lat >= minLat && lat <= maxLat && lon >= minLon && lon <= maxLon) return state;
+  }
+  if (lat >= -44 && lat <= -10 && lon >= 112 && lon <= 154) return 'OS';
+  return '';
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MOON PHASE ENGINE
+   ───────────────────────────────────────────────────────────── */
+function getMoonPhase(dateStr, timeStr) {
+  const date = new Date(dateStr + 'T' + (timeStr || '12:00') + ':00');
+  const knownNewMoon = new Date('2000-01-06T18:14:00Z');
+  const lunarCycle = 29.530588853;
+  const diff = (date - knownNewMoon) / (1000 * 60 * 60 * 24);
+  const cycles = diff / lunarCycle;
+  const phase = ((cycles % 1) + 1) % 1;
+  const illumination = Math.round((1 - Math.cos(phase * 2 * Math.PI)) / 2 * 100);
+
+  let name, emoji;
+  if      (phase < 0.0625) { name = 'New Moon';        emoji = '🌑'; }
+  else if (phase < 0.1875) { name = 'Waxing Crescent'; emoji = '🌒'; }
+  else if (phase < 0.3125) { name = 'First Quarter';   emoji = '🌓'; }
+  else if (phase < 0.4375) { name = 'Waxing Gibbous';  emoji = '🌔'; }
+  else if (phase < 0.5625) { name = 'Full Moon';       emoji = '🌕'; }
+  else if (phase < 0.6875) { name = 'Waning Gibbous';  emoji = '🌖'; }
+  else if (phase < 0.8125) { name = 'Last Quarter';    emoji = '🌗'; }
+  else if (phase < 0.9375) { name = 'Waning Crescent'; emoji = '🌘'; }
+  else                     { name = 'New Moon';         emoji = '🌑'; }
+
+  const distFromNew  = Math.min(phase, 1 - phase);
+  const distFromFull = Math.abs(phase - 0.5);
+  const bestDist     = Math.min(distFromNew, distFromFull);
+  let solunar;
+  if      (bestDist < 0.05) solunar = {rating:'Peak', stars:'★★★', color:'#f97316'};
+  else if (bestDist < 0.12) solunar = {rating:'Good', stars:'★★☆', color:'#eab308'};
+  else if (bestDist < 0.22) solunar = {rating:'Fair', stars:'★☆☆', color:'#64b5d9'};
+  else                      solunar = {rating:'Slow', stars:'☆☆☆', color:'#94a3b8'};
+
+  return {phase, name, emoji, illumination, solunar};
+}
+
+function updateMoonDisplay() {
+  const date = document.getElementById('catchDate').value;
+  const time = document.getElementById('catchTime').value;
+  if (!date) return;
+  const moon = getMoonPhase(date, time);
+  const el = document.getElementById('moonDisplay');
+  if (el) {
+    el.textContent = `${moon.emoji} ${moon.name} · ${moon.illumination}% · `;
+    const star = document.createElement('span');
+    star.style.color = moon.solunar.color;
+    star.textContent = `${moon.solunar.stars} ${moon.solunar.rating}`;
+    el.appendChild(star);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SPOT AUTOCOMPLETE
+   ───────────────────────────────────────────────────────────── */
+function getSpotSuggestions(q) {
+  const freq = {};
+  catches.forEach(c => { if (c.spotName && c.spotName.trim()) { const k = c.spotName.trim(); freq[k] = (freq[k]||0) + 1; } });
+  locations.forEach(l => { if (l.name && !freq[l.name]) freq[l.name] = 0; });
+  const all = Object.entries(freq).sort((a,b) => b[1]-a[1]).map(([name,count]) => ({name, count}));
+  if (!q) return all.slice(0, 8);
+  const ql = q.toLowerCase();
+  return all.filter(s => s.name.toLowerCase().includes(ql)).slice(0, 8);
+}
+function onSpotInput() {
+  if (spotCloseTimer) { clearTimeout(spotCloseTimer); spotCloseTimer = null; }
+  const q  = document.getElementById('spotName').value.trim();
+  const dd = document.getElementById('spotDrop');
+  const suggestions = getSpotSuggestions(q);
+  if (!suggestions.length) { dd.classList.remove('open'); return; }
+  dd.innerHTML = suggestions.map(s => {
+    const safeName = s.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return '<div class="spot-option" onmousedown="pickSpot(\'' + safeName + '\')">'
+      + '<span>' + s.name + '</span>'
+      + (s.count > 0
+        ? '<span class="spot-opt-count">' + s.count + ' catch' + (s.count !== 1 ? 'es' : '') + '</span>'
+        : '<span class="spot-opt-count">location</span>')
+      + '</div>';
+  }).join('');
+  dd.classList.add('open');
+}
+function pickSpot(name) {
+  document.getElementById('spotName').value = name;
+  document.getElementById('spotDrop').classList.remove('open');
+  const loc = locations.find(l => l.name === name);
+  if (loc && !document.getElementById('gpsCoords').value) {
+    document.getElementById('gpsCoords').value = loc.lat.toFixed(5) + ', ' + loc.lon.toFixed(5);
+    const gpsS = document.getElementById('gpsStatus');
+    gpsS.style.display = 'block'; gpsS.className = 'gps-status got';
+    gpsS.textContent = '📍 Location: ' + name;
+    const st = stateFromGPS(loc.lat, loc.lon);
+    if (st && !document.getElementById('catchState').value) document.getElementById('catchState').value = st;
+  }
+}
+function schedSpotClose() {
+  spotCloseTimer = setTimeout(() => document.getElementById('spotDrop').classList.remove('open'), 200);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SPECIES AUTOCOMPLETE
+   ───────────────────────────────────────────────────────────── */
+function onSpInput() {
+  if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
+  const q  = document.getElementById('spSearch').value.toLowerCase().trim();
+  const dd = document.getElementById('spDrop');
+  const hits = species.filter(s =>
+    s.name.toLowerCase().includes(q) || (s.nicknames||[]).some(n => n.toLowerCase().includes(q))
+  );
+  let html = hits.map(s =>
+    `<div class="species-option" onmousedown="pickSp('${s.id}','${esc(s.name)}')">${s.name}`
+    + (s.nicknames&&s.nicknames.length ? `<span class="sp-nick">${s.nicknames.slice(0,2).join(', ')}</span>` : '')
+    + '</div>'
+  ).join('');
+  const raw = document.getElementById('spSearch').value.trim();
+  if (raw) html += `<div class="sp-add" onmousedown="addSpFromLog()">+ Add "${raw}" as new species</div>`;
+  dd.innerHTML = html;
+  dd.classList.add('open');
+}
+function schedClose() { closeTimer = setTimeout(() => document.getElementById('spDrop').classList.remove('open'), 200); }
+function pickSp(id, name) {
+  selSpId = id; selSpName = name;
+  document.getElementById('spId').value   = id;
+  document.getElementById('spName').value = name;
+  document.getElementById('spSearch').value = '';
+  document.getElementById('spSearch').style.display = 'none';
+  document.getElementById('spDrop').classList.remove('open');
+  document.getElementById('spBadge').style.display = 'block';
+  document.getElementById('spBadgeName').textContent = name;
+}
+function clearSp() {
+  selSpId = null; selSpName = '';
+  ['spId','spName','spSearch'].forEach(i => document.getElementById(i).value = '');
+  document.getElementById('spSearch').style.display = 'block';
+  document.getElementById('spBadge').style.display  = 'none';
+}
+function addSpFromLog() {
+  const name = document.getElementById('spSearch').value.trim(); if (!name) return;
+  const id = 'sp' + Date.now();
+  species.push({id, name, nicknames:[], notes:''}); saveSp();
+  pickSp(id, name); showToast('"' + name + '" added to species list');
+}
+
+/* ─────────────────────────────────────────────────────────────
+   PHOTO HANDLING
+   ───────────────────────────────────────────────────────────── */
+function makeThumbnail(dataUrl) {
+  return new Promise(res => {
+    try {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const MAX = 200;
+          let w = img.width, hh = img.height;
+          if (w > MAX) { hh = Math.round(hh*MAX/w); w = MAX; }
+          const c = document.createElement('canvas');
+          c.width = w; c.height = hh;
+          c.getContext('2d').drawImage(img, 0, 0, w, hh);
+          const t = c.toDataURL('image/jpeg', 0.6);
+          res(t && t.length > 100 ? t : dataUrl);
+        } catch(e) { res(dataUrl); }
+      };
+      img.onerror = () => res(dataUrl);
+      img.src = dataUrl;
+    } catch(e) { res(dataUrl); }
+  });
+}
+async function savePhoto(catchId, index, fullData) {
+  const id = `p_${catchId}_${index}`;
+  const thumb = await makeThumbnail(fullData);
+  await idbPut(id, fullData, thumb);
+  return {id, thumb};
+}
+async function getFullPhoto(id) {
+  if (!id) return null;
+  if (id.startsWith('data:')) return id;
+  const rec = await idbGet(id);
+  return rec ? rec.fullData : null;
+}
+async function savePendingPhotos(catchId, photos) {
+  const saved = [];
+  for (let i = 0; i < photos.length; i++) {
+    try {
+      const p = photos[i];
+      if (!p) continue;
+      if (typeof p === 'string' && p.startsWith('data:')) {
+        const {id, thumb} = await savePhoto(catchId, i, p);
+        saved.push({id, thumb});
+      } else if (p && p.id) {
+        saved.push(p);
+      }
+    } catch(e) { console.warn('Photo', i, 'failed to save to IDB:', e); }
+  }
+  return saved;
+}
+
+function compressPhoto(file, callback) {
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const MAX = 800;
+        let w = img.width, hh = img.height;
+        if (w > MAX) { hh = Math.round(hh*MAX/w); w = MAX; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = hh;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, hh);
+        const compressed = canvas.toDataURL('image/jpeg', 0.7);
+        callback(compressed && compressed.length > 100 ? compressed : ev.target.result);
+      } catch(e) { callback(ev.target.result); }
+    };
+    img.onerror = () => callback(ev.target.result);
+    img.src = ev.target.result;
+  };
+  reader.onerror = () => showToast('Could not read photo');
+  reader.readAsDataURL(file);
+}
+
+function compressPhotoFromBase64(b64, callback) {
+  const img = new Image();
+  img.onload = () => {
+    try {
+      const MAX = 1200;
+      let w = img.width, hh = img.height;
+      if (w > MAX) { hh = Math.round(hh*MAX/w); w = MAX; }
+      const c = document.createElement('canvas');
+      c.width = w; c.height = hh;
+      c.getContext('2d').drawImage(img, 0, 0, w, hh);
+      const result = c.toDataURL('image/jpeg', 0.85);
+      callback(result && result.length > 100 ? result : b64);
+    } catch(e) { callback(b64); }
+  };
+  img.onerror = () => callback(b64);
+  img.src = b64;
+}
+
+function handlePhotoUpload(e) {
+  const files = Array.from(e.target.files);
+  if (pendingPhotos.length >= 3) { showToast('Max 3 photos per catch'); return; }
+  files.forEach(file => {
+    if (!file.type.startsWith('image/')) return;
+    compressPhoto(file, data => { pendingPhotos.push(data); renderPhotoPreviews(); });
+  });
+}
+function renderPhotoPreviews() {
+  const el = document.getElementById('photoPreviews');
+  el.innerHTML = pendingPhotos.map((src, i) => `
+    <div class="photo-thumb-wrap">
+      <img class="photo-thumb" src="${src}" alt="Photo ${i+1}">
+      <button class="photo-thumb-del" onclick="removePhoto(${i})">×</button>
+    </div>`).join('');
+}
+function removePhoto(i) { pendingPhotos.splice(i, 1); renderPhotoPreviews(); }
+
+async function openFullPhoto(imgEl) {
+  const lb = document.getElementById('lightboxImg');
+  lb.src = imgEl.src;
+  document.getElementById('photoLightbox').classList.add('open');
+  const pid = imgEl.dataset.photoid;
+  if (pid) {
+    const full = await getFullPhoto(pid);
+    if (full) lb.src = full;
+  }
+}
+function openLightbox(src) {
+  document.getElementById('lightboxImg').src = src;
+  document.getElementById('photoLightbox').classList.add('open');
+}
+function closeLightbox() { document.getElementById('photoLightbox').classList.remove('open'); }
+
+/* ─────────────────────────────────────────────────────────────
+   PHOTO MEASUREMENT TOOL
+   ───────────────────────────────────────────────────────────── */
+function openMeasureModal(dataUrl, targetFieldId) {
+  measureTarget = targetFieldId || 'length';
+  measurePoints = [];
+  measureImgData = dataUrl;
+  document.getElementById('measureModal').classList.add('open');
+  document.getElementById('measureResult').value = '';
+  document.getElementById('measureStep').textContent = 'Tap the NOSE of the fish';
+  document.getElementById('measureInstructions').textContent = 'Tap the tip of the nose, then the tip of the tail to measure.';
+  setTimeout(() => {
+    try {
+      const canvas = document.getElementById('measureCanvas');
+      canvas.removeEventListener('click', onMeasureTap);
+      canvas.addEventListener('click', onMeasureTap);
+      const img = new Image();
+      img.onload = () => {
+        try {
+          measureImg = img;
+          const wrap = canvas.parentElement;
+          const maxW = Math.max(wrap.clientWidth,  window.innerWidth  || 375);
+          const maxH = Math.max(wrap.clientHeight, Math.round((window.innerHeight || 667) * 0.55));
+          const scale = Math.min(maxW / img.width, maxH / img.height, 1);
+          canvas.width  = Math.max(1, Math.round(img.width  * scale));
+          canvas.height = Math.max(1, Math.round(img.height * scale));
+          drawMeasure();
+        } catch(e) { console.warn('Canvas size error:', e); }
+      };
+      img.onerror = () => { showToast('Could not load photo for measuring'); closeMeasureModal(); };
+      img.src = dataUrl;
+    } catch(e) { console.warn('openMeasureModal error:', e); }
+  }, 150);
+}
+function onMeasureTap(e) {
+  if (measurePoints.length >= 2) return;
+  const rect = e.target.getBoundingClientRect();
+  measurePoints.push({x: e.clientX - rect.left, y: e.clientY - rect.top});
+  if (measurePoints.length === 1) {
+    document.getElementById('measureStep').textContent = 'Now tap the TAIL of the fish';
+    document.getElementById('measureInstructions').textContent = 'Tap the very tip of the tail fin.';
+  } else {
+    document.getElementById('measureStep').textContent = 'Measurement complete — edit if needed';
+    document.getElementById('measureInstructions').textContent = 'The length shown is relative. Tap Reset to redo.';
+    calcMeasurement();
+  }
+  drawMeasure();
+}
+function calcMeasurement() {
+  if (measurePoints.length < 2) return;
+  const p1 = measurePoints[0], p2 = measurePoints[1];
+  const px = Math.sqrt(Math.pow(p2.x-p1.x,2) + Math.pow(p2.y-p1.y,2));
+  const canvas = document.getElementById('measureCanvas');
+  const framePct = px / canvas.width;
+  const estimatedCm = Math.round(framePct * 80);
+  document.getElementById('measureResult').value = estimatedCm > 0 ? estimatedCm : '';
+}
+function drawMeasure() {
+  if (!measureImg) return;
+  const canvas = document.getElementById('measureCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(measureImg, 0, 0, canvas.width, canvas.height);
+  measurePoints.forEach((p, i) => {
+    ctx.beginPath(); ctx.arc(p.x, p.y, 10, 0, Math.PI*2);
+    ctx.fillStyle = i === 0 ? '#f97316' : '#22c55e'; ctx.fill();
+    ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = 'white'; ctx.font = 'bold 13px Courier New';
+    ctx.fillText(i === 0 ? 'NOSE' : 'TAIL', p.x+14, p.y+5);
+  });
+  if (measurePoints.length === 2) {
+    const p1 = measurePoints[0], p2 = measurePoints[1];
+    ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y);
+    ctx.strokeStyle = '#facc15'; ctx.lineWidth = 2.5; ctx.setLineDash([6,4]); ctx.stroke(); ctx.setLineDash([]);
+  }
+}
+function resetMeasure() {
+  measurePoints = [];
+  document.getElementById('measureResult').value = '';
+  document.getElementById('measureStep').textContent = 'Tap the NOSE of the fish';
+  document.getElementById('measureInstructions').textContent = 'Tap the tip of the nose, then the tip of the tail to measure.';
+  drawMeasure();
+}
+function confirmMeasure() {
+  try {
+    const val = document.getElementById('measureResult').value;
+    if (val) { const target = document.getElementById(measureTarget || 'length'); if (target) target.value = val; }
+  } catch(e) { console.warn('confirmMeasure error:', e); }
+  closeMeasureModal();
+}
+function skipMeasure() { closeMeasureModal(); }
+function closeMeasureModal() {
+  try { document.getElementById('measureCanvas').removeEventListener('click', onMeasureTap); } catch(e) {}
+  try { document.getElementById('measureModal').classList.remove('open'); } catch(e) {}
+  measurePoints = []; measureImg = null;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   EXIF PHOTO IMPORT
+   ───────────────────────────────────────────────────────────── */
+function importFromPhoto(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const buf = ev.target.result;
+      const resultEl = document.getElementById('exifResult');
+      const warnEl   = document.getElementById('exifWarn');
+      resultEl.classList.remove('show'); warnEl.classList.remove('show');
+
+      // Convert ArrayBuffer → base64 and compress
+      try {
+        const bytes = new Uint8Array(buf);
+        let binary = ''; const chunkSize = 8192;
+        for (let i = 0; i < bytes.byteLength; i += chunkSize)
+          binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+        const b64 = 'data:image/jpeg;base64,' + btoa(binary);
+        compressPhotoFromBase64(b64, data => {
+          pendingPhotos.push(data);
+          renderPhotoPreviews();
+          openMeasureModal(data);
+        });
+      } catch(convErr) { console.warn('Photo conversion error:', convErr); }
+
+      let exif = {dateTime:null, gpsLat:null, gpsLon:null};
+      try { exif = parseExif(buf); }
+      catch(err) {
+        warnEl.textContent = 'Photo added. Could not read EXIF data from this file — fill in date and location manually.';
+        warnEl.classList.add('show'); showToast('Photo added'); return;
+      }
+
+      const rows = []; let gotSomething = false;
+      if (exif.dateTime && /^\d{4}:\d{2}:\d{2} \d{2}:\d{2}:\d{2}$/.test(exif.dateTime)) {
+        const datePart = exif.dateTime.slice(0,10).replace(/:/g,'-');
+        const timePart = exif.dateTime.slice(11,16);
+        document.getElementById('catchDate').value = datePart;
+        document.getElementById('catchTime').value = timePart;
+        rows.push({k:'Date', v: new Date(datePart).toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short',year:'numeric'})});
+        rows.push({k:'Time', v: timePart});
+        gotSomething = true;
+      }
+      if (exif.gpsLat !== null && exif.gpsLon !== null) {
+        const lat = exif.gpsLat.toFixed(5), lon = exif.gpsLon.toFixed(5);
+        document.getElementById('gpsCoords').value = `${lat}, ${lon}`;
+        const gpsS = document.getElementById('gpsStatus');
+        gpsS.style.display = 'block'; gpsS.className = 'gps-status got'; gpsS.textContent = '✓ GPS from photo EXIF';
+        rows.push({k:'GPS', v: `${lat}, ${lon}`});
+        const derivedState = stateFromGPS(exif.gpsLat, exif.gpsLon);
+        if (derivedState) { document.getElementById('catchState').value = derivedState; rows.push({k:'State', v: derivedState}); }
+        gotSomething = true;
+      }
+
+      if (gotSomething) {
+        document.getElementById('exifRows').innerHTML = rows.map(r => `<div class="exif-row"><span class="ek">${r.k}</span><span class="ev">${r.v}</span></div>`).join('');
+        resultEl.classList.add('show');
+        showToast('📸 Photo data imported — fill in the catch details');
+        if (exif.dateTime && exif.gpsLat !== null && exif.gpsLon !== null) {
+          lookupTide(exif.dateTime, exif.gpsLat, exif.gpsLon);
+        } else if (exif.dateTime) {
+          pendingExifDateTime = exif.dateTime;
+          showLocPicker();
+        }
+      } else {
+        warnEl.textContent = '⚠ No usable data found in this photo. GPS may not have been active when the shot was taken, or data was stripped by a messaging app. Photo has been attached — fill in the details manually.';
+        warnEl.classList.add('show');
+        showToast('Photo added — no EXIF data found');
+      }
+      e.target.value = '';
+    } catch(outerErr) { console.error('importFromPhoto outer error:', outerErr); showToast('Photo import error — please try again'); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function parseExif(buf) {
+  const view = new DataView(buf);
+  const result = {dateTime:null, gpsLat:null, gpsLon:null};
+  try {
+    if (view.getUint16(0) !== 0xFFD8) return result;
+    let offset = 2, safety = 0;
+    while (offset < view.byteLength - 2 && safety++ < 200) {
+      const marker = view.getUint16(offset); offset += 2;
+      if (marker === 0xFFE1) {
+        const len = view.getUint16(offset);
+        if (len < 8) { offset += len; continue; }
+        const exifHeader = String.fromCharCode(
+          view.getUint8(offset+2), view.getUint8(offset+3),
+          view.getUint8(offset+4), view.getUint8(offset+5)
+        );
+        if (exifHeader === 'Exif') {
+          try { parseExifBlock(view, offset+8, result); } catch(e) { console.warn('parseExifBlock error:', e); }
+        }
+        offset += len;
+      } else if ((marker & 0xFF00) === 0xFF00) {
+        if (offset + 2 > view.byteLength) break;
+        const segLen = view.getUint16(offset);
+        if (segLen < 2) break;
+        offset += segLen;
+      } else break;
+    }
+  } catch(e) { console.warn('parseExif outer error:', e); }
+  return result;
+}
+
+function parseExifBlock(view, start, result) {
+  if (start + 8 > view.byteLength) return;
+  const byteOrder = view.getUint16(start);
+  const le = (byteOrder === 0x4949);
+  if (byteOrder !== 0x4949 && byteOrder !== 0x4D4D) return;
+  const r16  = o => le ? view.getUint16(o,true) : view.getUint16(o,false);
+  const r32  = o => le ? view.getUint32(o,true) : view.getUint32(o,false);
+
+  function readRational(o) { const n=r32(o), d=r32(o+4); return d===0?0:n/d; }
+  function readString(o, len) {
+    let s = '';
+    for (let i = 0; i < len; i++) { const c = view.getUint8(o+i); if (c===0) break; s += String.fromCharCode(c); }
+    return s.trim();
+  }
+  function readIFD(ifdOffset) {
+    if (ifdOffset+2 > view.byteLength) return;
+    const count = r16(start + ifdOffset);
+    for (let i = 0; i < count; i++) {
+      const eo = start + ifdOffset + 2 + i*12;
+      if (eo + 12 > view.byteLength) break;
+      const tag = r16(eo), num = r32(eo+4), vo = eo+8;
+      if (tag === 0x0132)            { result.dateTime = readString(start+r32(vo), num); }
+      if ((tag===0x9003||tag===0x9004) && !result.dateTime) { result.dateTime = readString(start+r32(vo), num); }
+      if (tag === 0x8825)            { readGPS(r32(vo)); }
+      if (tag === 0x8769)            { readExifSub(r32(vo)); }
+    }
+  }
+  function readExifSub(ifdOffset) {
+    if (ifdOffset+2 > view.byteLength) return;
+    const count = r16(start + ifdOffset);
+    for (let i = 0; i < count; i++) {
+      const eo = start + ifdOffset + 2 + i*12;
+      if (eo + 12 > view.byteLength) break;
+      const tag = r16(eo), num = r32(eo+4), vo = eo+8;
+      if ((tag===0x9003||tag===0x9004) && !result.dateTime) result.dateTime = readString(start+r32(vo), num);
+    }
+  }
+  function readGPS(ifdOffset) {
+    if (start+ifdOffset+2 > view.byteLength) return;
+    const count = r16(start+ifdOffset);
+    if (count < 1 || count > 64) return;
+    let latRef='N', lonRef='E', lat=null, lon=null;
+    for (let i = 0; i < count; i++) {
+      const eo = start+ifdOffset+2+i*12;
+      if (eo+12 > view.byteLength) break;
+      try {
+        const tag = r16(eo), vf = eo+8;
+        if (tag===0x0001) latRef = String.fromCharCode(view.getUint8(vf));
+        if (tag===0x0003) lonRef = String.fromCharCode(view.getUint8(vf));
+        if (tag===0x0002||tag===0x0004) {
+          const ao = start + r32(vf);
+          if (ao+24 > view.byteLength) continue;
+          const deg = readRational(ao) + readRational(ao+8)/60 + readRational(ao+16)/3600;
+          if (isFinite(deg) && deg>=0 && deg<=180) { if (tag===0x0002) lat=deg; else lon=deg; }
+        }
+      } catch(e) { continue; }
+    }
+    if (lat!==null && isFinite(lat)) result.gpsLat = (latRef==='S' ? -lat : lat);
+    if (lon!==null && isFinite(lon)) result.gpsLon = (lonRef==='W' ? -lon : lon);
+  }
+  const ifd0 = r32(start+4);
+  readIFD(ifd0);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MAP PICKER
+   ───────────────────────────────────────────────────────────── */
+let mapInstance = null, mapMarker = null, mapPinLatLon = null;
+let mapTiles = {}, currentMapLayer = 'satellite';
+
+function openMapPicker() {
+  if (typeof L === 'undefined') { showToast('Map loading — try again in a moment'); return; }
+  document.getElementById('mapModal').classList.add('open');
+  setTimeout(() => {
+    if (!mapInstance) {
+      mapInstance = L.map('mapContainer', {zoomControl:true}).setView([-25,134], 5);
+      mapTiles = {
+        satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+          attribution:'Tiles © Esri — Esri, Maxar, GeoEye, Earthstar Geographics, CNES/Airbus DS, USDA, USGS, AeroGRID, IGN',
+          maxZoom: 19
+        }),
+        street: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors', maxZoom: 19
+        }),
+      };
+      mapTiles.satellite.addTo(mapInstance);
+      currentMapLayer = 'satellite';
+      mapInstance.on('click', e => placeMapPin(e.latlng.lat, e.latlng.lng));
+    }
+    mapInstance.invalidateSize();
+    const existing = document.getElementById('gpsCoords').value;
+    if (existing) {
+      const parts = existing.split(',').map(s => parseFloat(s.trim()));
+      if (parts.length===2 && !isNaN(parts[0]) && !isNaN(parts[1])) {
+        mapInstance.setView(parts, 13);
+        placeMapPin(parts[0], parts[1]);
+      }
+    }
+  }, 100);
+}
+function closeMapPicker() { document.getElementById('mapModal').classList.remove('open'); }
+function setMapLayer(layer) {
+  if (!mapInstance || layer === currentMapLayer) return;
+  mapInstance.removeLayer(mapTiles[currentMapLayer]);
+  mapTiles[layer].addTo(mapInstance);
+  currentMapLayer = layer;
+  document.getElementById('btnSatellite').classList.toggle('active', layer==='satellite');
+  document.getElementById('btnStreet').classList.toggle('active',    layer==='street');
+}
+function placeMapPin(lat, lng) {
+  mapPinLatLon = {lat, lng};
+  if (mapMarker) mapMarker.remove();
+  mapMarker = L.marker([lat, lng], {
+    icon: L.divIcon({
+      html: '<div style="width:28px;height:28px;background:#059669;border:3px solid white;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 8px rgba(0,0,0,0.4)"></div>',
+      iconSize:[28,28], iconAnchor:[14,28], className:'',
+    }),
+  }).addTo(mapInstance);
+  document.getElementById('mapPinInfo').className = 'map-pin-info has-pin';
+  document.getElementById('mapPinInfo').textContent = `📍 ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+  document.getElementById('mapConfirmBtn').disabled = false;
+  document.getElementById('navionicsBtn').disabled  = false;
+}
+async function confirmMapPin() {
+  if (!mapPinLatLon) return;
+  const {lat, lng} = mapPinLatLon;
+  document.getElementById('gpsCoords').value = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+  const gpsS = document.getElementById('gpsStatus');
+  gpsS.style.display = 'block'; gpsS.className = 'gps-status got'; gpsS.textContent = '✓ Location pinned on map';
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
+    const d = await r.json();
+    if (d && d.address) {
+      const a = d.address;
+      const parts = [a.suburb||a.village||a.hamlet||a.town||a.city_district||'', a.city||a.town||a.county||'', a.state||''].filter(Boolean);
+      const placeName = parts.slice(0,2).join(', ');
+      if (placeName && !document.getElementById('spotName').value) document.getElementById('spotName').value = placeName;
+      gpsS.textContent = `✓ Pinned: ${placeName || 'Location set'}`;
+    }
+  } catch(e) {}
+  closeMapPicker();
+  const dateVal = document.getElementById('catchDate').value;
+  const timeVal = document.getElementById('catchTime').value || '12:00';
+  if (dateVal) lookupTide(dateVal.replace(/-/g,':') + ' ' + timeVal + ':00', lat, lng);
+}
+async function mapSearch() {
+  const q = document.getElementById('mapSearchInput').value.trim(); if (!q) return;
+  try {
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&countrycodes=au`);
+    const d = await r.json();
+    if (d && d.length) { const lat=parseFloat(d[0].lat), lon=parseFloat(d[0].lon); mapInstance.setView([lat,lon],13); placeMapPin(lat,lon); }
+    else showToast('Location not found — try a different search');
+  } catch(e) { showToast('Search failed — check internet connection'); }
+}
+function openNavionics() {
+  if (!mapPinLatLon) return;
+  window.open(`https://webapp.navionics.com/#boating&zoom=13&lat=${mapPinLatLon.lat}&lng=${mapPinLatLon.lng}`, '_blank');
+}
+
+/* ─────────────────────────────────────────────────────────────
+   LOCATIONS MANAGER
+   ───────────────────────────────────────────────────────────── */
+function showLocPicker() {
+  const wrap = document.getElementById('locPickerWrap');
+  const grid = document.getElementById('locPickerGrid');
+  pickerSelectedLoc = null;
+  document.getElementById('locLookupBtn').disabled = true;
+  if (!locations.length) {
+    grid.innerHTML = '<p style="font-size:12px;color:var(--mist);font-family:\'Courier New\',monospace;grid-column:1/-1">No saved locations — add some in Settings → My Fishing Locations</p>';
+    wrap.classList.add('show'); return;
+  }
+  grid.innerHTML = locations.map(l =>
+    `<button class="loc-btn" id="lpick-${l.id}" onclick="pickLocForTide('${l.id}')">
+      <span class="loc-name">${l.name}</span>
+      <span class="loc-state">${l.state}</span>
+    </button>`).join('');
+  wrap.classList.add('show');
+}
+function pickLocForTide(id) {
+  pickerSelectedLoc = locations.find(l => l.id === id);
+  document.querySelectorAll('.loc-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('lpick-' + id).classList.add('selected');
+  document.getElementById('locLookupBtn').disabled = false;
+}
+function lookupTideFromPicker() {
+  if (!pickerSelectedLoc || !pendingExifDateTime) return;
+  document.getElementById('locPickerWrap').classList.remove('show');
+  const lat = pickerSelectedLoc.lat.toFixed(5), lon = pickerSelectedLoc.lon.toFixed(5);
+  document.getElementById('gpsCoords').value = `${lat}, ${lon}`;
+  const gpsS = document.getElementById('gpsStatus');
+  gpsS.style.display = 'block'; gpsS.className = 'gps-status got';
+  gpsS.textContent = `📍 Location: ${pickerSelectedLoc.name}`;
+  lookupTide(pendingExifDateTime, pickerSelectedLoc.lat, pickerSelectedLoc.lon);
+  const rows = document.getElementById('exifRows');
+  if (rows) rows.innerHTML += `<div class="exif-row"><span class="ek">Location</span><span class="ev">${pickerSelectedLoc.name}</span></div>`;
+}
+function renderLocMgr() {
+  const el = document.getElementById('locMgrList'); if (!el) return;
+  if (!locations.length) { el.innerHTML = '<p style="font-size:12px;color:var(--mist);font-family:\'Courier New\',monospace">No locations saved yet.</p>'; return; }
+  el.innerHTML = locations.map(l => `
+    <div class="loc-item">
+      <div style="flex:1">
+        <div class="loc-item-name">${l.name}</div>
+        <div class="loc-item-coords">${l.state} · ${l.lat.toFixed(4)}, ${l.lon.toFixed(4)}</div>
+      </div>
+      <div class="loc-item-actions">
+        <button class="btn btn-danger btn-sm" onclick="deleteLoc('${l.id}')">✕</button>
+      </div>
+    </div>`).join('');
+}
+function openAddLoc()  { document.getElementById('addLocForm').style.display = 'block'; document.getElementById('nLocName').focus(); }
+function closeAddLoc() {
+  document.getElementById('addLocForm').style.display = 'none';
+  ['nLocName','nLocState','nLocLat','nLocLon'].forEach(i => document.getElementById(i).value = '');
+}
+function saveNewLoc() {
+  const name = document.getElementById('nLocName').value.trim();
+  const state = document.getElementById('nLocState').value.trim();
+  const lat = parseFloat(document.getElementById('nLocLat').value);
+  const lon = parseFloat(document.getElementById('nLocLon').value);
+  if (!name) { showToast('Enter a location name'); return; }
+  if (isNaN(lat)||isNaN(lon)) { showToast('Enter valid coordinates'); return; }
+  locations.push({id:'loc'+Date.now(), name, state, lat, lon});
+  saveLocs(); closeAddLoc(); renderLocMgr(); showToast('Location saved');
+}
+function deleteLoc(id) {
+  const l = locations.find(x => x.id === id);
+  confirmAction(`Delete "${l.name}"?`, () => {
+    locations = locations.filter(x => x.id !== id);
+    saveLocs(); renderLocMgr(); showToast('Location deleted');
+  });
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SETTINGS VIEW
+   ───────────────────────────────────────────────────────────── */
+function loadSettingsView() {
+  renderLocMgr();
+  const k = localStorage.getItem('bragdata_wtkey') || '';
+  document.getElementById('wtApiKey').value = k;
+  const st = document.getElementById('keyStatus');
+  if (k) { st.className = 'key-status saved'; st.textContent = '✓ API key saved'; }
+  else   { st.className = 'key-status empty'; st.textContent = 'No key saved yet'; }
+}
+function saveApiKey() {
+  const k = document.getElementById('wtApiKey').value.trim();
+  localStorage.setItem('bragdata_wtkey', k);
+  wtApiKey = k;
+  const st = document.getElementById('keyStatus');
+  if (k) { st.className = 'key-status saved'; st.textContent = '✓ Key saved to this device'; showToast('API key saved'); }
+  else   { st.className = 'key-status empty'; st.textContent = 'Key cleared'; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   TIDE AUTO-LOOKUP (WorldTides API)
+   ───────────────────────────────────────────────────────────── */
+async function lookupTide(exifDateTime, lat, lon) {
+  try {
+    const el  = document.getElementById('tideLookup');
+    const key = localStorage.getItem('bragdata_wtkey') || '';
+    if (!key) {
+      el.className = 'tide-lookup error show';
+      el.textContent = '⚠ No WorldTides API key — add one in Settings to auto-fill tide.';
+      return;
+    }
+    el.className = 'tide-lookup loading show'; el.textContent = '⌛ Looking up tide data…';
+    const dtStr    = exifDateTime.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3');
+    const catchTime = new Date(dtStr);
+    const catchUnix = Math.floor(catchTime.getTime() / 1000);
+    const dateStr  = dtStr.slice(0, 10);
+    const url = `https://www.worldtides.info/api/v3?extremes&lat=${lat}&lon=${lon}&date=${dateStr}&days=1&key=${key}`;
+    try {
+      const resp = await fetch(url);
+      const data = await resp.json();
+      if (data.status && data.status !== 200) {
+        el.className = 'tide-lookup error show';
+        el.textContent = `⚠ WorldTides error: ${data.error||data.status}. Check your API key in Settings.`;
+        return;
+      }
+      if (!data.extremes || !data.extremes.length) {
+        el.className = 'tide-lookup error show';
+        el.textContent = '⚠ No tide data returned for this location. Try a coastal GPS coordinate.';
+        return;
+      }
+      const exs = data.extremes;
+      let before = null, after = null;
+      for (const ex of exs) { if (ex.dt <= catchUnix) before = ex; else if (!after) after = ex; }
+      let tideState = '', tideDetail = '';
+      if (before && after) {
+        const pct = (catchUnix - before.dt) / (after.dt - before.dt);
+        if      (before.type==='Low'  && after.type==='High') tideState = pct<0.15?'Low': pct>0.85?'High':'Incoming';
+        else if (before.type==='High' && after.type==='Low')  tideState = pct<0.15?'High':pct>0.85?'Low':'Outgoing';
+        else tideState = 'Slack';
+        const fmt = t => new Date(t*1000).toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
+        tideDetail = `${before.type} ${fmt(before.dt)} (${before.height.toFixed(1)}m) → ${after.type} ${fmt(after.dt)} (${after.height.toFixed(1)}m)`;
+      } else if (before) { tideState = before.type==='High'?'High':'Low'; tideDetail = `Last extreme: ${before.type}`; }
+      else if (after)    { tideState = after.type==='High'?'Incoming':'Outgoing'; tideDetail = `Next extreme: ${after.type}`; }
+      if (tideState) {
+        const tideEl = document.getElementById('tide');
+        for (let i = 0; i < tideEl.options.length; i++) { if (tideEl.options[i].value === tideState) { tideEl.value = tideState; break; } }
+        el.className = 'tide-lookup success show';
+        el.textContent = `🌊 Tide auto-filled: ${tideState} — ${tideDetail}`;
+        document.getElementById('exifRows').innerHTML += `<div class="exif-row"><span class="ek">Tide</span><span class="ev">${tideState}</span></div>`;
+      }
+    } catch(err) { el.className = 'tide-lookup error show'; el.textContent = '⚠ Tide lookup requires internet — works when app is installed on your phone.'; }
+  } catch(outerErr) { console.warn('lookupTide outer error:', outerErr); }
+}
+
+async function lookupTideForEnrich(exifDateTime, lat, lon, catchObj) {
+  const key = localStorage.getItem('bragdata_wtkey') || ''; if (!key) return;
+  const dtStr = exifDateTime.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3');
+  const catchUnix = Math.floor(new Date(dtStr).getTime() / 1000);
+  const dateStr = dtStr.slice(0, 10);
+  const resp = await fetch(`https://www.worldtides.info/api/v3?extremes&lat=${lat}&lon=${lon}&date=${dateStr}&days=1&key=${key}`);
+  const data = await resp.json();
+  if (!data.extremes || !data.extremes.length) return;
+  let before=null, after=null;
+  for (const ex of data.extremes) { if (ex.dt <= catchUnix) before=ex; else if (!after) after=ex; }
+  if (before && after) {
+    const pct = (catchUnix - before.dt) / (after.dt - before.dt);
+    if      (before.type==='Low'  && after.type==='High') catchObj.tide = pct<0.15?'Low':pct>0.85?'High':'Incoming';
+    else if (before.type==='High' && after.type==='Low')  catchObj.tide = pct<0.15?'High':pct>0.85?'Low':'Outgoing';
+    else catchObj.tide = 'Slack';
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   WEATHER — Open-Meteo (free, no key required)
+   ───────────────────────────────────────────────────────────── */
+function degToCompass(deg) { return ['N','NE','E','SE','S','SW','W','NW'][Math.round(deg/45) % 8]; }
+function wmoToWeather(code) {
+  if (code == null) return null;
+  if (code === 0) return 'Sunny';
+  if (code <= 2)  return 'Cloudy';
+  if (code <= 3)  return 'Overcast';
+  if (code <= 67) return 'Rain';
+  if (code <= 77) return 'Overcast';
+  if (code <= 82) return 'Rain';
+  return 'Overcast';
+}
+async function fetchHistoricalWeather(lat, lon, date, time) {
+  const hour = time ? parseInt(time.split(':')[0]) : 12;
+  const [atmosResp, marineResp] = await Promise.allSettled([
+    fetch(`https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${date}&end_date=${date}&hourly=temperature_2m,windspeed_10m,winddirection_10m,weathercode&timezone=auto&windspeed_unit=kmh`),
+    fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&start_date=${date}&end_date=${date}&hourly=wave_height,swell_wave_height,swell_wave_direction,swell_wave_period&timezone=auto`),
+  ]);
+  const result = {};
+  if (atmosResp.status === 'fulfilled') {
+    const data = await atmosResp.value.json();
+    if (data.hourly) {
+      const hd = data.hourly, idx = Math.min(hour, (hd.time||[]).length-1);
+      result.airTemp   = hd.temperature_2m?.[idx]     ? Math.round(hd.temperature_2m[idx])  : null;
+      result.windSpeed = hd.windspeed_10m?.[idx]      ? Math.round(hd.windspeed_10m[idx])   : null;
+      result.windDir   = hd.winddirection_10m?.[idx] != null ? degToCompass(hd.winddirection_10m[idx]) : null;
+      result.weather   = wmoToWeather(hd.weathercode?.[idx]);
+    }
+  }
+  if (marineResp.status === 'fulfilled') {
+    try {
+      const mdata = await marineResp.value.json();
+      if (mdata.hourly) {
+        const hm = mdata.hourly, idx = Math.min(hour, (hm.time||[]).length-1);
+        result.swellHeight = hm.swell_wave_height?.[idx]     ? parseFloat(hm.swell_wave_height[idx].toFixed(1))     : null;
+        result.swellDir    = hm.swell_wave_direction?.[idx] != null ? degToCompass(hm.swell_wave_direction[idx])    : null;
+        result.swellPeriod = hm.swell_wave_period?.[idx]    ? Math.round(hm.swell_wave_period[idx])                : null;
+        result.waveHeight  = hm.wave_height?.[idx]          ? parseFloat(hm.wave_height[idx].toFixed(1))            : null;
+      }
+    } catch(e) {}
+  }
+  return Object.keys(result).length ? result : null;
+}
+async function reverseGeocodeSpot(lat, lon) {
+  const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+  const d = await r.json();
+  if (!d || !d.address) return null;
+  const a = d.address;
+  const parts = [a.suburb||a.village||a.hamlet||a.town||a.city_district||'', a.city||a.town||a.county||''].filter(Boolean);
+  return parts.slice(0,2).join(', ') || null;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   ENRICH ALL CATCHES
+   ───────────────────────────────────────────────────────────── */
+async function exportThenEnrich() {
+  await exportData();
+  enrichBackedUp = true;
+  document.getElementById('enrichBackupGate').style.display = 'none';
+  document.getElementById('enrichUnlocked').style.display   = 'block';
+  showToast('✓ Backup saved — you can now run enrichment');
+}
+async function runEnrichment() {
+  if (!enrichBackedUp) { showToast('Please export a backup first'); return; }
+  const eligible = catches.filter(c => c.date && c.gps);
+  if (!eligible.length) { showToast('No catches with GPS + date found to enrich'); return; }
+  document.getElementById('enrichUnlocked').style.display = 'none';
+  document.getElementById('enrichProgress').style.display = 'block';
+  document.getElementById('enrichResult').style.display   = 'none';
+  const logEl = document.getElementById('enrichLog');
+  const barEl = document.getElementById('enrichProgressBar');
+  const txtEl = document.getElementById('enrichProgressText');
+  let enriched=0, skipped=0, failed=0;
+  const log = msg => { logEl.innerHTML += msg + '<br>'; logEl.scrollTop = logEl.scrollHeight; };
+  const setProgress = (i, t) => { barEl.style.width = Math.round(i/t*100) + '%'; txtEl.textContent = `Processing ${i} of ${t}…`; };
+
+  for (let i = 0; i < eligible.length; i++) {
+    const c = eligible[i];
+    setProgress(i+1, eligible.length);
+    const parts = c.gps.split(',').map(s => parseFloat(s.trim()));
+    if (parts.length!==2 || isNaN(parts[0]) || isNaN(parts[1])) { skipped++; continue; }
+    const [lat, lon] = parts;
+    let changed = false;
+
+    // Tide
+    const wtKey = localStorage.getItem('bragdata_wtkey') || '';
+    if (!c.tide && wtKey && c.time) {
+      try {
+        await lookupTideForEnrich(c.date.replace(/-/g,':') + ' ' + c.time + ':00', lat, lon, c);
+        if (c.tide) { changed = true; log(`✓ ${c.species||'Catch'} ${c.date} — tide: ${c.tide}`); }
+      } catch(e) { log(`⚠ Tide failed: ${c.date}`); }
+    }
+    // Weather
+    if ((!c.weather || !c.windSpeed || !c.windDir || !c.airTemp) && c.time) {
+      try {
+        const wd = await fetchHistoricalWeather(lat, lon, c.date, c.time);
+        if (wd) {
+          if (!c.weather && wd.weather)       { c.weather=wd.weather;   changed=true; }
+          if (!c.windSpeed && wd.windSpeed)   { c.windSpeed=wd.windSpeed; changed=true; }
+          if (!c.windDir && wd.windDir)       { c.windDir=wd.windDir;   changed=true; }
+          if (!c.airTemp && wd.airTemp)       { c.airTemp=wd.airTemp;   changed=true; }
+          if (!c.swellHeight && wd.swellHeight){ c.swellHeight=wd.swellHeight; changed=true; }
+          if (!c.swellDir && wd.swellDir)     { c.swellDir=wd.swellDir; changed=true; }
+          if (!c.swellPeriod && wd.swellPeriod){ c.swellPeriod=wd.swellPeriod; changed=true; }
+          if (!c.waveHeight && wd.waveHeight) { c.waveHeight=wd.waveHeight; changed=true; }
+          if (changed) log(`✓ ${c.species||'Catch'} ${c.date} — weather + swell filled`);
+        }
+      } catch(e) { log(`⚠ Weather failed: ${c.date}`); failed++; }
+    }
+    // Spot name
+    if (!c.spotName) {
+      try { const name = await reverseGeocodeSpot(lat, lon); if (name) { c.spotName=name; changed=true; log(`✓ ${c.date} — spot: ${name}`); } } catch(e) {}
+    }
+    // State
+    if (!c.state) { const st = stateFromGPS(lat, lon); if (st) { c.state=st; changed=true; } }
+    // Moon
+    if (!c.moon && c.date) {
+      c.moon = getMoonPhase(c.date, c.time||'12:00'); changed=true;
+      log(`🌕 ${c.species||'Catch'} ${c.date} — ${c.moon.emoji} ${c.moon.name}`);
+    }
+
+    if (changed) { const idx = catches.findIndex(x => x.id===c.id); if (idx>=0) catches[idx]=c; enriched++; }
+    else skipped++;
+    await new Promise(r => setTimeout(r, 300));
+  }
+
+  saveC(); setProgress(eligible.length, eligible.length); txtEl.textContent = 'Complete!';
+  const resultEl = document.getElementById('enrichResult');
+  resultEl.style.display = 'block';
+  resultEl.style.color = enriched > 0 ? 'var(--catch)' : 'var(--mist)';
+  resultEl.textContent = `✓ Enriched ${enriched} catches · ${skipped} already complete · ${failed} failed`;
+  showToast(`✨ Enriched ${enriched} catches`);
+  enrichBackedUp = false;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SPECIES MANAGER
+   ───────────────────────────────────────────────────────────── */
+function renderSpMgr() {
+  const el = document.getElementById('spMgrList');
+  if (!species.length) { el.innerHTML = '<div class="no-catches">No species yet.</div>'; return; }
+  const cnt = {}; catches.forEach(c => { if (c.speciesId) cnt[c.speciesId] = (cnt[c.speciesId]||0) + Number(c.count||1); });
+  el.innerHTML = species.map(s => `
+    <div class="sp-item">
+      <div style="flex:1">
+        <div class="sp-item-name">${h(s.name)}</div>
+        ${s.nicknames&&s.nicknames.length ? `<div class="sp-item-nick">Also: ${h(s.nicknames.join(', '))}</div>` : ''}
+        ${s.notes ? `<div class="sp-item-nick">${h(s.notes)}</div>` : ''}
+        <div class="sp-item-cnt">${cnt[s.id]||0} fish logged</div>
+      </div>
+      <div class="sp-item-actions">
+        <button class="btn btn-sm" style="background:var(--foam);border:1px solid var(--line);color:var(--ink2)" data-id="${s.id}" onclick="openEditSp(this.dataset.id)">Edit</button>
+        <button class="btn btn-danger btn-sm" data-id="${s.id}" onclick="delSp(this.dataset.id)">✕</button>
+      </div>
+    </div>`).join('');
+}
+function openAddSp()  { document.getElementById('addSpForm').style.display = 'block'; document.getElementById('nSpName').focus(); }
+function closeAddSp() {
+  document.getElementById('addSpForm').style.display = 'none';
+  ['nSpName','nSpNick','nSpNotes'].forEach(i => document.getElementById(i).value = '');
+}
+function saveNewSp() {
+  const name = document.getElementById('nSpName').value.trim(); if (!name) { showToast('Enter a name'); return; }
+  const nick = document.getElementById('nSpNick').value.split(',').map(n => n.trim()).filter(Boolean);
+  species.push({id:'sp'+Date.now(), name, nicknames:nick, notes:document.getElementById('nSpNotes').value.trim()});
+  saveSp(); closeAddSp(); renderSpMgr(); showToast('Species added');
+}
+function openEditSp(id) {
+  const s = species.find(x => x.id === id); if (!s) return;
+  document.getElementById('eSid').value    = s.id;
+  document.getElementById('eSpName').value = s.name;
+  document.getElementById('eSpNick').value = (s.nicknames||[]).join(', ');
+  document.getElementById('eSpNotes').value = s.notes||'';
+  document.getElementById('editSpModal').classList.add('open');
+}
+function closeEditSp() { document.getElementById('editSpModal').classList.remove('open'); }
+function saveEditSp() {
+  const id = document.getElementById('eSid').value;
+  const idx = species.findIndex(s => s.id === id); if (idx < 0) return;
+  const name = document.getElementById('eSpName').value.trim(); if (!name) { showToast('Name required'); return; }
+  species[idx] = {...species[idx], name, notes:document.getElementById('eSpNotes').value.trim(), nicknames:document.getElementById('eSpNick').value.split(',').map(n=>n.trim()).filter(Boolean)};
+  saveSp(); closeEditSp(); renderSpMgr(); showToast('Species updated');
+}
+function delSp(id) {
+  const s = species.find(x => x.id === id);
+  const n = catches.filter(c => c.speciesId === id).length;
+  confirmAction(n > 0 ? `"${s.name}" has ${n} entries linked. Delete?` : `Delete "${s.name}"?`, () => {
+    species = species.filter(x => x.id !== id); saveSp(); renderSpMgr(); showToast('Species deleted');
+  });
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SAVE CATCH
+   ───────────────────────────────────────────────────────────── */
+async function saveCatch() {
+  const sName = document.getElementById('spName').value.trim();
+  if (!sName) { showToast('Select or add a species first'); return; }
+  try {
+    let moonData = null;
+    try { const d=document.getElementById('catchDate').value, t=document.getElementById('catchTime').value; if(d) moonData=getMoonPhase(d,t); } catch(me){}
+    const entry = {
+      id: Date.now(), timestamp: new Date().toISOString(),
+      spotName:    document.getElementById('spotName').value.trim(),
+      state:       document.getElementById('catchState').value,
+      date:        document.getElementById('catchDate').value,
+      time:        document.getElementById('catchTime').value,
+      moon:        moonData,
+      gps:         document.getElementById('gpsCoords').value,
+      waypointId:  document.getElementById('waypointId').value.trim(),
+      waypointName:document.getElementById('waypointName').value.trim(),
+      depth:       document.getElementById('depth').value,
+      waterTemp:   document.getElementById('waterTemp').value,
+      weather:     selWx,
+      airTemp:     document.getElementById('airTemp').value,
+      windSpeed:   document.getElementById('windSpeed').value,
+      windDir:     selWindDir,
+      tide:        document.getElementById('tide').value,
+      swellHeight: document.getElementById('swellHeight').value,
+      swellDir:    document.getElementById('swellDir').value,
+      swellPeriod: document.getElementById('swellPeriod').value,
+      waveHeight:  document.getElementById('waveHeight').value,
+      speciesId:   selSpId || null,
+      species:     sName,
+      weight:      document.getElementById('weight').value,
+      length:      document.getElementById('length').value,
+      count:       Number(document.getElementById('count').value) || 1,
+      method:      document.getElementById('method').value,
+      bait:        document.getElementById('bait').value.trim(),
+      lineWeight:  document.getElementById('lineWeight').value,
+      leader:      document.getElementById('leader').value,
+      disposition: document.getElementById('disposition').value,
+      notes:       document.getElementById('notes').value.trim(),
+      photos:      [],
+    };
+    try {
+      if (pendingPhotos.length) entry.photos = await savePendingPhotos(entry.id, pendingPhotos.slice());
+    } catch(pe) { console.warn('Photo save error (catch still saved):', pe); }
+    catches.unshift(entry);
+    saveC(); showToast('🐟 Catch saved!'); clearForm();
+  } catch(e) { console.error('Save error:', e); showToast('⚠ Error saving — please try again'); }
+}
+function clearForm() {
+  ['spotName','gpsCoords','waypointId','waypointName','depth','waterTemp','airTemp','windSpeed','bait','lineWeight','leader','notes']
+    .forEach(i => document.getElementById(i).value = '');
+  document.getElementById('count').value = '1';
+  ['method','disposition','tide','catchState','swellDir'].forEach(i => document.getElementById(i).value = '');
+  ['swellHeight','swellPeriod','waveHeight'].forEach(i => document.getElementById(i).value = '');
+  document.querySelectorAll('.weather-tile').forEach(t => t.classList.remove('selected'));
+  document.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('needle').style.transform = 'translateX(-50%) translateY(-100%) rotate(0deg)';
+  document.getElementById('gpsStatus').style.display = 'none';
+  selWx=''; selWindDir=''; clearSp(); pendingPhotos=[];
+  document.getElementById('photoPreviews').innerHTML = '';
+  document.getElementById('photoInput').value = '';
+  const now = new Date();
+  document.getElementById('catchDate').value = now.toISOString().slice(0, 10);
+  document.getElementById('catchTime').value = now.toTimeString().slice(0, 5);
+  updateMoonDisplay();
+}
+
+/* ─────────────────────────────────────────────────────────────
+   CATCHES LIST
+   ───────────────────────────────────────────────────────────── */
+function filterC(el, f) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active'); curFilter = f; renderCatches();
+}
+function setSort(field) {
+  if (sortField === field) sortDir = sortDir === 'desc' ? 'asc' : 'desc';
+  else { sortField = field; sortDir = (field==='species'||field==='state') ? 'asc' : 'desc'; }
+  ['date','species','length','state'].forEach(f => {
+    const chip  = document.getElementById('sort-' + f);
+    const arrow = document.getElementById('sort-' + f + '-arrow');
+    if (!chip || !arrow) return;
+    chip.classList.toggle('active', f === sortField);
+    arrow.textContent = f === sortField ? (sortDir==='desc' ? '↓' : '↑') : '';
+  });
+  renderCatches();
+}
+function filteredCatches() {
+  const now = new Date();
+  const filtered = catches.filter(c => {
+    if (curFilter==='all')       return true;
+    if (curFilter==='thisMonth') { const d=new Date(c.date); return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear(); }
+    if (curFilter==='thisYear')  return new Date(c.date).getFullYear() === now.getFullYear();
+    if (curFilter==='kept')      return c.disposition === 'Kept';
+    if (curFilter==='released')  return c.disposition && c.disposition.startsWith('Released');
+    return true;
+  });
+  filtered.sort((a, b) => {
+    let av, bv;
+    if      (sortField==='date')    { av=a.date+' '+(a.time||''); bv=b.date+' '+(b.time||''); }
+    else if (sortField==='species') { av=(a.species||'').toLowerCase(); bv=(b.species||'').toLowerCase(); }
+    else if (sortField==='length')  { av=Number(a.length)||0; bv=Number(b.length)||0; }
+    else if (sortField==='state')   { av=(a.state||'').toLowerCase(); bv=(b.state||'').toLowerCase(); }
+    else { av=a.date; bv=b.date; }
+    if (av < bv) return sortDir==='asc' ? -1 : 1;
+    if (av > bv) return sortDir==='asc' ?  1 : -1;
+    return 0;
+  });
+  return filtered;
+}
+function renderCatches() {
+  const list = document.getElementById('catchList');
+  const f    = filteredCatches();
+  document.getElementById('catchCount').textContent = `${f.length} entr${f.length===1?'y':'ies'}`;
+  if (!f.length) { list.innerHTML = '<div class="no-catches">No catches here yet. Go get \'em! 🎣</div>'; return; }
+  list.innerHTML = f.map(c => {
+    const d = c.date ? new Date(c.date+'T12:00:00').toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short',year:'numeric'}) : '';
+    const wx = [c.weather, c.windDir&&c.windSpeed?`${c.windDir} ${c.windSpeed}km/h`:(c.windDir||'')].filter(Boolean).join(' · ');
+    const photoHtml = c.photos && c.photos.length
+      ? `<div class="catch-photos">${c.photos.map((p,i) => {
+          if (!p) return '';
+          const thumb = typeof p==='object' ? p.thumb : (p.startsWith('data:') ? p : null);
+          const pid   = typeof p==='object' ? p.id    : (p.startsWith('data:') ? p : null);
+          if (!thumb) return '';
+          return `<img class="catch-photo" src="${thumb}" alt="Photo" data-photoid="${pid||''}" data-catchid="${c.id}" onclick="openFullPhoto(this)">`;
+        }).join('')}</div>` : '';
+    return `<div class="catch-card">
+      <div class="catch-header">
+        <div>
+          <div class="catch-species">${h(c.species)}${c.count>1?' ×'+c.count:''}${c.state?`<span class="catch-state-badge">${h(c.state)}</span>`:''}</div>
+          <div class="catch-date">${h(d)} ${h(c.time||'')} ${c.spotName?'· '+h(c.spotName):''} ${c.moon?'· '+c.moon.emoji+' '+c.moon.name:''}</div>
+        </div>
+        ${c.weight ? `<div class="catch-wt">${h(c.weight)}kg</div>` : ''}
+      </div>
+      <div class="catch-body">
+        ${c.method    ? `<div class="cd"><div class="lbl">Method</div><div class="val">${h(c.method)}</div></div>` : ''}
+        ${c.bait      ? `<div class="cd"><div class="lbl">Bait / Lure</div><div class="val">${h(c.bait)}</div></div>` : ''}
+        ${c.length    ? `<div class="cd"><div class="lbl">Length</div><div class="val">${h(c.length)}cm</div></div>` : ''}
+        ${c.depth     ? `<div class="cd"><div class="lbl">Depth</div><div class="val">${h(c.depth)}m</div></div>` : ''}
+        ${wx          ? `<div class="cd"><div class="lbl">Conditions</div><div class="val">${h(wx)}</div></div>` : ''}
+        ${c.tide      ? `<div class="cd"><div class="lbl">Tide</div><div class="val">${h(c.tide)}</div></div>` : ''}
+        ${c.swellHeight ? `<div class="cd"><div class="lbl">Swell</div><div class="val">${h(c.swellHeight)}m${c.swellDir?' '+h(c.swellDir):''}${c.swellPeriod?' @'+h(c.swellPeriod)+'s':''}</div></div>` : ''}
+        ${c.gps       ? `<div class="cd" style="grid-column:1/-1"><div class="lbl">GPS</div><div class="val" style="font-family:'Courier New',monospace;font-size:11px">${h(c.gps)}</div></div>` : ''}
+        ${(c.waypointId||c.waypointName) ? `<div class="cd" style="grid-column:1/-1"><div class="lbl">Waypoint</div><div class="val" style="font-family:'Courier New',monospace;font-size:11px">${h([c.waypointId,c.waypointName].filter(Boolean).join(' — '))}</div></div>` : ''}
+        ${c.disposition ? `<div class="cd"><div class="lbl">Disposition</div><div class="val">${h(c.disposition)}</div></div>` : ''}
+      </div>
+      ${c.notes ? `<div class="catch-notes">${h(c.notes)}</div>` : ''}
+      ${photoHtml}
+      <div class="catch-actions"><button class="btn btn-sm" style="background:var(--foam);border:1px solid var(--line);color:var(--ink2)" data-id="${c.id}" onclick="openEditCatch(Number(this.dataset.id))">Edit</button></div>
+    </div>`;
+  }).join('');
+}
+
+async function delCatch(id) {
+  confirmAction('Delete this catch?', async () => {
+    const c = catches.find(x => x.id === id);
+    if (c && c.photos) { for (const p of c.photos) { if (p && typeof p==='object' && p.id) await idbDel(p.id); } }
+    catches = catches.filter(x => x.id !== id);
+    saveC(); renderCatches(); showToast('Entry deleted');
+  });
+}
+
+/* ─────────────────────────────────────────────────────────────
+   EDIT CATCH MODAL
+   ───────────────────────────────────────────────────────────── */
+function openEditCatch(id) {
+  const c = catches.find(x => x.id === id); if (!c) return;
+  editPhotos = []; renderEditPhotos();
+  (async () => {
+    for (const p of (c.photos||[])) {
+      if (!p) continue;
+      if (typeof p === 'string' && p.startsWith('data:')) { editPhotos.push(p); }
+      else if (typeof p === 'object' && p.id) { const full = await getFullPhoto(p.id); editPhotos.push(full||p.thumb||''); }
+    }
+    renderEditPhotos();
+  })();
+  document.getElementById('eCatchId').value       = id;
+  document.getElementById('eCatchSpecies').value  = c.species||'';
+  document.getElementById('eCatchWeight').value   = c.weight||'';
+  document.getElementById('eCatchLength').value   = c.length||'';
+  document.getElementById('eCatchDate').value     = c.date||'';
+  document.getElementById('eCatchTime').value     = c.time||'';
+  document.getElementById('eCatchSpot').value     = c.spotName||'';
+  document.getElementById('eCatchState').value    = c.state||'';
+  document.getElementById('eCatchMethod').value   = c.method||'';
+  document.getElementById('eCatchBait').value     = c.bait||'';
+  document.getElementById('eCatchTide').value     = c.tide||'';
+  document.getElementById('eCatchSwellHeight').value = c.swellHeight||'';
+  document.getElementById('eCatchSwellDir').value    = c.swellDir||'';
+  document.getElementById('eCatchSwellPeriod').value = c.swellPeriod||'';
+  document.getElementById('eCatchWaveHeight').value  = c.waveHeight||'';
+  document.getElementById('eCatchDisp').value     = c.disposition||'';
+  document.getElementById('eCatchNotes').value    = c.notes||'';
+  document.getElementById('editCatchModal').classList.add('open');
+}
+function renderEditPhotos() {
+  const el = document.getElementById('eCatchPhotos'); if (!el) return;
+  if (!editPhotos.length) { el.innerHTML = '<span style="font-size:11px;color:var(--mist);font-family:Courier New,monospace">No photos</span>'; return; }
+  el.innerHTML = editPhotos.map((src, i) => `
+    <div style="position:relative;width:80px;height:80px;flex-shrink:0">
+      <img src="${src}" style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid var(--line)">
+      <button data-idx="${i}" onclick="removeEditPhoto(Number(this.dataset.idx))" style="position:absolute;top:-6px;right:-6px;background:var(--danger);color:white;border:none;border-radius:50%;width:20px;height:20px;font-size:13px;line-height:20px;text-align:center;cursor:pointer;padding:0">×</button>
+      <button data-src="${i}" onclick="measureEditPhoto(Number(this.dataset.src))" style="position:absolute;bottom:-6px;right:-6px;background:var(--water);color:white;border:none;border-radius:50%;width:22px;height:22px;font-size:13px;line-height:22px;text-align:center;cursor:pointer;padding:0" title="Measure fish">📏</button>
+    </div>`).join('');
+}
+function measureEditPhoto(i) { if (editPhotos[i]) openMeasureModal(editPhotos[i], 'eCatchLength'); }
+function removeEditPhoto(i) { editPhotos.splice(i, 1); renderEditPhotos(); }
+function addEditPhotos(e) {
+  Array.from(e.target.files).forEach(file => {
+    if (!file.type.startsWith('image/')) return;
+    compressPhoto(file, data => { editPhotos.push(data); renderEditPhotos(); });
+  });
+}
+function closeEditCatch() { document.getElementById('editCatchModal').classList.remove('open'); editPhotos = []; }
+async function saveEditCatch() {
+  const id  = Number(document.getElementById('eCatchId').value);
+  const idx = catches.findIndex(c => c.id === id); if (idx < 0) return;
+  try {
+    const updated = {
+      ...catches[idx],
+      species:     document.getElementById('eCatchSpecies').value.trim(),
+      weight:      document.getElementById('eCatchWeight').value,
+      length:      document.getElementById('eCatchLength').value,
+      date:        document.getElementById('eCatchDate').value,
+      time:        document.getElementById('eCatchTime').value,
+      spotName:    document.getElementById('eCatchSpot').value.trim(),
+      state:       document.getElementById('eCatchState').value,
+      method:      document.getElementById('eCatchMethod').value,
+      bait:        document.getElementById('eCatchBait').value.trim(),
+      tide:        document.getElementById('eCatchTide').value,
+      swellHeight: document.getElementById('eCatchSwellHeight').value,
+      swellDir:    document.getElementById('eCatchSwellDir').value,
+      swellPeriod: document.getElementById('eCatchSwellPeriod').value,
+      waveHeight:  document.getElementById('eCatchWaveHeight').value,
+      disposition: document.getElementById('eCatchDisp').value,
+      notes:       document.getElementById('eCatchNotes').value.trim(),
+      photos:      editPhotos.slice(),
+    };
+    if (updated.photos && updated.photos.length) updated.photos = await savePendingPhotos(updated.id, updated.photos);
+    catches[idx] = updated;
+    saveC(); closeEditCatch(); renderCatches(); showToast('Catch updated');
+  } catch(e) { showToast('Error saving — try removing some photos'); }
+}
+function delCatchFromEdit() {
+  const id = Number(document.getElementById('eCatchId').value);
+  closeEditCatch(); delCatch(id);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   CONFIRM DIALOG
+   ───────────────────────────────────────────────────────────── */
+function confirmAction(msg, callback) {
+  _confirmCallback = callback;
+  document.getElementById('confirmMsg').textContent = msg;
+  document.getElementById('confirmDialog').classList.add('open');
+}
+function confirmYes() { document.getElementById('confirmDialog').classList.remove('open'); if (_confirmCallback) _confirmCallback(); _confirmCallback = null; }
+function confirmNo()  { document.getElementById('confirmDialog').classList.remove('open'); _confirmCallback = null; }
+
+/* ─────────────────────────────────────────────────────────────
+   REPORTS
+   ───────────────────────────────────────────────────────────── */
+function buildRptFilters() {
+  const spSel = document.getElementById('rSp');
+  spSel.innerHTML = '<option value="">All species</option>';
+  species.forEach(s => spSel.innerHTML += `<option value="${s.id}">${s.name}</option>`);
+  const yrs = [...new Set(catches.map(c => c.date ? new Date(c.date+'T12:00:00').getFullYear() : null).filter(Boolean))].sort((a,b)=>b-a);
+  const yrSel = document.getElementById('rYr');
+  yrSel.innerHTML = '<option value="">All years</option>';
+  yrs.forEach(y => yrSel.innerHTML += `<option value="${y}">${y}</option>`);
+}
+function runReport() {
+  const spId = document.getElementById('rSp').value;
+  const mo   = document.getElementById('rMo').value;
+  const me   = document.getElementById('rMe').value;
+  const ti   = document.getElementById('rTi').value;
+  const wd   = document.getElementById('rWd').value;
+  const di   = document.getElementById('rDi').value;
+  const yr   = document.getElementById('rYr').value;
+  const sn   = document.getElementById('rSn').value.trim().toLowerCase();
+
+  const f = catches.filter(c => {
+    if (spId && c.speciesId !== spId) return false;
+    if (mo!=='' && c.date && String(new Date(c.date+'T12:00:00').getMonth()) !== mo) return false;
+    if (yr   && c.date && String(new Date(c.date+'T12:00:00').getFullYear()) !== yr) return false;
+    if (me   && c.method !== me) return false;
+    if (ti   && c.tide !== ti) return false;
+    if (wd   && c.windDir !== wd) return false;
+    if (di   && c.disposition !== di) return false;
+    if (sn   && !(c.spotName||'').toLowerCase().includes(sn)) return false;
+    return true;
+  });
+
+  const spName    = spId ? (species.find(s=>s.id===spId)||{name:'Unknown'}).name : 'All species';
+  const totalFish = f.reduce((a,c) => a + Number(c.count||1), 0);
+  const wts       = f.filter(c=>c.weight).map(c=>Number(c.weight));
+  const biggest   = wts.length ? Math.max(...wts) : null;
+  const avgW      = wts.length ? (wts.reduce((a,b)=>a+b,0)/wts.length).toFixed(2) : null;
+  const kept      = f.filter(c=>c.disposition==='Kept').length;
+
+  const parts = [];
+  if (spId)  parts.push(spName);
+  if (mo!=='') parts.push(MF[Number(mo)]);
+  if (yr)    parts.push(yr);
+  if (me)    parts.push(me);
+  if (ti)    parts.push(ti+' tide');
+  if (wd)    parts.push(wd+' wind');
+  if (sn)    parts.push('"'+sn+'"');
+  const desc = parts.length ? parts.join(' · ') : 'All catches';
+
+  if (!f.length) { document.getElementById('rptResults').innerHTML = '<div class="no-results">No catches match these filters.<br>Try broadening your search.</div>'; return; }
+
+  function agg(key, countKey) {
+    const m = {}; f.forEach(c => { if(c[key]) m[c[key]] = (m[c[key]]||0) + Number(c[countKey||'count']||1); });
+    return Object.entries(m).sort((a,b) => b[1]-a[1]);
+  }
+  const meths = agg('method','count'), maxMe = meths[0]?meths[0][1]:1;
+  const tides = agg('tide','count'),   maxTi = tides[0]?tides[0][1]:1;
+  const winds = agg('windDir','count'),maxWd = winds[0]?winds[0][1]:1;
+  const wxs   = agg('weather','count'),maxWx = wxs[0]?wxs[0][1]:1;
+
+  const baitMap = {}; f.forEach(c => { if(c.bait) baitMap[c.bait]=(baitMap[c.bait]||0)+Number(c.count||1); });
+  const baits = Object.entries(baitMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+
+  const moMap = {}; f.forEach(c => { if(c.date){const m=new Date(c.date+'T12:00:00').getMonth();moMap[m]=(moMap[m]||0)+Number(c.count||1);}});
+  const months = Object.entries(moMap).sort((a,b)=>b[1]-a[1]);
+  const maxMo = months[0]?months[0][1]:1;
+
+  const spMap = {}; f.forEach(c => {const s=c.species||'?';spMap[s]=(spMap[s]||0)+Number(c.count||1);});
+  const sps = Object.entries(spMap).sort((a,b)=>b[1]-a[1]);
+  const maxSp = sps[0]?sps[0][1]:1;
+
+  const spotMap = {}; f.forEach(c => {
+    const k=c.spotName||'Unknown spot';
+    if(!spotMap[k]) spotMap[k]={count:0,gps:c.gps||'',wp:[c.waypointId,c.waypointName].filter(Boolean).join(' — ')};
+    spotMap[k].count += Number(c.count||1);
+  });
+  const spots = Object.entries(spotMap).sort((a,b)=>b[1].count-a[1].count);
+  const depthVals = f.filter(c=>c.depth).map(c=>Number(c.depth));
+  const avgDepth  = depthVals.length ? (depthVals.reduce((a,b)=>a+b,0)/depthVals.length).toFixed(1) : null;
+
+  function bars(arr, max, gold=false) {
+    return arr.map(([l,n]) => `<div class="br">
+      <div class="bl" title="${l}">${l.length>10?l.slice(0,9)+'…':l}</div>
+      <div class="bt"><div class="bf${gold?' gold':''}" style="width:${Math.round(n/max*100)}%"></div></div>
+      <div class="bc">${n}</div></div>`).join('');
+  }
+
+  const moonMap = {}; f.forEach(c => {if(c.moon)moonMap[c.moon.name]=(moonMap[c.moon.name]||0)+Number(c.count||1);});
+  const moonSorted = Object.entries(moonMap).sort((a,b)=>b[1]-a[1]);
+  const maxMoon = moonSorted[0]?moonSorted[0][1]:1;
+  const moonEmojis = {'New Moon':'🌑','Waxing Crescent':'🌒','First Quarter':'🌓','Waxing Gibbous':'🌔','Full Moon':'🌕','Waning Gibbous':'🌖','Last Quarter':'🌗','Waning Crescent':'🌘'};
+
+  const swellMap = {}; f.forEach(c => {if(c.swellDir)swellMap[c.swellDir]=(swellMap[c.swellDir]||0)+Number(c.count||1);});
+  const swellSorted = Object.entries(swellMap).sort((a,b)=>b[1]-a[1]);
+  const maxSwell = swellSorted[0]?swellSorted[0][1]:1;
+  const swellHeights = f.filter(c=>c.swellHeight).map(c=>Number(c.swellHeight));
+  const avgSwell = swellHeights.length ? (swellHeights.reduce((a,b)=>a+b,0)/swellHeights.length).toFixed(1) : null;
+
+  document.getElementById('rptResults').innerHTML = `
+    <div class="res-summary"><h3>${desc}</h3><p>${f.length} session${f.length!==1?'s':''} · ${totalFish} fish total</p></div>
+    <div class="res-stats">
+      <div class="rs"><div class="num">${totalFish}</div><div class="lbl">Fish</div></div>
+      <div class="rs"><div class="num">${biggest||'—'}</div><div class="lbl">Biggest kg</div></div>
+      <div class="rs"><div class="num">${kept}</div><div class="lbl">Kept</div></div>
+    </div>
+    ${!spId&&sps.length>1?`<div class="isec"><div class="isec-hdr">Species</div><div class="isec-body">${bars(sps.slice(0,8),maxSp)}</div></div>`:''}
+    ${meths.length?`<div class="isec"><div class="isec-hdr">Methods that worked</div><div class="isec-body">${bars(meths,maxMe,true)}</div></div>`:''}
+    ${baits.length?`<div class="isec"><div class="isec-hdr">Baits &amp; lures</div><div class="isec-body">${baits.map(([b,n],i)=>`<div class="stat-row"><span class="sl">${i+1}. ${b}</span><span class="sv">${n} fish</span></div>`).join('')}</div></div>`:''}
+    ${tides.length?`<div class="isec"><div class="isec-hdr">Best tide state</div><div class="isec-body">${bars(tides,maxTi)}</div></div>`:''}
+    ${winds.length?`<div class="isec"><div class="isec-hdr">Wind direction</div><div class="isec-body">${bars(winds,maxWd)}</div></div>`:''}
+    ${swellSorted.length?`<div class="isec"><div class="isec-hdr">Swell direction</div><div class="isec-body">${bars(swellSorted,maxSwell)}${avgSwell?`<div class="stat-row" style="margin-top:8px"><span class="sl">Avg swell height</span><span class="sv">${avgSwell}m</span></div>`:''}</div></div>`:''}
+    ${wxs.length?`<div class="isec"><div class="isec-hdr">Weather conditions</div><div class="isec-body">${bars(wxs,maxWx)}</div></div>`:''}
+    ${mo===''&&months.length>1?`<div class="isec"><div class="isec-hdr">Best months</div><div class="isec-body">${months.map(([m,n])=>`<div class="br"><div class="bl">${MN[m]}</div><div class="bt"><div class="bf" style="width:${Math.round(n/maxMo*100)}%"></div></div><div class="bc">${n}</div></div>`).join('')}</div></div>`:''}
+    ${spots.length?`<div class="isec"><div class="isec-hdr">Productive spots</div><div class="isec-body">${spots.map(([name,d])=>`<div class="spot-card"><div class="spot-name">${h(name)} <span style="font-family:'Courier New',monospace;font-size:10px;color:var(--mist)">· ${d.count} fish</span></div>${d.wp?`<div class="spot-meta">Waypoint: ${d.wp}</div>`:''} ${d.gps?`<div class="spot-gps">GPS: ${d.gps}</div>`:''}</div>`).join('')}</div></div>`:''}
+    ${moonSorted.length?`<div class="isec"><div class="isec-hdr">Moon phases</div><div class="isec-body">${moonSorted.map(([m,n])=>`<div class="br"><div class="bl">${(moonEmojis[m]||'')+' '+m.split(' ')[0]}</div><div class="bt"><div class="bf" style="width:${Math.round(n/maxMoon*100)}%"></div></div><div class="bc">${n}</div></div>`).join('')}</div></div>`:''}
+    ${(avgW||avgDepth)?`<div class="isec"><div class="isec-hdr">Averages</div><div class="isec-body">${avgW?`<div class="stat-row"><span class="sl">Average weight</span><span class="sv">${avgW}kg</span></div>`:''} ${biggest?`<div class="stat-row"><span class="sl">Biggest</span><span class="sv hi">${biggest}kg</span></div>`:''} ${avgDepth?`<div class="stat-row"><span class="sl">Average depth</span><span class="sv">${avgDepth}m</span></div>`:''}</div></div>`:''}
+  `;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MOON / SOLUNAR VIEW
+   ───────────────────────────────────────────────────────────── */
+async function loadCatchPhotos(catch_) {
+  if (!catch_.photos || !catch_.photos.length) return [];
+  const results = [];
+  for (const p of catch_.photos) {
+    if (!p) continue;
+    if (typeof p==='string' && p.startsWith('data:')) results.push({id:p, dataUrl:p});
+    else if (typeof p==='object' && p.id) { const full=await getFullPhoto(p.id); results.push({id:p.id, dataUrl:full||p.thumb||''}); }
+  }
+  return results;
+}
+
+function renderMoonView() {
+  const compact = document.getElementById('moonCompact').checked;
+  const catchesWithMoon    = catches.filter(c => c.moon);
+  const catchesWithoutMoon = catches.filter(c => !c.moon && c.date);
+
+  // Solunar summary tiles
+  const tilesEl = document.getElementById('solunarTiles');
+  const solCounts = {Peak:0,Good:0,Fair:0,Slow:0};
+  catchesWithMoon.forEach(c => { const r=c.moon.solunar.rating; solCounts[r]=(solCounts[r]||0)+Number(c.count||1); });
+  tilesEl.innerHTML = [
+    {key:'Peak',emoji:'🔥',label:'Peak'},
+    {key:'Good',emoji:'⭐',label:'Good'},
+    {key:'Fair',emoji:'〰️',label:'Fair'},
+    {key:'Slow',emoji:'💤',label:'Slow'},
+  ].map(t => `
+    <div class="solunar-tile st-${t.key.toLowerCase()}">
+      <span class="st-emoji">${t.emoji}</span>
+      <span class="st-count">${solCounts[t.key]||0}</span>
+      <span class="st-label">${t.label}</span>
+    </div>`).join('');
+
+  // Phase groups
+  const groupsEl = document.getElementById('moonPhaseGroups');
+  const grouped = {};
+  catchesWithMoon.forEach(c => { const key=c.moon.name; if(!grouped[key]) grouped[key]=[]; grouped[key].push(c); });
+
+  let html = '', hasAny = false;
+  for (const phase of PHASE_ORDER) {
+    const group = grouped[phase.name]; if (!group || !group.length) continue;
+    hasAny = true;
+    const totalFish = group.reduce((a,c)=>a+Number(c.count||1),0);
+    const sc = SOLUNAR_COLORS[phase.solunarRating];
+    html += `<div class="phase-group">
+      <div class="phase-group-header">
+        <span class="ph-emoji">${phase.emoji}</span>
+        <span class="ph-name">${phase.name}</span>
+        <span class="ph-count">${totalFish} fish</span>
+        <span class="ph-solunar" style="background:${sc.bg};border:1px solid ${sc.border};color:${sc.text}">${phase.solunarRating}</span>
+      </div>
+      <div class="phase-group-cards">
+        ${group.sort((a,b)=>b.date>a.date?1:-1).map(c => compact ? renderCompactRow(c) : renderBragCard(c)).join('')}
+      </div>
+    </div>`;
+  }
+
+  if (!hasAny) {
+    groupsEl.innerHTML = catchesWithoutMoon.length
+      ? `<div class="moon-empty">${catchesWithoutMoon.length} catches need moon data.<br>Run <strong>Enrich All Catches</strong> in Settings to add it.</div>`
+      : '<div class="moon-empty">No catches logged yet. Go get \'em! 🎣</div>';
+    return;
+  }
+  if (catchesWithoutMoon.length) html += `<div style="text-align:center;padding:14px;font-size:11px;font-family:'Courier New',monospace;color:var(--mist)">${catchesWithoutMoon.length} catches missing moon data — run Enrich in Settings</div>`;
+  groupsEl.innerHTML = html;
+
+  if (!compact) {
+    catchesWithMoon.forEach(c => {
+      if (!c.photos || !c.photos.length) return;
+      loadCatchPhotos(c).then(photos => {
+        photos.forEach((p, i) => {
+          const container = document.getElementById('mcp-' + c.id); if (!container) return;
+          const placeholder = container.querySelector('[data-idx="' + i + '"]'); if (!placeholder) return;
+          const img = document.createElement('img');
+          img.className = 'catch-photo'; img.src = p.dataUrl; img.alt = 'Photo';
+          img.onclick = () => openLightbox(p.dataUrl);
+          placeholder.replaceWith(img);
+        });
+      });
+    });
+  }
+}
+
+function renderCompactRow(c) {
+  const sizeStr = [c.weight?c.weight+'kg':null, c.length?c.length+'cm':null].filter(Boolean).join(' · ') || '—';
+  const method  = c.method ? c.method.replace('Lure — ','') : '—';
+  const d = c.date ? new Date(c.date+'T12:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'2-digit'}) : '';
+  return `<div class="compact-row">
+    <span class="cr-species">${h(c.species)}${c.count>1?' ×'+c.count:''}</span>
+    <span class="cr-size">${h(sizeStr)}</span>
+    <span class="cr-method">${h(method)}</span>
+    <span class="cr-date">${d}</span>
+  </div>`;
+}
+
+function renderBragCard(c) {
+  const d = c.date ? new Date(c.date+'T12:00:00').toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short',year:'numeric'}) : '';
+  const wx = [c.weather, c.windDir&&c.windSpeed?`${c.windDir} ${c.windSpeed}km/h`:(c.windDir||'')].filter(Boolean).join(' · ');
+  const photoHtml = c.photos && c.photos.length
+    ? `<div class="catch-photos" id="mcp-${c.id}">${c.photos.map((_,i) => `<div class="photo-placeholder" data-idx="${i}"></div>`).join('')}</div>`
+    : '';
+  return `<div class="catch-card" style="border-radius:0;border-left:none;border-right:none;border-top:none;margin-bottom:0">
+    <div class="catch-header" style="border-radius:0">
+      <div>
+        <div class="catch-species">${h(c.species)}${c.count>1?' ×'+c.count:''}</div>
+        <div class="catch-date">${h(d)} ${h(c.time||'')} ${c.spotName?'· '+h(c.spotName):''}</div>
+      </div>
+      ${c.weight ? `<div class="catch-wt">${h(c.weight)}kg</div>` : ''}
+    </div>
+    <div class="catch-body">
+      ${c.method?`<div class="cd"><div class="lbl">Method</div><div class="val">${h(c.method)}</div></div>`:''}
+      ${c.bait?`<div class="cd"><div class="lbl">Bait / Lure</div><div class="val">${h(c.bait)}</div></div>`:''}
+      ${c.length?`<div class="cd"><div class="lbl">Length</div><div class="val">${h(c.length)}cm</div></div>`:''}
+      ${wx?`<div class="cd"><div class="lbl">Conditions</div><div class="val">${h(wx)}</div></div>`:''}
+      ${c.tide?`<div class="cd"><div class="lbl">Tide</div><div class="val">${h(c.tide)}</div></div>`:''}
+    </div>
+    ${c.notes?`<div class="catch-notes">${h(c.notes)}</div>`:''}
+    ${photoHtml}
+  </div>`;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   EXPORT / IMPORT
+   ───────────────────────────────────────────────────────────── */
+async function exportData() {
+  const statusEl = document.getElementById('exportStatus');
+  statusEl.style.display = 'block'; statusEl.textContent = '⌛ Preparing export — loading photos…';
+  try {
+    const exportObj = {
+      version: 2, exportDate: new Date().toISOString(),
+      catches: [], species, locations,
+      settings: {wtApiKey: localStorage.getItem('bragdata_wtkey')||''},
+    };
+    for (const c of catches) {
+      const catchCopy = {...c, photos:[]};
+      for (const p of (c.photos||[])) {
+        if (!p) continue;
+        if (typeof p==='string' && p.startsWith('data:')) catchCopy.photos.push(p);
+        else if (typeof p==='object' && p.id) { const full=await getFullPhoto(p.id); if(full) catchCopy.photos.push(full); else if(p.thumb) catchCopy.photos.push(p.thumb); }
+      }
+      exportObj.catches.push(catchCopy);
+    }
+    const json = JSON.stringify(exportObj);
+    const blob = new Blob([json], {type:'application/json'});
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = `bragdata-backup-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    const sizeMB = (json.length/1024/1024).toFixed(1);
+    statusEl.textContent = `✓ Exported ${exportObj.catches.length} catches (${sizeMB}MB) — file saved`;
+    statusEl.style.color = 'var(--catch)';
+  } catch(e) { statusEl.textContent = '✗ Export failed — ' + e.message; statusEl.style.color = 'var(--danger)'; }
+}
+
+async function importData(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const statusEl = document.getElementById('importStatus');
+  statusEl.style.display = 'block'; statusEl.style.color = 'var(--mist)'; statusEl.textContent = '⌛ Reading backup file…';
+  try {
+    const data = JSON.parse(await file.text());
+    if (!data.catches || !Array.isArray(data.catches)) throw new Error('Invalid backup file format');
+    let newCatches=0, updatedCatches=0, newSpecies=0;
+    for (const c of data.catches) {
+      const existing = catches.findIndex(x => x.id===c.id);
+      const processedPhotos = [];
+      for (let i=0; i<(c.photos||[]).length; i++) {
+        const p = c.photos[i];
+        if (p && p.startsWith('data:')) { const {id,thumb}=await savePhoto(c.id,i,p); processedPhotos.push({id,thumb}); }
+      }
+      const importedCatch = {...c, photos:processedPhotos};
+      if (existing>=0) { catches[existing]=importedCatch; updatedCatches++; }
+      else { catches.push(importedCatch); newCatches++; }
+    }
+    for (const s of (data.species||[])) { if (!species.find(x=>x.id===s.id)) { species.push(s); newSpecies++; } }
+    for (const l of (data.locations||[])) { if (!locations.find(x=>x.id===l.id)) locations.push(l); }
+    if (data.settings && data.settings.wtApiKey && !localStorage.getItem('bragdata_wtkey')) {
+      localStorage.setItem('bragdata_wtkey', data.settings.wtApiKey);
+      wtApiKey = data.settings.wtApiKey;
+    }
+    catches.sort((a,b) => ((b.date+' '+(b.time||'')) > (a.date+' '+(a.time||''))) ? 1 : -1);
+    catches.reverse();
+    saveC(); saveSp(); saveLocs();
+    statusEl.style.color = 'var(--catch)';
+    statusEl.textContent = `✓ Imported: ${newCatches} new catches, ${updatedCatches} updated, ${newSpecies} new species`;
+    showToast(`✓ Import complete — ${newCatches+updatedCatches} catches loaded`);
+    e.target.value = '';
+  } catch(err) { statusEl.style.color = 'var(--danger)'; statusEl.textContent = '✗ Import failed — ' + err.message; }
+}
+
+/* ─────────────────────────────────────────────────────────────
+   BOOT
+   ───────────────────────────────────────────────────────────── */
+init();
+</script>
+</body>
+</html>
