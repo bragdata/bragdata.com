@@ -1690,6 +1690,21 @@ body.map-open .content > #view-map { display: flex; }
   </div>
 
   <div class="settings-section">
+    <div class="settings-section-hdr">🏠 Home Fishing Location</div>
+    <div class="settings-body">
+      <p>When a catch has no GPS data, enrichment will use this location to pull weather and swell data. Set it to your most fished area.</p>
+      <div class="field" style="margin-bottom:10px">
+        <label>Default Location</label>
+        <select id="homeLocSelect" onchange="saveHomeLoc()" style="width:100%;border:1.5px solid var(--line);border-radius:var(--radius-sm);padding:10px 12px;font-size:14px;font-family:'Georgia',serif;color:var(--ink);background:var(--foam);-webkit-appearance:none;appearance:none;">
+          <option value="">— None —</option>
+        </select>
+      </div>
+      <div id="homeLocCoords" style="font-size:11px;font-family:'Courier New',monospace;color:var(--mist);margin-top:4px;"></div>
+      <p style="margin-top:10px">This location is also used for bulk imports where no GPS is present in the photo.</p>
+    </div>
+  </div>
+
+  <div class="settings-section">
     <div class="settings-section-hdr">💾 Backup &amp; Restore</div>
     <div class="settings-body">
       <p>Export everything — catches, photos, species, locations — to a single backup file. Use this before moving to a new device or published app URL.</p>
@@ -2228,7 +2243,7 @@ function showView(v) {
   if (v === 'moon')     renderMoonView();
   if (v === 'reports')  buildRptFilters();
   if (v === 'species')  renderSpMgr();
-  if (v === 'settings') loadSettingsView();
+  if (v === 'settings') { loadSettingsView(); loadHomeLocSelect(); }
   if (v === 'map')      { document.body.classList.add('map-open'); initMapTabFilters(); setTimeout(renderAllCatchesMap, 100); } else { document.body.classList.remove('map-open'); }
   if (v === 'map')      { document.body.classList.add('map-open'); initMapTabFilters(); setTimeout(renderAllCatchesMap, 100); } else { document.body.classList.remove('map-open'); }
 }
@@ -3247,7 +3262,7 @@ async function exportThenEnrich() {
 async function runEnrichment() {
   if (!enrichBackedUp) { showToast('Please export a backup first'); return; }
   const eligible = catches.filter(c => c.date && c.gps);
-  if (!eligible.length) { showToast('No catches with GPS + date found to enrich'); return; }
+  if (!catches.filter(c=>c.date).length) { showToast('No catches with GPS + date found to enrich'); return; }
   document.getElementById('enrichUnlocked').style.display = 'none';
   document.getElementById('enrichProgress').style.display = 'block';
   document.getElementById('enrichResult').style.display   = 'none';
@@ -3258,12 +3273,24 @@ async function runEnrichment() {
   const log = msg => { logEl.innerHTML += msg + '<br>'; logEl.scrollTop = logEl.scrollHeight; };
   const setProgress = (i, t) => { barEl.style.width = Math.round(i/t*100) + '%'; txtEl.textContent = `Processing ${i} of ${t}…`; };
 
-  for (let i = 0; i < eligible.length; i++) {
-    const c = eligible[i];
-    setProgress(i+1, eligible.length);
-    const parts = c.gps.split(',').map(s => parseFloat(s.trim()));
-    if (parts.length!==2 || isNaN(parts[0]) || isNaN(parts[1])) { skipped++; continue; }
-    const [lat, lon] = parts;
+  // Also include catches without GPS using home location
+  const allEligible = catches.filter(c => c.date);
+  const eligible2 = allEligible;
+
+  for (let i = 0; i < eligible2.length; i++) {
+    const c = eligible2[i];
+    setProgress(i+1, eligible2.length);
+    let lat, lon, usingHomeLoc = false;
+    if (c.gps) {
+      const parts = c.gps.split(',').map(s => parseFloat(s.trim()));
+      if (parts.length!==2 || isNaN(parts[0]) || isNaN(parts[1])) { skipped++; continue; }
+      lat = parts[0]; lon = parts[1];
+    } else {
+      // No GPS — use home location for weather/swell
+      const homeLoc = getHomeLocation();
+      if (!homeLoc) { skipped++; continue; }
+      lat = homeLoc.lat; lon = homeLoc.lon; usingHomeLoc = true;
+    }
     let changed = false;
 
     // Tide
@@ -4651,8 +4678,73 @@ async function saveBulkCatches() {
 
   saveC();
   closeBulkModal();
-  showToast('Saved ' + saved + ' catches from bulk import');
+  showToast('Saved ' + saved + ' catches — enriching in background...');
   showView('catches');
+
+  // Background enrichment — runs after UI updates, non-blocking
+  setTimeout(() => enrichBulkCatches(catches.slice(0, saved)), 500);
+}
+
+async function enrichBulkCatches(newCatches) {
+  let enriched = 0;
+  for (const c of newCatches) {
+    if (!c.date) continue;
+    let lat, lon;
+    if (c.gps) {
+      const parts = c.gps.split(',').map(s => parseFloat(s.trim()));
+      if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) continue;
+      lat = parts[0]; lon = parts[1];
+    } else {
+      const homeLoc = getHomeLocation();
+      if (!homeLoc) continue;
+      lat = homeLoc.lat; lon = homeLoc.lon;
+    }
+    let changed = false;
+
+    // Weather — Open-Meteo (free, no key)
+    try {
+      const wd = await fetchHistoricalWeather(lat, lon, c.date, c.time);
+      if (wd) {
+        if (!c.weather   && wd.weather)    { c.weather   = wd.weather;    changed = true; }
+        if (!c.windSpeed && wd.windSpeed)  { c.windSpeed = wd.windSpeed;  changed = true; }
+        if (!c.windDir   && wd.windDir)    { c.windDir   = wd.windDir;    changed = true; }
+        if (!c.airTemp   && wd.airTemp)    { c.airTemp   = wd.airTemp;    changed = true; }
+        if (!c.swellHeight && wd.swellHeight) { c.swellHeight = wd.swellHeight; changed = true; }
+        if (!c.swellDir  && wd.swellDir)   { c.swellDir  = wd.swellDir;   changed = true; }
+        if (!c.swellPeriod && wd.swellPeriod) { c.swellPeriod = wd.swellPeriod; changed = true; }
+      }
+    } catch(e) {}
+
+    // Tide — WorldTides (requires API key)
+    const wtKey = localStorage.getItem('bragmaster_wtkey') || '';
+    if (!c.tide && wtKey && c.time) {
+      try {
+        await lookupTideForEnrich(c.date.replace(/-/g,':') + ' ' + c.time + ':00', lat, lon, c);
+        if (c.tide) changed = true;
+      } catch(e) {}
+    }
+
+    // Spot name
+    if (!c.spotName) {
+      try {
+        const name = await reverseGeocodeSpot(lat, lon);
+        if (name) { c.spotName = name; changed = true; }
+      } catch(e) {}
+    }
+
+    if (changed) {
+      const idx = catches.findIndex(x => x.id === c.id);
+      if (idx >= 0) catches[idx] = c;
+      enriched++;
+    }
+
+    await new Promise(r => setTimeout(r, 400)); // rate limit API calls
+  }
+
+  if (enriched > 0) {
+    saveC();
+    showToast('Enriched ' + enriched + ' catches with weather & tide data');
+  }
 }
 
 function closeBulkModal() {
@@ -4699,6 +4791,43 @@ function schedBulkClose(gi) {
     const dd = document.getElementById('bg_sp_drop_' + gi);
     if (dd) dd.classList.remove('open');
   }, 200);
+}
+
+
+/* HOME FISHING LOCATION */
+function saveHomeLoc() {
+  const sel = document.getElementById('homeLocSelect');
+  const id  = sel.value;
+  localStorage.setItem('bragmaster_homeloc', id);
+  const loc = locations.find(l => l.id === id);
+  const coordEl = document.getElementById('homeLocCoords');
+  if (loc && coordEl) {
+    coordEl.textContent = loc.lat.toFixed(5) + ', ' + loc.lon.toFixed(5) + ' · ' + loc.state;
+  } else if (coordEl) {
+    coordEl.textContent = '';
+  }
+}
+
+function loadHomeLocSelect() {
+  const sel = document.getElementById('homeLocSelect');
+  if (!sel) return;
+  const saved = localStorage.getItem('bragmaster_homeloc') || '';
+  sel.innerHTML = '<option value="">— None —</option>'
+    + locations.map(l => '<option value="' + l.id + '"' + (l.id===saved?' selected':'') + '>' + l.name + ' (' + l.state + ')</option>').join('');
+  // Show coords for current selection
+  const loc = locations.find(l => l.id === saved);
+  const coordEl = document.getElementById('homeLocCoords');
+  if (loc && coordEl) coordEl.textContent = loc.lat.toFixed(5) + ', ' + loc.lon.toFixed(5) + ' · ' + loc.state;
+}
+
+function getHomeLocation() {
+  const id = localStorage.getItem('bragmaster_homeloc') || '';
+  if (id) {
+    const loc = locations.find(l => l.id === id);
+    if (loc) return loc;
+  }
+  // Default to Port Kembla if nothing saved
+  return locations.find(l => l.name && l.name.toLowerCase().includes('port kembla')) || locations[0] || null;
 }
 
 /* ─────────────────────────────────────────────────────────────
