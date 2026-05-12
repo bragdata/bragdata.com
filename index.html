@@ -3115,7 +3115,7 @@ async function fetchWWSwell(lat, lon, date, hour) {
   const daysAgo   = (Date.now() - catchDate.getTime()) / (1000*60*60*24);
   if (daysAgo > 7) return null; // WW forecast doesn't go back far enough
 
-  const url = 'https://api.willyweather.com.au/v2/' + WW_KEY + '/locations/' + nearest.id + '/weather.json?forecasts=swell&days=1&startDate=' + date;
+  const url = 'https://bragmaster-proxy.lee-edwards-au.workers.dev?location=' + nearest.id + '&forecasts=swell&days=1&startDate=' + date;
   const resp = await fetch(url);
   const data = await resp.json();
   const swellDay = data.forecasts && data.forecasts.swell && data.forecasts.swell.days && data.forecasts.swell.days[0];
@@ -4210,7 +4210,7 @@ async function loadConditions() {
   el.innerHTML = '<div class="cond-loading">Fetching latest conditions...</div>';
   upd.textContent = '';
   try {
-    const url = 'https://api.willyweather.com.au/v2/' + WW_KEY + '/locations/' + loc.id + '/weather.json?forecasts=swell,tides,wind,weather&days=1';
+    const url = 'https://bragmaster-proxy.lee-edwards-au.workers.dev?location=' + loc.id + '&forecasts=swell,tides,wind,weather&days=1';
     const resp = await fetch(url);
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const data = await resp.json();
