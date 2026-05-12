@@ -1062,6 +1062,9 @@ body.map-open .content > #view-map { display: flex; }
   border: 1px solid var(--line); border-top: none;
   border-radius: 0 0 var(--radius) var(--radius); overflow: hidden;
 }
+.moon-card { border-radius: 0; border-left: none; border-right: none; margin-bottom: 0; border-top: 1px solid var(--line); }
+.moon-card:first-child { border-top: none; }
+.moon-card-header { border-radius: 0; }
 
 .compact-row {
   display: flex; align-items: center; gap: 10px; padding: 9px 14px;
@@ -3661,8 +3664,8 @@ function renderBragCard(c) {
   const photoHtml = c.photos && c.photos.length
     ? `<div class="catch-photos" id="mcp-${c.id}">${c.photos.map((_,i) => `<div class="photo-placeholder" data-idx="${i}"></div>`).join('')}</div>`
     : '';
-  return `<div class="catch-card" style="border-radius:0;border-left:none;border-right:none;border-top:none;margin-bottom:0">
-    <div class="catch-header" style="border-radius:0">
+  return `<div class="catch-card moon-card">
+    <div class="catch-header moon-card-header">
       <div>
         <div class="catch-species">${h(c.species)}${c.count>1?' ×'+c.count:''}</div>
         <div class="catch-date">${h(d)} ${h(c.time||'')} ${c.spotName?'· '+h(c.spotName):''}</div>
