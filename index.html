@@ -52,36 +52,83 @@
 .cond-updated { font-size:10px; font-family:'Courier New',monospace; color:var(--mist); text-align:right; margin-bottom:10px; }
 
 /* 17. BULK IMPORT */
-.bulk-modal-bg { display:none; position:fixed; inset:0; background:rgba(10,22,40,0.92); z-index:800; flex-direction:column; }
+/* Modal shell */
+.bulk-modal-bg { display:none; position:fixed; inset:0; background:rgba(10,22,40,0.95); z-index:800; flex-direction:column; }
 .bulk-modal-bg.open { display:flex; }
 .bulk-modal { background:var(--foam); display:flex; flex-direction:column; width:100%; height:100vh; overflow:hidden; }
 .bulk-header { background:var(--ink); padding:12px 16px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
 .bulk-header h2 { color:#e0f7fa; font-size:16px; font-weight:400; }
 .bulk-header-sub { color:#64b5d9; font-size:10px; font-family:'Courier New',monospace; margin-top:2px; }
-.bulk-close { background:rgba(255,255,255,0.1); border:none; color:#e0f7fa; font-size:20px; width:36px; height:36px; border-radius:50%; cursor:pointer; }
+.bulk-close { background:rgba(255,255,255,0.1); border:none; color:#e0f7fa; font-size:20px; width:36px; height:36px; border-radius:50%; cursor:pointer; flex-shrink:0; }
+/* Progress */
 .bulk-progress-bar-wrap { background:var(--ink2); padding:8px 16px; flex-shrink:0; }
 .bulk-progress-bar { background:var(--line); border-radius:4px; height:6px; overflow:hidden; }
 .bulk-progress-fill { height:100%; background:var(--catch); border-radius:4px; transition:width 0.2s; width:0%; }
 .bulk-progress-text { font-size:10px; font-family:'Courier New',monospace; color:#64b5d9; margin-top:4px; }
-.bulk-content { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:12px 14px 80px; }
-.bulk-group { background:var(--surface); border-radius:var(--radius); border:1px solid var(--line); margin-bottom:14px; overflow:hidden; }
-.bulk-group-header { background:var(--ink); padding:10px 14px; display:flex; align-items:center; justify-content:space-between; }
-.bulk-group-num { color:#64b5d9; font-size:10px; font-family:'Courier New',monospace; }
-.bulk-group-date { color:#e0f7fa; font-size:13px; }
-.bulk-group-gps { color:#64b5d9; font-size:10px; font-family:'Courier New',monospace; margin-top:2px; }
-.bulk-group-photos { display:flex; gap:6px; padding:10px 14px; flex-wrap:wrap; overflow-x:auto; }
-.bulk-thumb { width:64px; height:64px; object-fit:cover; border-radius:6px; border:1px solid var(--line); flex-shrink:0; }
-.bulk-thumb.no-exif { opacity:0.5; border:1px dashed var(--mist); }
+/* Selection mode toolbar */
+.bulk-sel-toolbar { background:var(--ink2); padding:8px 14px; display:none; align-items:center; justify-content:space-between; flex-shrink:0; }
+.bulk-sel-toolbar.show { display:flex; }
+.bulk-sel-count { color:#e0f7fa; font-size:12px; font-family:'Courier New',monospace; }
+.bulk-sel-actions { display:flex; gap:8px; }
+.bulk-sel-btn { border:none; border-radius:var(--radius-sm); padding:7px 14px; font-size:12px; font-family:'Courier New',monospace; cursor:pointer; }
+.bulk-sel-group { background:var(--catch); color:white; }
+.bulk-sel-cancel { background:rgba(255,255,255,0.15); color:#e0f7fa; }
+/* Tile grid — PHASE 1 */
+.bulk-tile-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:3px; padding:3px; }
+.bulk-tile {
+  position:relative; aspect-ratio:1; overflow:hidden;
+  background:var(--ink2); cursor:pointer;
+  border:2px solid transparent; transition:border-color 0.15s;
+  border-radius:4px;
+}
+.bulk-tile.selected { border-color:var(--catch); }
+.bulk-tile.grouped { border-color:var(--dawn); }
+.bulk-tile img { width:100%; height:100%; object-fit:cover; display:block; pointer-events:none; }
+/* Tile badges */
+.bulk-tile-badges { position:absolute; top:4px; left:4px; display:flex; gap:3px; flex-wrap:wrap; }
+.bulk-badge { font-size:9px; padding:2px 4px; border-radius:3px; font-family:'Courier New',monospace; font-weight:600; line-height:1; }
+.bulk-badge-gps { background:rgba(5,150,105,0.85); color:white; }
+.bulk-badge-date { background:rgba(14,116,144,0.85); color:white; }
+.bulk-badge-noexif { background:rgba(100,100,100,0.75); color:white; }
+/* Tile action buttons */
+.bulk-tile-x { position:absolute; top:4px; right:4px; background:rgba(220,38,38,0.85); border:none; color:white; width:22px; height:22px; border-radius:50%; font-size:14px; line-height:22px; text-align:center; cursor:pointer; padding:0; display:none; }
+.bulk-tile-check { position:absolute; bottom:4px; right:4px; background:rgba(5,150,105,0.85); border:none; color:white; width:22px; height:22px; border-radius:50%; font-size:13px; line-height:22px; text-align:center; cursor:pointer; padding:0; display:none; }
+.bulk-tile.selected .bulk-tile-x,
+.bulk-tile.selected .bulk-tile-check { display:block; }
+/* Group count badge */
+.bulk-tile-group-count { position:absolute; bottom:4px; left:4px; background:rgba(217,119,6,0.9); color:white; font-size:10px; font-family:'Courier New',monospace; font-weight:700; padding:2px 5px; border-radius:3px; display:none; }
+.bulk-tile.grouped .bulk-tile-group-count { display:block; }
+/* Selected overlay */
+.bulk-tile-sel-overlay { position:absolute; inset:0; background:rgba(5,150,105,0.2); display:none; pointer-events:none; }
+.bulk-tile.selected .bulk-tile-sel-overlay { display:block; }
+/* Review phase — PHASE 2 */
+.bulk-content { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:8px 10px 100px; min-height:0; }
+.bulk-group-card { background:var(--surface); border-radius:var(--radius); border:1px solid var(--line); margin-bottom:14px; overflow:hidden; }
+.bulk-group-hdr { background:var(--ink); padding:10px 14px; }
+.bulk-group-meta { color:#64b5d9; font-size:10px; font-family:'Courier New',monospace; margin-top:2px; }
+.bulk-group-title { color:#e0f7fa; font-size:13px; }
+.bulk-group-thumbs { display:flex; gap:5px; padding:8px 12px; flex-wrap:wrap; }
+.bulk-group-thumb { width:56px; height:56px; object-fit:cover; border-radius:5px; border:1px solid var(--line); }
 .bulk-fields { padding:10px 14px 14px; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 .bulk-field label { font-size:9px; font-family:'Courier New',monospace; letter-spacing:0.1em; text-transform:uppercase; color:var(--mist); display:block; margin-bottom:4px; }
 .bulk-field input, .bulk-field select { width:100%; border:1.5px solid var(--line); border-radius:var(--radius-sm); padding:8px 10px; font-size:13px; font-family:'Georgia',serif; color:var(--ink); background:var(--foam); -webkit-appearance:none; }
 .bulk-field.full { grid-column:1/-1; }
-.bulk-skip-btn { background:none; border:none; color:var(--mist); font-size:11px; font-family:'Courier New',monospace; padding:4px 14px 10px; cursor:pointer; text-decoration:underline; }
-.bulk-footer { position:fixed; bottom:0; left:0; right:0; background:var(--ink); padding:12px 16px; z-index:801; }
-.bulk-save-btn { background:var(--catch); color:white; border:none; border-radius:var(--radius-sm); padding:14px; font-size:16px; font-family:'Georgia',serif; cursor:pointer; width:100%; letter-spacing:0.03em; }
-.bulk-save-btn:disabled { opacity:0.4; }
+/* No-GPS boat ramp picker */
+.bulk-ramp-picker { background:var(--sand); border:1.5px solid var(--dawn); border-radius:var(--radius-sm); padding:10px 12px; margin:0 14px 10px; }
+.bulk-ramp-picker p { font-size:11px; font-family:'Courier New',monospace; color:#92400e; margin-bottom:8px; }
+.bulk-ramp-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.bulk-ramp-btn { background:var(--surface); border:1.5px solid var(--line); border-radius:var(--radius-sm); padding:8px 10px; font-size:12px; font-family:'Georgia',serif; color:var(--ink); cursor:pointer; text-align:left; transition:all 0.15s; }
+.bulk-ramp-btn.selected { background:var(--ink); border-color:var(--ink); color:#e0f7fa; }
+.bulk-ramp-name { display:block; font-size:13px; }
+.bulk-ramp-state { display:block; font-size:10px; font-family:'Courier New',monospace; color:var(--mist); margin-top:1px; }
+.bulk-ramp-btn.selected .bulk-ramp-state { color:#64b5d9; }
+.bulk-skip-btn { background:none; border:none; color:var(--mist); font-size:11px; font-family:'Courier New',monospace; padding:4px 14px 10px; cursor:pointer; text-decoration:underline; display:block; }
+/* Footer */
+.bulk-footer { position:fixed; bottom:0; left:0; right:0; background:var(--ink); padding:10px 14px; z-index:801; display:flex; flex-direction:column; gap:6px; }
+.bulk-import-btn { background:linear-gradient(135deg,#059669,#047857); color:white; border:none; border-radius:var(--radius-sm); padding:14px; font-size:16px; font-family:'Georgia',serif; cursor:pointer; width:100%; letter-spacing:0.03em; font-weight:400; }
+.bulk-import-btn:disabled { opacity:0.4; cursor:not-allowed; }
+.bulk-footer-hint { font-size:10px; font-family:'Courier New',monospace; color:#64b5d9; text-align:center; }
 .bulk-empty { text-align:center; padding:40px 20px; color:var(--mist); font-style:italic; font-size:14px; }
-.bulk-noexif-badge { background:var(--sand); border:1px solid var(--dawn); border-radius:4px; padding:2px 7px; font-size:9px; font-family:'Courier New',monospace; color:#92400e; margin-left:6px; }
 </style> — never inside it.
      JS block order mirrors CSS order above.
      ═══════════════════════════════════════════════════════════════ -->
@@ -1217,36 +1264,83 @@ body.map-open .content > #view-map { display: flex; }
 .cond-updated { font-size:10px; font-family:'Courier New',monospace; color:var(--mist); text-align:right; margin-bottom:10px; }
 
 /* 17. BULK IMPORT */
-.bulk-modal-bg { display:none; position:fixed; inset:0; background:rgba(10,22,40,0.92); z-index:800; flex-direction:column; }
+/* Modal shell */
+.bulk-modal-bg { display:none; position:fixed; inset:0; background:rgba(10,22,40,0.95); z-index:800; flex-direction:column; }
 .bulk-modal-bg.open { display:flex; }
 .bulk-modal { background:var(--foam); display:flex; flex-direction:column; width:100%; height:100vh; overflow:hidden; }
 .bulk-header { background:var(--ink); padding:12px 16px; display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
 .bulk-header h2 { color:#e0f7fa; font-size:16px; font-weight:400; }
 .bulk-header-sub { color:#64b5d9; font-size:10px; font-family:'Courier New',monospace; margin-top:2px; }
-.bulk-close { background:rgba(255,255,255,0.1); border:none; color:#e0f7fa; font-size:20px; width:36px; height:36px; border-radius:50%; cursor:pointer; }
+.bulk-close { background:rgba(255,255,255,0.1); border:none; color:#e0f7fa; font-size:20px; width:36px; height:36px; border-radius:50%; cursor:pointer; flex-shrink:0; }
+/* Progress */
 .bulk-progress-bar-wrap { background:var(--ink2); padding:8px 16px; flex-shrink:0; }
 .bulk-progress-bar { background:var(--line); border-radius:4px; height:6px; overflow:hidden; }
 .bulk-progress-fill { height:100%; background:var(--catch); border-radius:4px; transition:width 0.2s; width:0%; }
 .bulk-progress-text { font-size:10px; font-family:'Courier New',monospace; color:#64b5d9; margin-top:4px; }
-.bulk-content { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:12px 14px 80px; }
-.bulk-group { background:var(--surface); border-radius:var(--radius); border:1px solid var(--line); margin-bottom:14px; overflow:hidden; }
-.bulk-group-header { background:var(--ink); padding:10px 14px; display:flex; align-items:center; justify-content:space-between; }
-.bulk-group-num { color:#64b5d9; font-size:10px; font-family:'Courier New',monospace; }
-.bulk-group-date { color:#e0f7fa; font-size:13px; }
-.bulk-group-gps { color:#64b5d9; font-size:10px; font-family:'Courier New',monospace; margin-top:2px; }
-.bulk-group-photos { display:flex; gap:6px; padding:10px 14px; flex-wrap:wrap; overflow-x:auto; }
-.bulk-thumb { width:64px; height:64px; object-fit:cover; border-radius:6px; border:1px solid var(--line); flex-shrink:0; }
-.bulk-thumb.no-exif { opacity:0.5; border:1px dashed var(--mist); }
+/* Selection mode toolbar */
+.bulk-sel-toolbar { background:var(--ink2); padding:8px 14px; display:none; align-items:center; justify-content:space-between; flex-shrink:0; }
+.bulk-sel-toolbar.show { display:flex; }
+.bulk-sel-count { color:#e0f7fa; font-size:12px; font-family:'Courier New',monospace; }
+.bulk-sel-actions { display:flex; gap:8px; }
+.bulk-sel-btn { border:none; border-radius:var(--radius-sm); padding:7px 14px; font-size:12px; font-family:'Courier New',monospace; cursor:pointer; }
+.bulk-sel-group { background:var(--catch); color:white; }
+.bulk-sel-cancel { background:rgba(255,255,255,0.15); color:#e0f7fa; }
+/* Tile grid — PHASE 1 */
+.bulk-tile-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:3px; padding:3px; }
+.bulk-tile {
+  position:relative; aspect-ratio:1; overflow:hidden;
+  background:var(--ink2); cursor:pointer;
+  border:2px solid transparent; transition:border-color 0.15s;
+  border-radius:4px;
+}
+.bulk-tile.selected { border-color:var(--catch); }
+.bulk-tile.grouped { border-color:var(--dawn); }
+.bulk-tile img { width:100%; height:100%; object-fit:cover; display:block; pointer-events:none; }
+/* Tile badges */
+.bulk-tile-badges { position:absolute; top:4px; left:4px; display:flex; gap:3px; flex-wrap:wrap; }
+.bulk-badge { font-size:9px; padding:2px 4px; border-radius:3px; font-family:'Courier New',monospace; font-weight:600; line-height:1; }
+.bulk-badge-gps { background:rgba(5,150,105,0.85); color:white; }
+.bulk-badge-date { background:rgba(14,116,144,0.85); color:white; }
+.bulk-badge-noexif { background:rgba(100,100,100,0.75); color:white; }
+/* Tile action buttons */
+.bulk-tile-x { position:absolute; top:4px; right:4px; background:rgba(220,38,38,0.85); border:none; color:white; width:22px; height:22px; border-radius:50%; font-size:14px; line-height:22px; text-align:center; cursor:pointer; padding:0; display:none; }
+.bulk-tile-check { position:absolute; bottom:4px; right:4px; background:rgba(5,150,105,0.85); border:none; color:white; width:22px; height:22px; border-radius:50%; font-size:13px; line-height:22px; text-align:center; cursor:pointer; padding:0; display:none; }
+.bulk-tile.selected .bulk-tile-x,
+.bulk-tile.selected .bulk-tile-check { display:block; }
+/* Group count badge */
+.bulk-tile-group-count { position:absolute; bottom:4px; left:4px; background:rgba(217,119,6,0.9); color:white; font-size:10px; font-family:'Courier New',monospace; font-weight:700; padding:2px 5px; border-radius:3px; display:none; }
+.bulk-tile.grouped .bulk-tile-group-count { display:block; }
+/* Selected overlay */
+.bulk-tile-sel-overlay { position:absolute; inset:0; background:rgba(5,150,105,0.2); display:none; pointer-events:none; }
+.bulk-tile.selected .bulk-tile-sel-overlay { display:block; }
+/* Review phase — PHASE 2 */
+.bulk-content { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:8px 10px 100px; min-height:0; }
+.bulk-group-card { background:var(--surface); border-radius:var(--radius); border:1px solid var(--line); margin-bottom:14px; overflow:hidden; }
+.bulk-group-hdr { background:var(--ink); padding:10px 14px; }
+.bulk-group-meta { color:#64b5d9; font-size:10px; font-family:'Courier New',monospace; margin-top:2px; }
+.bulk-group-title { color:#e0f7fa; font-size:13px; }
+.bulk-group-thumbs { display:flex; gap:5px; padding:8px 12px; flex-wrap:wrap; }
+.bulk-group-thumb { width:56px; height:56px; object-fit:cover; border-radius:5px; border:1px solid var(--line); }
 .bulk-fields { padding:10px 14px 14px; display:grid; grid-template-columns:1fr 1fr; gap:8px; }
 .bulk-field label { font-size:9px; font-family:'Courier New',monospace; letter-spacing:0.1em; text-transform:uppercase; color:var(--mist); display:block; margin-bottom:4px; }
 .bulk-field input, .bulk-field select { width:100%; border:1.5px solid var(--line); border-radius:var(--radius-sm); padding:8px 10px; font-size:13px; font-family:'Georgia',serif; color:var(--ink); background:var(--foam); -webkit-appearance:none; }
 .bulk-field.full { grid-column:1/-1; }
-.bulk-skip-btn { background:none; border:none; color:var(--mist); font-size:11px; font-family:'Courier New',monospace; padding:4px 14px 10px; cursor:pointer; text-decoration:underline; }
-.bulk-footer { position:fixed; bottom:0; left:0; right:0; background:var(--ink); padding:12px 16px; z-index:801; }
-.bulk-save-btn { background:var(--catch); color:white; border:none; border-radius:var(--radius-sm); padding:14px; font-size:16px; font-family:'Georgia',serif; cursor:pointer; width:100%; letter-spacing:0.03em; }
-.bulk-save-btn:disabled { opacity:0.4; }
+/* No-GPS boat ramp picker */
+.bulk-ramp-picker { background:var(--sand); border:1.5px solid var(--dawn); border-radius:var(--radius-sm); padding:10px 12px; margin:0 14px 10px; }
+.bulk-ramp-picker p { font-size:11px; font-family:'Courier New',monospace; color:#92400e; margin-bottom:8px; }
+.bulk-ramp-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+.bulk-ramp-btn { background:var(--surface); border:1.5px solid var(--line); border-radius:var(--radius-sm); padding:8px 10px; font-size:12px; font-family:'Georgia',serif; color:var(--ink); cursor:pointer; text-align:left; transition:all 0.15s; }
+.bulk-ramp-btn.selected { background:var(--ink); border-color:var(--ink); color:#e0f7fa; }
+.bulk-ramp-name { display:block; font-size:13px; }
+.bulk-ramp-state { display:block; font-size:10px; font-family:'Courier New',monospace; color:var(--mist); margin-top:1px; }
+.bulk-ramp-btn.selected .bulk-ramp-state { color:#64b5d9; }
+.bulk-skip-btn { background:none; border:none; color:var(--mist); font-size:11px; font-family:'Courier New',monospace; padding:4px 14px 10px; cursor:pointer; text-decoration:underline; display:block; }
+/* Footer */
+.bulk-footer { position:fixed; bottom:0; left:0; right:0; background:var(--ink); padding:10px 14px; z-index:801; display:flex; flex-direction:column; gap:6px; }
+.bulk-import-btn { background:linear-gradient(135deg,#059669,#047857); color:white; border:none; border-radius:var(--radius-sm); padding:14px; font-size:16px; font-family:'Georgia',serif; cursor:pointer; width:100%; letter-spacing:0.03em; font-weight:400; }
+.bulk-import-btn:disabled { opacity:0.4; cursor:not-allowed; }
+.bulk-footer-hint { font-size:10px; font-family:'Courier New',monospace; color:#64b5d9; text-align:center; }
 .bulk-empty { text-align:center; padding:40px 20px; color:var(--mist); font-style:italic; font-size:14px; }
-.bulk-noexif-badge { background:var(--sand); border:1px solid var(--dawn); border-radius:4px; padding:2px 7px; font-size:9px; font-family:'Courier New',monospace; color:#92400e; margin-left:6px; }
 </style>
 
 <!-- ─────────────────────────────────────────────────────────────
@@ -1825,21 +1919,47 @@ body.map-open .content > #view-map { display: flex; }
 <!-- BULK IMPORT MODAL -->
 <div class="bulk-modal-bg" id="bulkModal">
   <div class="bulk-modal">
+
+    <!-- Header -->
     <div class="bulk-header">
-      <div>
-        <h2>Bulk Photo Import</h2>
-        <div class="bulk-header-sub" id="bulkHeaderSub">Reading photos...</div>
+      <div style="flex:1;min-width:0">
+        <h2 id="bulkHeaderTitle">Import Brags</h2>
+        <div class="bulk-header-sub" id="bulkHeaderSub">Select photos from your camera roll</div>
       </div>
       <button class="bulk-close" onclick="closeBulkModal()">×</button>
     </div>
-    <div class="bulk-progress-bar-wrap" id="bulkProgressWrap">
+
+    <!-- Progress bar (shown while reading EXIF) -->
+    <div class="bulk-progress-bar-wrap" id="bulkProgressWrap" style="display:none">
       <div class="bulk-progress-bar"><div class="bulk-progress-fill" id="bulkProgressFill"></div></div>
-      <div class="bulk-progress-text" id="bulkProgressText">Starting...</div>
+      <div class="bulk-progress-text" id="bulkProgressText">Reading photos...</div>
     </div>
-    <div class="bulk-content" id="bulkContent"></div>
-    <div class="bulk-footer">
-      <button class="bulk-save-btn" id="bulkSaveBtn" onclick="saveBulkCatches()" disabled>Save All Catches</button>
+
+    <!-- Selection mode toolbar (shown when tiles are long-pressed) -->
+    <div class="bulk-sel-toolbar" id="bulkSelToolbar">
+      <span class="bulk-sel-count" id="bulkSelCount">0 selected</span>
+      <div class="bulk-sel-actions">
+        <button class="bulk-sel-btn bulk-sel-cancel" onclick="cancelBulkSelection()">Cancel</button>
+        <button class="bulk-sel-btn bulk-sel-group" id="bulkGroupBtn" onclick="groupSelectedTiles()">Group as one catch</button>
+      </div>
     </div>
+
+    <!-- Phase 1: Tile grid -->
+    <div id="bulkPhase1" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0;display:none">
+      <div class="bulk-tile-grid" id="bulkTileGrid"></div>
+    </div>
+
+    <!-- Phase 2: Review groups -->
+    <div id="bulkPhase2" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0;display:none">
+      <div class="bulk-content" id="bulkContent"></div>
+    </div>
+
+    <!-- Footer -->
+    <div class="bulk-footer" id="bulkFooter">
+      <button class="bulk-import-btn" id="bulkImportBtn" onclick="startBulkReview()" disabled>Import Brags</button>
+      <div class="bulk-footer-hint" id="bulkFooterHint">Long press a photo to start grouping</div>
+    </div>
+
   </div>
 </div>
 <!-- Edit Species modal -->
@@ -4437,203 +4557,262 @@ function renderConditions(data, loc) {
   el.innerHTML = html || '<div class="cond-loading">No data available.</div>';
 }
 
-/* BULK PHOTO IMPORT */
-let bulkGroups = [];
+/* BULK PHOTO IMPORT — Tile grid with long-press grouping */
+let bulkTiles        = [];   // [{idx, dataUrl, dateTime, lat, lon, groupId}]
+let bulkGroups       = [];   // [{photoIdxs:[], species, weight, length, method, disposition, rampLocId}]
+let bulkSelMode      = false;
+let bulkSelSet       = new Set();
+let bulkLongPressTimer = null;
+let bulkPhase        = 'tiles'; // 'loading' | 'tiles' | 'review'
+let bulkNextGroupId  = 1;
 
 function haversineKm(lat1, lon1, lat2, lon2) {
-  const R = 6371;
-  const dLat = (lat2-lat1)*Math.PI/180;
-  const dLon = (lon2-lon1)*Math.PI/180;
-  const a = Math.sin(dLat/2)*Math.sin(dLat/2) +
-            Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)*Math.sin(dLon/2);
+  const R = 6371, dL = (lat2-lat1)*Math.PI/180, dLn = (lon2-lon1)*Math.PI/180;
+  const a = Math.sin(dL/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLn/2)**2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
 async function startBulkImport(e) {
-  const files = Array.from(e.target.files);
-  if (!files.length) return;
-  bulkGroups = [];
+  const files = Array.from(e.target.files); if (!files.length) return;
+  bulkTiles=[]; bulkGroups=[]; bulkSelMode=false; bulkSelSet=new Set(); bulkPhase='loading'; bulkNextGroupId=1;
   document.getElementById('bulkModal').classList.add('open');
+  document.getElementById('bulkPhase1').style.display = 'none';
+  document.getElementById('bulkPhase2').style.display = 'none';
   document.getElementById('bulkProgressWrap').style.display = 'block';
-  document.getElementById('bulkContent').innerHTML = '';
-  document.getElementById('bulkSaveBtn').disabled = true;
-  document.getElementById('bulkHeaderSub').textContent = 'Reading ' + files.length + ' photos...';
+  document.getElementById('bulkHeaderTitle').textContent = 'Reading Photos…';
+  document.getElementById('bulkHeaderSub').textContent = '0 of ' + files.length + ' read';
+  document.getElementById('bulkImportBtn').disabled = true;
+  document.getElementById('bulkFooterHint').textContent = 'Reading EXIF data…';
 
-  const setProgress = (i, t, msg) => {
-    document.getElementById('bulkProgressFill').style.width = Math.round(i/t*100) + '%';
-    document.getElementById('bulkProgressText').textContent = msg;
-  };
-
-  // Step 1 — read EXIF from all photos
-  const photoData = [];
   for (let i = 0; i < files.length; i++) {
-    setProgress(i+1, files.length, 'Reading EXIF ' + (i+1) + ' of ' + files.length + '...');
+    document.getElementById('bulkProgressFill').style.width = Math.round((i+1)/files.length*100) + '%';
+    document.getElementById('bulkProgressText').textContent = 'Reading ' + (i+1) + ' of ' + files.length + '…';
+    document.getElementById('bulkHeaderSub').textContent = (i+1) + ' of ' + files.length + ' read';
     try {
-      const result = await readPhotoExif(files[i]);
-      photoData.push(result);
+      const tile = await readPhotoExif(files[i]);
+      tile.idx = i; tile.groupId = null;
+      bulkTiles.push(tile);
     } catch(err) {
-      photoData.push({file: files[i], dataUrl: null, dateTime: null, lat: null, lon: null, error: true});
+      bulkTiles.push({idx:i, file:files[i], dataUrl:null, dateTime:null, lat:null, lon:null, groupId:null, error:true});
     }
-    await new Promise(r => setTimeout(r, 10)); // keep UI responsive
+    await new Promise(r => setTimeout(r, 8));
   }
 
-  // Step 2 — group by proximity (500m) and time (5 hours)
-  document.getElementById('bulkHeaderSub').textContent = 'Grouping ' + files.length + ' photos...';
-  setProgress(1, 1, 'Grouping by location and time...');
-  const groups = groupPhotos(photoData);
-  bulkGroups = groups;
+  // Auto-group by 500m + 5hrs
+  autoGroupTiles();
 
-  // Step 3 — render review UI
   document.getElementById('bulkProgressWrap').style.display = 'none';
-  document.getElementById('bulkHeaderSub').textContent = groups.length + ' catch groups found from ' + files.length + ' photos';
-  renderBulkGroups(groups);
-  document.getElementById('bulkSaveBtn').disabled = false;
-  document.getElementById('bulkSaveBtn').textContent = 'Save ' + groups.length + ' Catches';
+  document.getElementById('bulkHeaderTitle').textContent = 'Import Brags';
+  document.getElementById('bulkHeaderSub').textContent = bulkTiles.length + ' photos · long press to group';
+  document.getElementById('bulkPhase1').style.display = 'block';
+  document.getElementById('bulkImportBtn').disabled = false;
+  document.getElementById('bulkFooterHint').textContent = 'Long press photos to group them as one catch';
+  bulkPhase = 'tiles';
+  renderBulkTileGrid();
   e.target.value = '';
 }
 
-async function readPhotoExif(file) {
-  return new Promise((res) => {
-    const reader = new FileReader();
-    reader.onload = ev => {
-      try {
-        const buf = ev.target.result;
-        // Parse EXIF immediately before any async operations
-        let exifData = {dateTime: null, gpsLat: null, gpsLon: null};
-        try { exifData = parseExif(buf); } catch(e) {}
-        // Then compress
-        const b64 = arrayBufferToBase64(buf);
-        compressPhotoFromBase64(b64, dataUrl => {
-          res({
-            file, dataUrl,
-            dateTime: exifData.dateTime,
-            lat: exifData.gpsLat,
-            lon: exifData.gpsLon
-          });
-        });
-      } catch(e) {
-        res({file, dataUrl: null, dateTime: null, lat: null, lon: null, error: true});
-      }
-    };
-    reader.onerror = () => res({file, dataUrl: null, dateTime: null, lat: null, lon: null, error: true});
-    reader.readAsArrayBuffer(file);
-  });
-}
-
-function arrayBufferToBase64(buf) {
-  const bytes = new Uint8Array(buf);
-  let binary = '';
-  const chunkSize = 8192;
-  for (let i = 0; i < bytes.byteLength; i += chunkSize)
-    binary += String.fromCharCode.apply(null, bytes.subarray(i, i+chunkSize));
-  return 'data:image/jpeg;base64,' + btoa(binary);
-}
-
-function groupPhotos(photos) {
+function autoGroupTiles() {
   // Sort by dateTime
-  const withTime = photos.filter(p => p.dateTime).sort((a,b) => a.dateTime.localeCompare(b.dateTime));
-  const noTime   = photos.filter(p => !p.dateTime);
-  const groups   = [];
-
-  withTime.forEach(photo => {
-    const pTime = exifToMs(photo.dateTime);
-    // Try to find an existing group within 5hrs and 500m
+  const withTime = bulkTiles.filter(t => t.dateTime).sort((a,b) => a.dateTime.localeCompare(b.dateTime));
+  withTime.forEach(tile => {
+    const pTime = exifToMs(tile.dateTime);
     let placed = false;
-    for (const g of groups) {
-      const gTime = exifToMs(g.photos[0].dateTime);
-      const timeDiffHrs = Math.abs(pTime - gTime) / (1000*60*60);
-      if (timeDiffHrs > 5) continue;
-      // Check distance if both have GPS
-      if (photo.lat && photo.lon && g.lat && g.lon) {
-        const dist = haversineKm(photo.lat, photo.lon, g.lat, g.lon);
-        if (dist > 0.5) continue; // more than 500m apart
+    for (const t2 of withTime) {
+      if (!t2.groupId || t2 === tile) continue;
+      const gTime = exifToMs(t2.dateTime);
+      if (Math.abs(pTime - gTime) / (1000*60*60) > 5) continue;
+      if (tile.lat && tile.lon && t2.lat && t2.lon) {
+        if (haversineKm(tile.lat, tile.lon, t2.lat, t2.lon) > 0.5) continue;
       }
-      g.photos.push(photo);
-      // Update group GPS to first photo with GPS
-      if (!g.lat && photo.lat) { g.lat = photo.lat; g.lon = photo.lon; }
-      placed = true;
-      break;
+      tile.groupId = t2.groupId; placed = true; break;
     }
-    if (!placed) {
-      groups.push({
-        photos: [photo],
-        lat: photo.lat, lon: photo.lon,
-        dateTime: photo.dateTime,
-        species: '', weight: '', length: '', method: '', disposition: 'Kept', notes: '', skip: false
-      });
+    if (!placed && tile.groupId === null) {
+      // Only create a group if there will be more tiles matching later
+      // Leave as null for now — groups formed by long press or auto
     }
   });
-
-  // Add no-time photos as individual groups
-  noTime.forEach(photo => {
-    groups.push({
-      photos: [photo],
-      lat: null, lon: null, dateTime: null,
-      species: '', weight: '', length: '', method: '', disposition: 'Kept', notes: '', skip: false
-    });
-  });
-
-  return groups;
 }
 
 function exifToMs(exifStr) {
   if (!exifStr) return 0;
-  const s = exifStr.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3');
-  return new Date(s).getTime();
+  return new Date(exifStr.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3')).getTime();
 }
 
-function renderBulkGroups(groups) {
-  const el = document.getElementById('bulkContent');
-  if (!groups.length) { el.innerHTML = '<div class="bulk-empty">No photos could be read.</div>'; return; }
+function renderBulkTileGrid() {
+  const grid = document.getElementById('bulkTileGrid');
+  if (!bulkTiles.length) { grid.innerHTML = '<div class="bulk-empty">No photos could be read.</div>'; return; }
 
-  el.innerHTML = groups.map((g, gi) => {
-    const hasExif = g.dateTime || g.lat;
+  grid.innerHTML = bulkTiles.map((t, i) => {
+    const hasGps  = t.lat !== null && t.lon !== null;
+    const hasDate = !!t.dateTime;
+    const noExif  = !hasGps && !hasDate;
+    const inGroup = t.groupId !== null;
+    const groupCount = inGroup ? bulkTiles.filter(x => x.groupId === t.groupId).length : 0;
+    const isLeader = inGroup && bulkTiles.find(x => x.groupId === t.groupId) === t;
+
+    return '<div class="bulk-tile' + (inGroup?' grouped':'') + '" id="btile' + i + '" data-idx="' + i + '">'
+      + (t.dataUrl ? '<img src="' + t.dataUrl + '" alt="photo">' : '<div style="width:100%;height:100%;background:var(--line);display:flex;align-items:center;justify-content:center;font-size:20px;">📷</div>')
+      + '<div class="bulk-tile-badges">'
+      + (hasGps  ? '<span class="bulk-badge bulk-badge-gps">GPS</span>' : '')
+      + (hasDate ? '<span class="bulk-badge bulk-badge-date">Date</span>' : '')
+      + (noExif  ? '<span class="bulk-badge bulk-badge-noexif">No data</span>' : '')
+      + '</div>'
+      + '<div class="bulk-tile-sel-overlay"></div>'
+      + '<button class="bulk-tile-x" onclick="removeBulkTile(event,' + i + ')">×</button>'
+      + '<button class="bulk-tile-check" onclick="acceptBulkTile(event,' + i + ')">✓</button>'
+      + (inGroup && isLeader ? '<div class="bulk-tile-group-count">' + groupCount + '</div>' : '')
+      + '</div>';
+  }).join('');
+
+  // Bind long press on each tile
+  bulkTiles.forEach((t, i) => {
+    const el = document.getElementById('btile' + i); if (!el) return;
+    el.addEventListener('touchstart', e => { bulkLongPressTimer = setTimeout(() => enterBulkSelMode(i), 500); }, {passive:true});
+    el.addEventListener('touchend',   () => clearTimeout(bulkLongPressTimer));
+    el.addEventListener('touchmove',  () => clearTimeout(bulkLongPressTimer));
+    el.addEventListener('click', () => { if (bulkSelMode) toggleBulkSel(i); });
+  });
+}
+
+function enterBulkSelMode(firstIdx) {
+  bulkSelMode = true; bulkSelSet = new Set([firstIdx]);
+  document.getElementById('bulkSelToolbar').classList.add('show');
+  updateBulkSelUI();
+}
+function cancelBulkSelection() {
+  bulkSelMode = false; bulkSelSet.clear();
+  document.getElementById('bulkSelToolbar').classList.remove('show');
+  bulkTiles.forEach((t,i) => { const el=document.getElementById('btile'+i); if(el) el.classList.remove('selected'); });
+}
+function toggleBulkSel(idx) {
+  if (bulkSelSet.has(idx)) bulkSelSet.delete(idx); else bulkSelSet.add(idx);
+  updateBulkSelUI();
+  if (bulkSelSet.size === 0) cancelBulkSelection();
+}
+function updateBulkSelUI() {
+  document.getElementById('bulkSelCount').textContent = bulkSelSet.size + ' selected';
+  document.getElementById('bulkGroupBtn').textContent = bulkSelSet.size > 1 ? 'Group as one catch' : 'Mark as single catch';
+  bulkTiles.forEach((t,i) => {
+    const el = document.getElementById('btile'+i); if (!el) return;
+    el.classList.toggle('selected', bulkSelSet.has(i));
+  });
+}
+function groupSelectedTiles() {
+  if (bulkSelSet.size === 0) return;
+  const gid = 'g' + (bulkNextGroupId++);
+  bulkSelSet.forEach(idx => { if (bulkTiles[idx]) bulkTiles[idx].groupId = gid; });
+  cancelBulkSelection();
+  renderBulkTileGrid();
+}
+function removeBulkTile(e, idx) {
+  e.stopPropagation();
+  bulkTiles.splice(idx, 1);
+  renderBulkTileGrid();
+  document.getElementById('bulkHeaderSub').textContent = bulkTiles.length + ' photos';
+}
+function acceptBulkTile(e, idx) {
+  e.stopPropagation();
+  // Mark as explicitly accepted — highlight green permanently
+  const el = document.getElementById('btile' + idx); if (!el) return;
+  el.style.borderColor = 'var(--catch)';
+}
+
+function startBulkReview() {
+  // Build groups from tiles
+  const groupMap = {};
+  bulkTiles.forEach((t, i) => {
+    const key = t.groupId || ('solo_' + i);
+    if (!groupMap[key]) groupMap[key] = [];
+    groupMap[key].push(t);
+  });
+  bulkGroups = Object.values(groupMap).map(tiles => {
+    const withGps  = tiles.find(t => t.lat !== null);
+    const withDate = tiles.find(t => t.dateTime);
+    return {
+      tiles, species:'', weight:'', length:'', method:'', disposition:'Kept', notes:'',
+      lat: withGps ? withGps.lat : null, lon: withGps ? withGps.lon : null,
+      dateTime: withDate ? withDate.dateTime : null,
+      rampLocId: null, skip: false,
+    };
+  });
+
+  document.getElementById('bulkPhase1').style.display = 'none';
+  document.getElementById('bulkPhase2').style.display = 'block';
+  document.getElementById('bulkHeaderTitle').textContent = 'Review Catches';
+  document.getElementById('bulkHeaderSub').textContent = bulkGroups.length + ' catch' + (bulkGroups.length!==1?'es':'') + ' to review';
+  document.getElementById('bulkImportBtn').textContent = 'Save ' + bulkGroups.length + ' Catches';
+  document.getElementById('bulkImportBtn').onclick = saveBulkCatches;
+  document.getElementById('bulkFooterHint').textContent = 'Fill in species and details, then save';
+  bulkPhase = 'review';
+  renderBulkReview();
+}
+
+function renderBulkReview() {
+  const el = document.getElementById('bulkContent');
+  el.innerHTML = bulkGroups.map((g, gi) => {
     const d = g.dateTime ? g.dateTime.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3') : '';
     const dateDisplay = d ? new Date(d).toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short',year:'numeric'}) + ' ' + (g.dateTime||'').slice(11,16) : 'No date';
-    const gpsDisplay  = g.lat ? g.lat.toFixed(4) + ', ' + g.lon.toFixed(4) : 'No GPS';
-    const thumbsHtml  = g.photos.map(p =>
-      p.dataUrl ? '<img class="bulk-thumb' + (!p.dateTime&&!p.lat?' no-exif':'') + '" src="' + p.dataUrl + '">' : ''
-    ).join('');
+    const gpsDisplay  = g.lat ? g.lat.toFixed(4)+', '+g.lon.toFixed(4) : 'No GPS';
+    const thumbsHtml  = g.tiles.slice(0,4).map(t => t.dataUrl ? '<img class="bulk-group-thumb" src="'+t.dataUrl+'">' : '').join('');
+    const noGps       = !g.lat;
 
-    return '<div class="bulk-group" id="bulkGroup' + gi + '">'
-      + '<div class="bulk-group-header">'
-      + '<div>'
-      + '<div class="bulk-group-num">Group ' + (gi+1) + ' of ' + groups.length + ' · ' + g.photos.length + ' photo' + (g.photos.length!==1?'s':'') + (!hasExif?'<span class="bulk-noexif-badge">No EXIF</span>':'') + '</div>'
-      + '<div class="bulk-group-date">' + dateDisplay + '</div>'
-      + '<div class="bulk-group-gps">' + gpsDisplay + '</div>'
+    // Boat ramp picker for no-GPS groups
+    const rampHtml = noGps ? '<div class="bulk-ramp-picker">'
+      + '<p>No GPS — which location is closest?</p>'
+      + '<div class="bulk-ramp-grid">'
+      + locations.map(l => { const sel=g.rampLocId===l.id?' selected':''; return '<button class="bulk-ramp-btn'+sel+'" id="bramp_'+gi+'_'+l.id+'" onclick="pickBulkRamp('+gi+',\''+l.id+'\')">'+'<span class="bulk-ramp-name">'+l.name+'</span>'+'<span class="bulk-ramp-state">'+l.state+'</span>'+'</button>'; }).join('')
+      + '</div></div>' : '';
+
+    return '<div class="bulk-group-card" id="bgroup'+gi+'">'
+      + '<div class="bulk-group-hdr">'
+      + '<div class="bulk-group-title">Catch '+(gi+1)+' of '+bulkGroups.length+' · '+g.tiles.length+' photo'+(g.tiles.length!==1?'s':'')+'</div>'
+      + '<div class="bulk-group-meta">'+dateDisplay+' · '+gpsDisplay+'</div>'
       + '</div>'
-      + '</div>'
-      + '<div class="bulk-group-photos">' + thumbsHtml + '</div>'
+      + '<div class="bulk-group-thumbs">'+thumbsHtml+'</div>'
+      + rampHtml
       + '<div class="bulk-fields">'
       + '<div class="bulk-field full"><label>Species</label>'
       + '<div class="species-wrap" style="position:relative">'
-      + '<input type="text" id="bg_sp_' + gi + '" placeholder="Type to search species..." autocomplete="off" value="' + h(g.species) + '" oninput="onBulkSpInput(' + gi + ',this.value)" onfocus="onBulkSpInput(' + gi + ',this.value)" onblur="schedBulkClose(' + gi + ')">'
-      + '<div class="species-dropdown" id="bg_sp_drop_' + gi + '"></div>'
+      + '<input type="text" id="bg_sp_'+gi+'" placeholder="Type to search..." autocomplete="off" oninput="onBulkSpInput('+gi+',this.value)" onfocus="onBulkSpInput('+gi+',this.value)" onblur="schedBulkClose('+gi+')">'
+      + '<div class="species-dropdown" id="bg_sp_drop_'+gi+'"></div>'
+      + '</div></div>'
+      + '<div class="bulk-field"><label>Weight (kg)</label><input type="number" id="bg_wt_'+gi+'" placeholder="0.0" step="0.1" min="0" oninput="bulkGroups['+gi+'].weight=this.value"></div>'
+      + '<div class="bulk-field"><label>Length (cm)</label><input type="number" id="bg_ln_'+gi+'" placeholder="0" step="1" min="0" oninput="bulkGroups['+gi+'].length=this.value"></div>'
+      + '<div class="bulk-field"><label>Method</label><select id="bg_me_'+gi+'" onchange="bulkGroups['+gi+'].method=this.value"><option value="">— Select —</option><option>Lure — Hard body</option><option>Lure — Soft plastic</option><option>Lure — Metal</option><option>Live bait</option><option>Cut bait</option><option>Prawns</option><option>Worms</option><option>Squid</option><option>Fly</option><option>Trolling</option><option>Jigging</option><option>Spinning</option></select></div>'
+      + '<div class="bulk-field"><label>Disposition</label><select id="bg_di_'+gi+'" onchange="bulkGroups['+gi+'].disposition=this.value"><option value="Kept">Kept</option><option value="Released">Released</option><option value="Released — undersized">Released — undersized</option></select></div>'
       + '</div>'
-      + '</div>'
-      + '<div class="bulk-field"><label>Weight (kg)</label><input type="number" id="bg_wt_' + gi + '" placeholder="0.0" step="0.1" min="0" value="' + g.weight + '" oninput="bulkGroups[' + gi + '].weight=this.value"></div>'
-      + '<div class="bulk-field"><label>Length (cm)</label><input type="number" id="bg_ln_' + gi + '" placeholder="0" step="1" min="0" value="' + g.length + '" oninput="bulkGroups[' + gi + '].length=this.value"></div>'
-      + '<div class="bulk-field"><label>Method</label><select id="bg_me_' + gi + '" onchange="bulkGroups[' + gi + '].method=this.value"><option value="">— Select —</option><option>Lure — Hard body</option><option>Lure — Soft plastic</option><option>Lure — Metal</option><option>Live bait</option><option>Cut bait</option><option>Prawns</option><option>Worms</option><option>Squid</option><option>Fly</option><option>Trolling</option><option>Jigging</option><option>Spinning</option></select></div>'
-      + '<div class="bulk-field"><label>Disposition</label><select id="bg_di_' + gi + '" onchange="bulkGroups[' + gi + '].disposition=this.value"><option value="Kept">Kept</option><option value="Released">Released</option><option value="Released — undersized">Released — undersized</option></select></div>'
-      + '</div>'
-      + '<button class="bulk-skip-btn" onclick="toggleBulkSkip(' + gi + ')">Skip this group</button>'
+      + '<button class="bulk-skip-btn" onclick="toggleBulkSkip('+gi+')">Skip this catch</button>'
       + '</div>';
   }).join('');
 }
 
+function pickBulkRamp(gi, locId) {
+  bulkGroups[gi].rampLocId = locId;
+  // Update button styles
+  locations.forEach(l => {
+    const btn = document.getElementById('bramp_'+gi+'_'+l.id);
+    if (btn) btn.classList.toggle('selected', l.id===locId);
+  });
+  // Set GPS from location
+  const loc = locations.find(l => l.id===locId);
+  if (loc) { bulkGroups[gi].lat = loc.lat; bulkGroups[gi].lon = loc.lon; }
+}
+
 function toggleBulkSkip(gi) {
   bulkGroups[gi].skip = !bulkGroups[gi].skip;
-  const el = document.getElementById('bulkGroup' + gi);
+  const el = document.getElementById('bgroup'+gi); if (!el) return;
   el.style.opacity = bulkGroups[gi].skip ? '0.35' : '1';
-  const btn = el.querySelector('.bulk-skip-btn');
-  btn.textContent = bulkGroups[gi].skip ? 'Undo skip' : 'Skip this group';
+  el.querySelector('.bulk-skip-btn').textContent = bulkGroups[gi].skip ? 'Undo skip' : 'Skip this catch';
+  const active = bulkGroups.filter(g=>!g.skip).length;
+  document.getElementById('bulkImportBtn').textContent = 'Save ' + active + ' Catches';
 }
 
 async function saveBulkCatches() {
-  const btn = document.getElementById('bulkSaveBtn');
+  const btn = document.getElementById('bulkImportBtn');
   btn.disabled = true;
   const toSave = bulkGroups.filter(g => !g.skip);
-  btn.textContent = 'Saving ' + toSave.length + ' catches...';
+  btn.textContent = 'Saving…';
   let saved = 0;
 
   for (const g of toSave) {
@@ -4641,158 +4820,73 @@ async function saveBulkCatches() {
       const d = g.dateTime ? g.dateTime.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3') : '';
       const dateStr = d ? d.slice(0,10) : new Date().toISOString().slice(0,10);
       const timeStr = d ? d.slice(11,16) : '';
-      const gpsStr  = g.lat ? g.lat.toFixed(5) + ', ' + g.lon.toFixed(5) : '';
+      const gpsStr  = g.lat ? g.lat.toFixed(5)+', '+g.lon.toFixed(5) : '';
       const moon    = dateStr ? getMoonPhase(dateStr, timeStr) : null;
       const state   = gpsStr ? stateFromGPS(g.lat, g.lon) : '';
       const id      = Date.now() + saved;
 
-      // Save photos to IDB
       const savedPhotos = [];
-      for (let i = 0; i < g.photos.length; i++) {
-        const p = g.photos[i];
-        if (p.dataUrl) {
-          const {id: pid, thumb} = await savePhoto(id, i, p.dataUrl);
-          savedPhotos.push({id: pid, thumb});
-        }
+      for (let i = 0; i < g.tiles.length; i++) {
+        const t = g.tiles[i];
+        if (t.dataUrl) { try { const {id:pid,thumb}=await savePhoto(id,i,t.dataUrl); savedPhotos.push({id:pid,thumb}); } catch(pe){} }
       }
-
-      const entry = {
-        id, timestamp: new Date().toISOString(),
-        date: dateStr, time: timeStr, moon,
-        gps: gpsStr, state,
-        species: g.species||'Unknown', speciesId: null,
-        weight: g.weight, length: g.length,
-        method: g.method, disposition: g.disposition,
-        notes: g.notes, photos: savedPhotos,
-        bulkImport: true,
-      };
-
-      catches.unshift(entry);
+      catches.unshift({
+        id, timestamp:new Date().toISOString(),
+        date:dateStr, time:timeStr, moon, gps:gpsStr, state,
+        species:g.species||'Unknown', speciesId:null,
+        weight:g.weight, length:g.length, method:g.method,
+        disposition:g.disposition, notes:g.notes, photos:savedPhotos, bulkImport:true,
+      });
       saved++;
-      btn.textContent = 'Saved ' + saved + ' of ' + toSave.length + '...';
-      await new Promise(r => setTimeout(r, 50));
-    } catch(err) {
-      console.warn('Bulk save error:', err);
-    }
+    } catch(err) { console.warn('Bulk save error:', err); }
+    await new Promise(r => setTimeout(r, 30));
   }
 
-  saveC();
-  closeBulkModal();
-  showToast('Saved ' + saved + ' catches — enriching in background...');
+  saveC(); closeBulkModal();
+  showToast('Saved '+saved+' catches — enriching in background…');
   showView('catches');
-
-  // Background enrichment — runs after UI updates, non-blocking
-  setTimeout(() => enrichBulkCatches(catches.slice(0, saved)), 500);
-}
-
-async function enrichBulkCatches(newCatches) {
-  let enriched = 0;
-  for (const c of newCatches) {
-    if (!c.date) continue;
-    let lat, lon;
-    if (c.gps) {
-      const parts = c.gps.split(',').map(s => parseFloat(s.trim()));
-      if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) continue;
-      lat = parts[0]; lon = parts[1];
-    } else {
-      const homeLoc = getHomeLocation();
-      if (!homeLoc) continue;
-      lat = homeLoc.lat; lon = homeLoc.lon;
-    }
-    let changed = false;
-
-    // Weather — Open-Meteo (free, no key)
-    try {
-      const wd = await fetchHistoricalWeather(lat, lon, c.date, c.time);
-      if (wd) {
-        if (!c.weather   && wd.weather)    { c.weather   = wd.weather;    changed = true; }
-        if (!c.windSpeed && wd.windSpeed)  { c.windSpeed = wd.windSpeed;  changed = true; }
-        if (!c.windDir   && wd.windDir)    { c.windDir   = wd.windDir;    changed = true; }
-        if (!c.airTemp   && wd.airTemp)    { c.airTemp   = wd.airTemp;    changed = true; }
-        if (!c.swellHeight && wd.swellHeight) { c.swellHeight = wd.swellHeight; changed = true; }
-        if (!c.swellDir  && wd.swellDir)   { c.swellDir  = wd.swellDir;   changed = true; }
-        if (!c.swellPeriod && wd.swellPeriod) { c.swellPeriod = wd.swellPeriod; changed = true; }
-      }
-    } catch(e) {}
-
-    // Tide — WorldTides (requires API key)
-    const wtKey = localStorage.getItem('bragmaster_wtkey') || '';
-    if (!c.tide && wtKey && c.time) {
-      try {
-        await lookupTideForEnrich(c.date.replace(/-/g,':') + ' ' + c.time + ':00', lat, lon, c);
-        if (c.tide) changed = true;
-      } catch(e) {}
-    }
-
-    // Spot name
-    if (!c.spotName) {
-      try {
-        const name = await reverseGeocodeSpot(lat, lon);
-        if (name) { c.spotName = name; changed = true; }
-      } catch(e) {}
-    }
-
-    if (changed) {
-      const idx = catches.findIndex(x => x.id === c.id);
-      if (idx >= 0) catches[idx] = c;
-      enriched++;
-    }
-
-    await new Promise(r => setTimeout(r, 400)); // rate limit API calls
-  }
-
-  if (enriched > 0) {
-    saveC();
-    showToast('Enriched ' + enriched + ' catches with weather & tide data');
-  }
+  setTimeout(() => enrichBulkCatches(catches.slice(0, saved)), 600);
 }
 
 function closeBulkModal() {
   document.getElementById('bulkModal').classList.remove('open');
-  bulkGroups = [];
+  document.getElementById('bulkSelToolbar').classList.remove('show');
+  bulkTiles=[]; bulkGroups=[]; bulkSelMode=false; bulkSelSet=new Set(); bulkPhase='tiles';
   document.getElementById('bulkContent').innerHTML = '';
+  document.getElementById('bulkTileGrid').innerHTML = '';
+  document.getElementById('bulkImportBtn').textContent = 'Import Brags';
+  document.getElementById('bulkImportBtn').onclick = startBulkReview;
 }
 
-
 function onBulkSpInput(gi, q) {
-  const dd = document.getElementById('bg_sp_drop_' + gi);
-  if (!dd) return;
+  const dd = document.getElementById('bg_sp_drop_' + gi); if (!dd) return;
   const ql = q.toLowerCase().trim();
-  const hits = species.filter(s =>
-    s.name.toLowerCase().includes(ql) || (s.nicknames||[]).some(n => n.toLowerCase().includes(ql))
-  );
+  const hits = species.filter(s => s.name.toLowerCase().includes(ql) || (s.nicknames||[]).some(n => n.toLowerCase().includes(ql)));
   let html = hits.map(s => {
     const safeName = s.name.replace(/'/g, "\\'");
-    return '<div class="species-option" onmousedown="pickBulkSp(' + gi + ',\'' + safeName + '\')">' + s.name
-      + (s.nicknames&&s.nicknames.length ? '<span class="sp-nick">' + s.nicknames.slice(0,2).join(', ') + '</span>' : '')
+    return '<div class="species-option" onmousedown="pickBulkSp('+gi+',\''+safeName+'\')">'+s.name
+      + (s.nicknames&&s.nicknames.length ? '<span class="sp-nick">'+s.nicknames.slice(0,2).join(', ')+'</span>' : '')
       + '</div>';
   }).join('');
   const safeQ = q.trim().replace(/'/g, "\\'");
-  if (q.trim()) html += '<div class="sp-add" onmousedown="addBulkSp(' + gi + ',\'' + safeQ + '\')">+ Add "' + q.trim() + '" as new species</div>';
+  if (q.trim()) html += '<div class="sp-add" onmousedown="addBulkSp('+gi+',\''+safeQ+'\')">+ Add "'+q.trim()+'" as new species</div>';
   dd.innerHTML = html;
   dd.classList.toggle('open', hits.length > 0 || q.trim().length > 0);
 }
 function pickBulkSp(gi, name) {
-  const inp = document.getElementById('bg_sp_' + gi);
-  if (inp) inp.value = name;
+  const inp = document.getElementById('bg_sp_' + gi); if (inp) inp.value = name;
   bulkGroups[gi].species = name;
-  const dd = document.getElementById('bg_sp_drop_' + gi);
-  if (dd) dd.classList.remove('open');
+  const dd = document.getElementById('bg_sp_drop_' + gi); if (dd) dd.classList.remove('open');
 }
 function addBulkSp(gi, name) {
   if (!name) return;
   const id = 'sp' + Date.now();
   species.push({id, name, nicknames:[], notes:''}); saveSp();
-  pickBulkSp(gi, name);
-  showToast('"' + name + '" added to species list');
+  pickBulkSp(gi, name); showToast('"'+name+'" added to species list');
 }
 function schedBulkClose(gi) {
-  setTimeout(() => {
-    const dd = document.getElementById('bg_sp_drop_' + gi);
-    if (dd) dd.classList.remove('open');
-  }, 200);
+  setTimeout(() => { const dd = document.getElementById('bg_sp_drop_'+gi); if (dd) dd.classList.remove('open'); }, 200);
 }
-
 
 /* HOME FISHING LOCATION */
 function saveHomeLoc() {
