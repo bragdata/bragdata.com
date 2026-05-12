@@ -4210,7 +4210,7 @@ async function loadConditions() {
   el.innerHTML = '<div class="cond-loading">Fetching latest conditions...</div>';
   upd.textContent = '';
   try {
-    const url = 'https://bragmaster-proxy.lee-edwards-au.workers.dev?location=' + loc.id + '&forecasts=swell,tides,wind,weather&days=1';
+    const url = 'https://bragmaster-proxy.lee-edwards-au.workers.dev?location=' + loc.id + '&forecasts=swell,tides,wind,weather&days=3';
     const resp = await fetch(url);
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const data = await resp.json();
@@ -4226,58 +4226,89 @@ function renderConditions(data, loc) {
   const upd = document.getElementById('condUpdated');
   const now = new Date();
   upd.textContent = 'Updated ' + now.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
-  const hour = now.getHours();
+  const hour  = now.getHours();
+  const nowMs = now.getTime();
+  const days  = ['swell','wind','weather'].map(k => data.forecasts && data.forecasts[k] && data.forecasts[k].days);
+  const numDays = Math.max(...['swell','wind','weather','tides'].map(k => (data.forecasts&&data.forecasts[k]&&data.forecasts[k].days||[]).length));
   let html = '';
 
-  const swellDay = data.forecasts && data.forecasts.swell && data.forecasts.swell.days && data.forecasts.swell.days[0];
-  if (swellDay) {
-    const e = swellDay.entries[Math.min(hour, swellDay.entries.length-1)];
-    if (e) html += '<div class="cond-section"><div class="cond-section-hdr">Swell</div><div class="cond-grid">'
-      + '<div class="cond-field"><div class="cf-lbl">Height</div><div class="cf-val">' + e.height + 'm</div></div>'
-      + '<div class="cond-field"><div class="cf-lbl">Period</div><div class="cf-val">' + e.period + 's</div></div>'
-      + '<div class="cond-field"><div class="cf-lbl">Direction</div><div class="cf-val">' + e.directionText + '</div><div class="cf-sub">' + Math.round(e.direction) + 'deg</div></div>'
-      + '</div></div>';
-  }
+  const dayLabel = (dateStr, i) => {
+    if (i===0) return 'Today';
+    if (i===1) return 'Tomorrow';
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'short'});
+  };
 
-  const windDay = data.forecasts && data.forecasts.wind && data.forecasts.wind.days && data.forecasts.wind.days[0];
-  if (windDay) {
-    const e = windDay.entries[Math.min(hour, windDay.entries.length-1)];
-    if (e) html += '<div class="cond-section"><div class="cond-section-hdr">Wind</div><div class="cond-grid">'
-      + '<div class="cond-field"><div class="cf-lbl">Speed</div><div class="cf-val">' + Math.round(e.speed) + ' km/h</div></div>'
-      + '<div class="cond-field"><div class="cf-lbl">Direction</div><div class="cf-val">' + e.directionText + '</div><div class="cf-sub">' + Math.round(e.direction) + 'deg</div></div>'
-      + '</div></div>';
-  }
+  for (let di = 0; di < Math.min(numDays, 3); di++) {
+    const swellDays = data.forecasts && data.forecasts.swell && data.forecasts.swell.days;
+    const windDays  = data.forecasts && data.forecasts.wind  && data.forecasts.wind.days;
+    const wxDays    = data.forecasts && data.forecasts.weather && data.forecasts.weather.days;
+    const tideDays  = data.forecasts && data.forecasts.tides && data.forecasts.tides.days;
 
-  const wxDay = data.forecasts && data.forecasts.weather && data.forecasts.weather.days && data.forecasts.weather.days[0];
-  if (wxDay) {
-    const e = wxDay.entries[0];
-    if (e) html += '<div class="cond-section"><div class="cond-section-hdr">Weather</div><div class="cond-grid">'
-      + '<div class="cond-field"><div class="cf-lbl">Conditions</div><div class="cf-val">' + e.precis + '</div></div>'
-      + '<div class="cond-field"><div class="cf-lbl">Temperature</div><div class="cf-val">' + e.min + ' - ' + e.max + 'C</div></div>'
-      + '</div></div>';
-  }
+    const swellDay = swellDays && swellDays[di];
+    const windDay  = windDays  && windDays[di];
+    const wxDay    = wxDays    && wxDays[di];
+    const tideDay  = tideDays  && tideDays[di];
 
-  const tideDay = data.forecasts && data.forecasts.tides && data.forecasts.tides.days && data.forecasts.tides.days[0];
-  if (tideDay && tideDay.entries && tideDay.entries.length) {
-    const nowMs = now.getTime();
-    let nextTide = null;
-    for (const e of tideDay.entries) {
-      if (new Date(e.dateTime.replace(' ','T')).getTime() > nowMs) { nextTide = e; break; }
+    const dateStr  = (swellDay||windDay||wxDay||tideDay||{}).dateTime || '';
+    const label    = dayLabel(dateStr, di);
+
+    // Day header
+    html += '<div style="font-size:13px;font-family:'Courier New',monospace;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink2);padding:12px 0 6px;font-weight:600;">' + label + '</div>';
+
+    // Swell
+    if (swellDay && swellDay.entries) {
+      const idx = di===0 ? Math.min(hour, swellDay.entries.length-1) : 6; // midday for future days
+      const e = swellDay.entries[idx];
+      if (e) html += '<div class="cond-section"><div class="cond-section-hdr">Swell</div><div class="cond-grid">'
+        + '<div class="cond-field"><div class="cf-lbl">Height</div><div class="cf-val">' + e.height + 'm</div></div>'
+        + '<div class="cond-field"><div class="cf-lbl">Period</div><div class="cf-val">' + e.period + 's</div></div>'
+        + '<div class="cond-field"><div class="cf-lbl">Direction</div><div class="cf-val">' + e.directionText + '</div></div>'
+        + '</div></div>';
     }
-    let tideHtml = '<div class="cond-section"><div class="cond-section-hdr">Tides - ' + loc.label + '</div>';
-    tideDay.entries.forEach(e => {
-      const t = new Date(e.dateTime.replace(' ','T'));
-      const isPast = t.getTime() < nowMs;
-      const time = t.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
-      const isNext = nextTide && e.dateTime === nextTide.dateTime;
-      tideHtml += '<div class="tide-row" style="' + (isPast?'opacity:0.4':'') + '">'
-        + '<span class="tr-type ' + e.type + '">' + e.type + '</span>'
-        + '<span class="tr-time">' + time + (isNext ? ' next' : '') + '</span>'
-        + '<span class="tr-height">' + e.height + 'm</span>'
-        + '</div>';
-    });
-    tideHtml += '</div>';
-    html += tideHtml;
+
+    // Wind
+    if (windDay && windDay.entries) {
+      const idx = di===0 ? Math.min(hour, windDay.entries.length-1) : 6;
+      const e = windDay.entries[idx];
+      if (e) html += '<div class="cond-section"><div class="cond-section-hdr">Wind</div><div class="cond-grid">'
+        + '<div class="cond-field"><div class="cf-lbl">Speed</div><div class="cf-val">' + Math.round(e.speed) + ' km/h</div></div>'
+        + '<div class="cond-field"><div class="cf-lbl">Direction</div><div class="cf-val">' + e.directionText + '</div></div>'
+        + '</div></div>';
+    }
+
+    // Weather
+    if (wxDay && wxDay.entries && wxDay.entries[0]) {
+      const e = wxDay.entries[0];
+      html += '<div class="cond-section"><div class="cond-section-hdr">Weather</div><div class="cond-grid">'
+        + '<div class="cond-field"><div class="cf-lbl">Conditions</div><div class="cf-val">' + e.precis + '</div></div>'
+        + '<div class="cond-field"><div class="cf-lbl">Temperature</div><div class="cf-val">' + e.min + ' - ' + e.max + 'C</div></div>'
+        + '</div></div>';
+    }
+
+    // Tides
+    if (tideDay && tideDay.entries && tideDay.entries.length) {
+      let nextTide = null;
+      if (di===0) {
+        for (const e of tideDay.entries) {
+          if (new Date(e.dateTime.replace(' ','T')).getTime() > nowMs) { nextTide = e; break; }
+        }
+      }
+      let tideHtml = '<div class="cond-section"><div class="cond-section-hdr">Tides</div>';
+      tideDay.entries.forEach(e => {
+        const t      = new Date(e.dateTime.replace(' ','T'));
+        const isPast = di===0 && t.getTime() < nowMs;
+        const time   = t.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'});
+        const isNext = nextTide && e.dateTime === nextTide.dateTime;
+        tideHtml += '<div class="tide-row" style="' + (isPast?'opacity:0.4':'') + '">'
+          + '<span class="tr-type ' + e.type + '">' + e.type + '</span>'
+          + '<span class="tr-time">' + time + (isNext ? '  next' : '') + '</span>'
+          + '<span class="tr-height">' + e.height + 'm</span>'
+          + '</div>';
+      });
+      tideHtml += '</div>';
+      html += tideHtml;
+    }
   }
 
   el.innerHTML = html || '<div class="cond-loading">No data available.</div>';
