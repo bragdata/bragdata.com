@@ -5779,9 +5779,14 @@ async function callClaudeVision(imageB64, prompt, maxTokens) {
 }
 
 async function measureFishFromPhoto(imageDataUrl, mediaType) {
+  // Debug — show that we got here
+  const dbg = document.getElementById('aiMeasureResult');
+  if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">Step 1: Resizing image...</div>'; dbg.classList.add('show'); }
+
   try {
     const resized = await resizeImageForAI(imageDataUrl, 1200);
     const b64 = resized.split(',')[1];
+    if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">Step 2: Calling Claude (' + Math.round(b64.length/1000) + 'KB)...</div>'; }
 
     // Call 1 — species identification only (fast, no mat reading needed)
     const speciesPromise = callClaudeVision(b64,
