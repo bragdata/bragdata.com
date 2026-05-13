@@ -5719,13 +5719,9 @@ async function calibrateBragMat(e) {
     });
 
     // Send to Claude for analysis
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('https://bragmaster-proxy.lee-edwards-au.workers.dev?service=claude', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': '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',
-        'anthropic-version': '2023-06-01',
-      },
+      headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
         model: 'claude-opus-4-5',
         max_tokens: 500,
@@ -5759,73 +5755,81 @@ async function calibrateBragMat(e) {
   e.target.value = '';
 }
 
+async function callClaudeVision(imageB64, prompt, maxTokens) {
+  const response = await fetch('https://bragmaster-proxy.lee-edwards-au.workers.dev?service=claude', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: maxTokens || 200,
+      messages: [{
+        role: 'user',
+        content: [
+          {type:'image', source:{type:'base64', media_type:'image/jpeg', data:imageB64}},
+          {type:'text', text:prompt}
+        ]
+      }]
+    })
+  });
+  const rawText = await response.text();
+  if (!response.ok) throw new Error('HTTP ' + response.status + ': ' + rawText.slice(0,100));
+  const data = JSON.parse(rawText);
+  if (data.error) throw new Error(JSON.stringify(data.error));
+  return data.content?.[0]?.text || '';
+}
+
 async function measureFishFromPhoto(imageDataUrl, mediaType) {
   try {
-    // Resize image to max 800px before sending — reduces payload from ~3MB to ~100KB
     const resized = await resizeImageForAI(imageDataUrl, 1200);
-    const base64  = resized.split(',')[1];
+    const b64 = resized.split(',')[1];
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': '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',
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 600,
-        messages: [{
-          role: 'user',
-          content: [
-            {
-              type: 'image',
-              source: {type: 'base64', media_type: 'image/jpeg', data: base64}
-            },
-            {
-              type: 'text',
-              text: 'You are measuring a fish on a fishing brag mat. CRITICAL: Brag mats have TWO scales — ignore the small millimetre scale along the top edge. Use ONLY the large bold numbers along the BOTTOM edge (10, 20, 30, 40, 50, 60, 70, 80cm etc). STEPS: 1) Locate the large bold cm numbers along the bottom of the mat. 2) Find where the tip of the fish NOSE aligns with these large numbers — record this as nose_at_cm. 3) Find where the tip of the fish TAIL (furthest point) aligns — record as tail_at_cm. 4) Length = tail_at_cm minus nose_at_cm. 5) If photo angle is not directly overhead, the fish will appear shorter — add 8-12% to compensate. Also identify the Australian fish species. Respond ONLY in valid JSON: {"length_cm": number or null, "nose_at_cm": number, "tail_at_cm": number, "confidence": "high/medium/low", "camera_angle": "overhead/angled", "species": "Australian common name", "nicknames": "comma list", "legal_size_cm": number or null, "habitat_notes": "brief", "protected": true/false, "protection_notes": "if protected why", "notes": "brief"}'
-            }
-          ]
-        }]
-      })
-    });
+    // Call 1 — species identification only (fast, no mat reading needed)
+    const speciesPromise = callClaudeVision(b64,
+      'What Australian fish species is in this photo? Reply ONLY in JSON: {"species":"common name","nicknames":"comma list","legal_size_cm":number or null,"habitat":"one line","protected":true/false,"protection_notes":"if protected"}',
+      150
+    );
 
-    console.log('Response status:', response.status, response.statusText);
-    const rawText = await response.text();
-    console.log('Raw response:', rawText.slice(0, 500));
+    // Call 2 — measurement only (focused on mat reading)
+    const measurePromise = callClaudeVision(b64,
+      'Measure this fish using the brag mat ruler. Use ONLY the large bold numbers on the BOTTOM edge (10,20,30,40,50,60,70cm). Find nose tip cm and tail tip cm. Length = tail minus nose. If angled photo add 8-12%. Reply ONLY in JSON: {"length_cm":number or null,"nose_at_cm":number,"tail_at_cm":number,"confidence":"high/medium/low","camera_angle":"overhead/angled"}',
+      120
+    );
 
-    // Show status in UI for debugging
+    // Race both with 25s timeout each
+    const timeout = ms => new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), ms));
+
+    const [speciesText, measureText] = await Promise.all([
+      Promise.race([speciesPromise, timeout(25000)]).catch(e => {console.warn('Species call failed:',e.message); return null;}),
+      Promise.race([measurePromise, timeout(25000)]).catch(e => {console.warn('Measure call failed:',e.message); return null;})
+    ]);
+
+    const result = {};
+    if (speciesText) {
+      try {
+        const s = JSON.parse(speciesText.replace(/```json|```/g,'').trim());
+        Object.assign(result, s);
+      } catch(e) { console.warn('Species parse error:', speciesText); }
+    }
+    if (measureText) {
+      try {
+        const m = JSON.parse(measureText.replace(/```json|```/g,'').trim());
+        Object.assign(result, m);
+      } catch(e) { console.warn('Measure parse error:', measureText); }
+    }
+
+    // Show debug in panel
     const debugEl = document.getElementById('aiMeasureResult');
-    if (response.status !== 200) {
-      if (debugEl) { debugEl.innerHTML = '<div class="ai-measure-title" style="color:var(--danger)">HTTP ' + response.status + ': ' + rawText.slice(0,150) + '</div><button class="ai-measure-btn ai-measure-edit" onclick="document.getElementById(\'aiMeasureResult\').classList.remove(\'show\')">Dismiss</button>'; debugEl.classList.add('show'); }
-      return null;
+    if (debugEl) {
+      debugEl.innerHTML = '<div class="ai-measure-title">Species: ' + (result.species||'none') + ' · Length: ' + (result.length_cm||'none') + 'cm</div>';
+      debugEl.classList.add('show');
     }
 
-    let data;
-    try { data = JSON.parse(rawText); } catch(e) {
-      if (debugEl) { debugEl.innerHTML = '<div class="ai-measure-title" style="color:var(--danger)">Parse error: ' + rawText.slice(0,150) + '</div>'; debugEl.classList.add('show'); }
-      return null;
-    }
-    if (data.error) {
-      if (debugEl) { debugEl.innerHTML = '<div class="ai-measure-title" style="color:var(--danger)">API Error: ' + JSON.stringify(data.error).slice(0,150) + '</div><button class="ai-measure-btn ai-measure-edit" onclick="document.getElementById(\'aiMeasureResult\').classList.remove(\'show\')">Dismiss</button>'; debugEl.classList.add('show'); }
-      return null;
-    }
-    const text = data.content?.[0]?.text || '';
-    if (debugEl) { debugEl.innerHTML = '<div class="ai-measure-title">Claude: ' + text.slice(0,300) + '</div>'; debugEl.classList.add('show'); }
-    if (!text) return null;
-    const clean = text.replace(/```json|```/g, '').trim();
-    try { return JSON.parse(clean); } catch(e) {
-      if (debugEl) { debugEl.innerHTML = '<div class="ai-measure-title" style="color:var(--danger)">JSON error: ' + text.slice(0,200) + '</div>'; debugEl.classList.add('show'); }
-      return null;
-    }
+    return Object.keys(result).length > 0 ? result : null;
   } catch(err) {
     console.warn('AI measurement error:', err);
-    // Show error in result panel so user knows what happened
     const errEl = document.getElementById('aiMeasureResult');
     if (errEl) {
-      errEl.innerHTML = '<div class="ai-measure-title" style="color:var(--danger)">AI error: ' + err.message + '</div>'
-        + '<button class="ai-measure-btn ai-measure-edit" onclick="document.getElementById(\'aiMeasureResult\').classList.remove(\'show\')">Dismiss</button>';
+      errEl.innerHTML = '<div class="ai-measure-title" style="color:var(--danger)">Error: ' + err.message + '</div><button class="ai-measure-btn ai-measure-edit" onclick="document.getElementById(\'aiMeasureResult\').classList.remove(\'show\')">Dismiss</button>';
       errEl.classList.add('show');
     }
     return null;
