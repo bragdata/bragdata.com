@@ -74,12 +74,13 @@
 .bulk-sel-group { background:var(--catch); color:white; }
 .bulk-sel-cancel { background:rgba(255,255,255,0.15); color:#e0f7fa; }
 /* Tile grid — PHASE 1 */
-.bulk-tile-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:3px; padding:3px; }
+.bulk-tile-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:3px; padding:3px; -webkit-touch-callout:none; -webkit-user-select:none; user-select:none; }
 .bulk-tile {
   position:relative; aspect-ratio:1; overflow:hidden;
   background:var(--ink2); cursor:pointer;
   border:2px solid transparent; transition:border-color 0.15s;
   border-radius:4px;
+  -webkit-touch-callout:none; -webkit-user-select:none; user-select:none;
 }
 .bulk-tile.selected { border-color:var(--catch); }
 .bulk-tile.grouped { border-color:var(--dawn); }
@@ -114,14 +115,26 @@
 .bulk-field input, .bulk-field select { width:100%; border:1.5px solid var(--line); border-radius:var(--radius-sm); padding:8px 10px; font-size:13px; font-family:'Georgia',serif; color:var(--ink); background:var(--foam); -webkit-appearance:none; }
 .bulk-field.full { grid-column:1/-1; }
 /* No-GPS boat ramp picker */
-.bulk-ramp-picker { background:var(--sand); border:1.5px solid var(--dawn); border-radius:var(--radius-sm); padding:10px 12px; margin:0 14px 10px; }
-.bulk-ramp-picker p { font-size:11px; font-family:'Courier New',monospace; color:#92400e; margin-bottom:8px; }
-.bulk-ramp-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
-.bulk-ramp-btn { background:var(--surface); border:1.5px solid var(--line); border-radius:var(--radius-sm); padding:8px 10px; font-size:12px; font-family:'Georgia',serif; color:var(--ink); cursor:pointer; text-align:left; transition:all 0.15s; }
-.bulk-ramp-btn.selected { background:var(--ink); border-color:var(--ink); color:#e0f7fa; }
-.bulk-ramp-name { display:block; font-size:13px; }
-.bulk-ramp-state { display:block; font-size:10px; font-family:'Courier New',monospace; color:var(--mist); margin-top:1px; }
-.bulk-ramp-btn.selected .bulk-ramp-state { color:#64b5d9; }
+.bulk-loc-picker { background:var(--sand); border:1.5px solid var(--dawn); border-radius:var(--radius-sm); padding:10px 12px; margin:0 14px 10px; }
+.bulk-loc-picker-title { font-size:11px; font-family:'Courier New',monospace; color:#92400e; margin-bottom:8px; font-weight:600; }
+.bulk-loc-tabs { display:flex; gap:6px; margin-bottom:10px; }
+.bulk-loc-tab { flex:1; background:var(--surface); border:1.5px solid var(--line); border-radius:var(--radius-sm); padding:7px 6px; font-size:11px; font-family:'Courier New',monospace; color:var(--mist); cursor:pointer; text-align:center; transition:all 0.15s; }
+.bulk-loc-tab.active { background:var(--ink); border-color:var(--ink); color:#e0f7fa; }
+.bulk-loc-list { display:grid; grid-template-columns:1fr 1fr; gap:6px; max-height:160px; overflow-y:auto; }
+.bulk-loc-btn { background:var(--surface); border:1.5px solid var(--line); border-radius:var(--radius-sm); padding:8px 10px; font-size:12px; font-family:'Georgia',serif; color:var(--ink); cursor:pointer; text-align:left; transition:all 0.15s; }
+.bulk-loc-btn.selected { background:var(--ink); border-color:var(--ink); color:#e0f7fa; }
+.bulk-loc-name { display:block; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.bulk-loc-sub { display:block; font-size:10px; font-family:'Courier New',monospace; color:var(--mist); margin-top:1px; }
+.bulk-loc-btn.selected .bulk-loc-sub { color:#64b5d9; }
+.bulk-loc-map { width:100%; height:180px; border-radius:var(--radius-sm); border:1px solid var(--line); margin-top:4px; }
+.bulk-selected-loc { background:var(--catch-light); border:1px solid var(--catch); border-radius:var(--radius-sm); padding:6px 10px; margin-top:6px; font-size:11px; font-family:'Courier New',monospace; color:#065f46; }
+/* Depth slider */
+.bulk-depth-wrap { padding:8px 14px 12px; border-top:1px solid var(--line); }
+.bulk-depth-label { font-size:9px; font-family:'Courier New',monospace; letter-spacing:0.1em; text-transform:uppercase; color:var(--mist); display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.bulk-depth-val { font-size:14px; color:var(--ink); font-family:'Courier New',monospace; font-weight:600; }
+.bulk-depth-slider { width:100%; -webkit-appearance:none; appearance:none; height:6px; border-radius:3px; background:var(--line); outline:none; }
+.bulk-depth-slider::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:24px; height:24px; border-radius:50%; background:var(--ink); cursor:pointer; border:3px solid white; box-shadow:0 1px 4px rgba(0,0,0,0.3); }
+.bulk-depth-marks { display:flex; justify-content:space-between; font-size:9px; font-family:'Courier New',monospace; color:var(--mist); margin-top:4px; }
 .bulk-skip-btn { background:none; border:none; color:var(--mist); font-size:11px; font-family:'Courier New',monospace; padding:4px 14px 10px; cursor:pointer; text-decoration:underline; display:block; }
 /* Footer */
 .bulk-footer { position:fixed; bottom:0; left:0; right:0; background:var(--ink); padding:10px 14px; z-index:801; display:flex; flex-direction:column; gap:6px; }
@@ -1286,12 +1299,13 @@ body.map-open .content > #view-map { display: flex; }
 .bulk-sel-group { background:var(--catch); color:white; }
 .bulk-sel-cancel { background:rgba(255,255,255,0.15); color:#e0f7fa; }
 /* Tile grid — PHASE 1 */
-.bulk-tile-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:3px; padding:3px; }
+.bulk-tile-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:3px; padding:3px; -webkit-touch-callout:none; -webkit-user-select:none; user-select:none; }
 .bulk-tile {
   position:relative; aspect-ratio:1; overflow:hidden;
   background:var(--ink2); cursor:pointer;
   border:2px solid transparent; transition:border-color 0.15s;
   border-radius:4px;
+  -webkit-touch-callout:none; -webkit-user-select:none; user-select:none;
 }
 .bulk-tile.selected { border-color:var(--catch); }
 .bulk-tile.grouped { border-color:var(--dawn); }
@@ -1326,14 +1340,26 @@ body.map-open .content > #view-map { display: flex; }
 .bulk-field input, .bulk-field select { width:100%; border:1.5px solid var(--line); border-radius:var(--radius-sm); padding:8px 10px; font-size:13px; font-family:'Georgia',serif; color:var(--ink); background:var(--foam); -webkit-appearance:none; }
 .bulk-field.full { grid-column:1/-1; }
 /* No-GPS boat ramp picker */
-.bulk-ramp-picker { background:var(--sand); border:1.5px solid var(--dawn); border-radius:var(--radius-sm); padding:10px 12px; margin:0 14px 10px; }
-.bulk-ramp-picker p { font-size:11px; font-family:'Courier New',monospace; color:#92400e; margin-bottom:8px; }
-.bulk-ramp-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
-.bulk-ramp-btn { background:var(--surface); border:1.5px solid var(--line); border-radius:var(--radius-sm); padding:8px 10px; font-size:12px; font-family:'Georgia',serif; color:var(--ink); cursor:pointer; text-align:left; transition:all 0.15s; }
-.bulk-ramp-btn.selected { background:var(--ink); border-color:var(--ink); color:#e0f7fa; }
-.bulk-ramp-name { display:block; font-size:13px; }
-.bulk-ramp-state { display:block; font-size:10px; font-family:'Courier New',monospace; color:var(--mist); margin-top:1px; }
-.bulk-ramp-btn.selected .bulk-ramp-state { color:#64b5d9; }
+.bulk-loc-picker { background:var(--sand); border:1.5px solid var(--dawn); border-radius:var(--radius-sm); padding:10px 12px; margin:0 14px 10px; }
+.bulk-loc-picker-title { font-size:11px; font-family:'Courier New',monospace; color:#92400e; margin-bottom:8px; font-weight:600; }
+.bulk-loc-tabs { display:flex; gap:6px; margin-bottom:10px; }
+.bulk-loc-tab { flex:1; background:var(--surface); border:1.5px solid var(--line); border-radius:var(--radius-sm); padding:7px 6px; font-size:11px; font-family:'Courier New',monospace; color:var(--mist); cursor:pointer; text-align:center; transition:all 0.15s; }
+.bulk-loc-tab.active { background:var(--ink); border-color:var(--ink); color:#e0f7fa; }
+.bulk-loc-list { display:grid; grid-template-columns:1fr 1fr; gap:6px; max-height:160px; overflow-y:auto; }
+.bulk-loc-btn { background:var(--surface); border:1.5px solid var(--line); border-radius:var(--radius-sm); padding:8px 10px; font-size:12px; font-family:'Georgia',serif; color:var(--ink); cursor:pointer; text-align:left; transition:all 0.15s; }
+.bulk-loc-btn.selected { background:var(--ink); border-color:var(--ink); color:#e0f7fa; }
+.bulk-loc-name { display:block; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.bulk-loc-sub { display:block; font-size:10px; font-family:'Courier New',monospace; color:var(--mist); margin-top:1px; }
+.bulk-loc-btn.selected .bulk-loc-sub { color:#64b5d9; }
+.bulk-loc-map { width:100%; height:180px; border-radius:var(--radius-sm); border:1px solid var(--line); margin-top:4px; }
+.bulk-selected-loc { background:var(--catch-light); border:1px solid var(--catch); border-radius:var(--radius-sm); padding:6px 10px; margin-top:6px; font-size:11px; font-family:'Courier New',monospace; color:#065f46; }
+/* Depth slider */
+.bulk-depth-wrap { padding:8px 14px 12px; border-top:1px solid var(--line); }
+.bulk-depth-label { font-size:9px; font-family:'Courier New',monospace; letter-spacing:0.1em; text-transform:uppercase; color:var(--mist); display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+.bulk-depth-val { font-size:14px; color:var(--ink); font-family:'Courier New',monospace; font-weight:600; }
+.bulk-depth-slider { width:100%; -webkit-appearance:none; appearance:none; height:6px; border-radius:3px; background:var(--line); outline:none; }
+.bulk-depth-slider::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:24px; height:24px; border-radius:50%; background:var(--ink); cursor:pointer; border:3px solid white; box-shadow:0 1px 4px rgba(0,0,0,0.3); }
+.bulk-depth-marks { display:flex; justify-content:space-between; font-size:9px; font-family:'Courier New',monospace; color:var(--mist); margin-top:4px; }
 .bulk-skip-btn { background:none; border:none; color:var(--mist); font-size:11px; font-family:'Courier New',monospace; padding:4px 14px 10px; cursor:pointer; text-decoration:underline; display:block; }
 /* Footer */
 .bulk-footer { position:fixed; bottom:0; left:0; right:0; background:var(--ink); padding:10px 14px; z-index:801; display:flex; flex-direction:column; gap:6px; }
@@ -1743,7 +1769,7 @@ body.map-open .content > #view-map { display: flex; }
 
 <!-- ═══ SETTINGS VIEW ═══ -->
 <div class="view" id="view-settings">
-  <div class="settings-section">
+  <div class="settings-section" style="display:none">
     <div class="settings-section-hdr">🌊 WorldTides API Key</div>
     <div class="settings-body">
       <p>Used to automatically look up tide state when importing a photo. Get a free key (100 credits) at <strong>worldtides.info</strong> — takes 2 minutes to register.</p>
@@ -2926,27 +2952,41 @@ function parseExif(buf) {
   const view = new DataView(buf);
   const result = {dateTime:null, gpsLat:null, gpsLon:null};
   try {
-    if (view.getUint16(0) !== 0xFFD8) return result;
-    let offset = 2, safety = 0;
-    while (offset < view.byteLength - 2 && safety++ < 200) {
-      const marker = view.getUint16(offset); offset += 2;
-      if (marker === 0xFFE1) {
-        const len = view.getUint16(offset);
-        if (len < 8) { offset += len; continue; }
-        const exifHeader = String.fromCharCode(
-          view.getUint8(offset+2), view.getUint8(offset+3),
-          view.getUint8(offset+4), view.getUint8(offset+5)
-        );
-        if (exifHeader === 'Exif') {
-          try { parseExifBlock(view, offset+8, result); } catch(e) { console.warn('parseExifBlock error:', e); }
+    const sig = view.getUint16(0);
+    if (sig === 0xFFD8) {
+      // JPEG — standard EXIF scan
+      let offset = 2, safety = 0;
+      while (offset < view.byteLength - 2 && safety++ < 200) {
+        const marker = view.getUint16(offset); offset += 2;
+        if (marker === 0xFFE1) {
+          const len = view.getUint16(offset);
+          if (len < 8) { offset += len; continue; }
+          const exifHeader = String.fromCharCode(
+            view.getUint8(offset+2), view.getUint8(offset+3),
+            view.getUint8(offset+4), view.getUint8(offset+5)
+          );
+          if (exifHeader === 'Exif') {
+            try { parseExifBlock(view, offset+8, result); } catch(e) {}
+          }
+          offset += len;
+        } else if ((marker & 0xFF00) === 0xFF00) {
+          if (offset + 2 > view.byteLength) break;
+          const segLen = view.getUint16(offset); if (segLen < 2) break;
+          offset += segLen;
+        } else break;
+      }
+    } else {
+      // HEIF/HEIC or other — scan entire buffer for 'Exif\0\0' marker
+      // This finds the EXIF block regardless of container format
+      const bytes = new Uint8Array(buf);
+      for (let i = 0; i < bytes.length - 6; i++) {
+        if (bytes[i]===0x45 && bytes[i+1]===0x78 && bytes[i+2]===0x69 &&
+            bytes[i+3]===0x66 && bytes[i+4]===0x00 && bytes[i+5]===0x00) {
+          // Found 'Exif\0\0' — TIFF header starts 2 bytes after
+          try { parseExifBlock(view, i+6, result); } catch(e) {}
+          if (result.dateTime || result.gpsLat) break; // found something useful
         }
-        offset += len;
-      } else if ((marker & 0xFF00) === 0xFF00) {
-        if (offset + 2 > view.byteLength) break;
-        const segLen = view.getUint16(offset);
-        if (segLen < 2) break;
-        offset += segLen;
-      } else break;
+      }
     }
   } catch(e) { console.warn('parseExif outer error:', e); }
   return result;
@@ -3211,18 +3251,12 @@ function saveApiKey() {
 async function lookupTide(exifDateTime, lat, lon) {
   try {
     const el  = document.getElementById('tideLookup');
-    const key = localStorage.getItem('bragmaster_wtkey') || '';
-    if (!key) {
-      el.className = 'tide-lookup error show';
-      el.textContent = '⚠ No WorldTides API key — add one in Settings to auto-fill tide.';
-      return;
-    }
     el.className = 'tide-lookup loading show'; el.textContent = '⌛ Looking up tide data…';
     const dtStr    = exifDateTime.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3');
     const catchTime = new Date(dtStr);
     const catchUnix = Math.floor(catchTime.getTime() / 1000);
     const dateStr  = dtStr.slice(0, 10);
-    const url = `https://www.worldtides.info/api/v3?extremes&lat=${lat}&lon=${lon}&date=${dateStr}&days=1&key=${key}`;
+    const url = 'https://bragmaster-proxy.lee-edwards-au.workers.dev?service=wt&lat='+lat+'&lon='+lon+'&date='+dateStr+'&days=1';
     try {
       const resp = await fetch(url);
       const data = await resp.json();
@@ -3261,11 +3295,11 @@ async function lookupTide(exifDateTime, lat, lon) {
 }
 
 async function lookupTideForEnrich(exifDateTime, lat, lon, catchObj) {
-  const key = localStorage.getItem('bragmaster_wtkey') || ''; if (!key) return;
+  // Key handled by proxy
   const dtStr = exifDateTime.replace(/^(\d{4}):(\d{2}):(\d{2})/, '$1-$2-$3');
   const catchUnix = Math.floor(new Date(dtStr).getTime() / 1000);
   const dateStr = dtStr.slice(0, 10);
-  const resp = await fetch(`https://www.worldtides.info/api/v3?extremes&lat=${lat}&lon=${lon}&date=${dateStr}&days=1&key=${key}`);
+  const resp = await fetch('https://bragmaster-proxy.lee-edwards-au.workers.dev?service=wt&lat='+lat+'&lon='+lon+'&date='+dateStr+'&days=1');
   const data = await resp.json();
   if (!data.extremes || !data.extremes.length) return;
   let before=null, after=null;
@@ -3345,7 +3379,7 @@ async function fetchWWSwell(lat, lon, date, hour) {
   const daysAgo   = (Date.now() - catchDate.getTime()) / (1000*60*60*24);
   if (daysAgo > 7) return null; // WW forecast doesn't go back far enough
 
-  const url = 'https://bragmaster-proxy.lee-edwards-au.workers.dev?location=' + nearest.id + '&forecasts=swell&days=1&startDate=' + date;
+  const url = 'https://bragmaster-proxy.lee-edwards-au.workers.dev?service=ww&location=' + nearest.id + '&forecasts=swell&days=1&startDate=' + date;
   const resp = await fetch(url);
   const data = await resp.json();
   const swellDay = data.forecasts && data.forecasts.swell && data.forecasts.swell.days && data.forecasts.swell.days[0];
@@ -3414,8 +3448,7 @@ async function runEnrichment() {
     let changed = false;
 
     // Tide
-    const wtKey = localStorage.getItem('bragmaster_wtkey') || '';
-    if (!c.tide && wtKey && c.time) {
+    if (!c.tide && c.time) {
       try {
         await lookupTideForEnrich(c.date.replace(/-/g,':') + ' ' + c.time + ':00', lat, lon, c);
         if (c.tide) { changed = true; log(`✓ ${c.species||'Catch'} ${c.date} — tide: ${c.tide}`); }
@@ -4452,7 +4485,7 @@ async function loadConditions() {
   el.innerHTML = '<div class="cond-loading">Fetching latest conditions...</div>';
   upd.textContent = '';
   try {
-    const url = 'https://bragmaster-proxy.lee-edwards-au.workers.dev?location=' + loc.id + '&forecasts=swell,tides,wind,weather&days=3';
+    const url = 'https://bragmaster-proxy.lee-edwards-au.workers.dev?service=ww&location=' + loc.id + '&forecasts=swell,tides,wind,weather&days=3';
     const resp = await fetch(url);
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const data = await resp.json();
@@ -4579,10 +4612,11 @@ async function readPhotoExif(file) {
               c.width = w; c.height = h;
               c.getContext('2d').drawImage(img, 0, 0, w, h);
               const thumb = c.toDataURL('image/jpeg', 0.7);
-              res({file, dataUrl:thumb, dateTime:exifData.dateTime, lat:exifData.gpsLat, lon:exifData.gpsLon});
+              const dt = exifData.dateTime || fileLastModifiedToExif(file);
+              res({file, dataUrl:thumb, dateTime:dt, lat:exifData.gpsLat, lon:exifData.gpsLon, dateFromFile:!exifData.dateTime});
             } catch(e) { res({file, dataUrl:rawB64, dateTime:exifData.dateTime, lat:exifData.gpsLat, lon:exifData.gpsLon}); }
           };
-          img.onerror = () => res({file, dataUrl:rawB64, dateTime:exifData.dateTime, lat:exifData.gpsLat, lon:exifData.gpsLon});
+          img.onerror = () => res({file, dataUrl:rawB64, dateTime:exifData.dateTime||fileLastModifiedToExif(file), lat:exifData.gpsLat, lon:exifData.gpsLon, dateFromFile:!exifData.dateTime});
           img.src = rawB64;
         } catch(e) { res({file, dataUrl:rawB64, dateTime:exifData.dateTime, lat:exifData.gpsLat, lon:exifData.gpsLon}); }
       };
@@ -4592,6 +4626,14 @@ async function readPhotoExif(file) {
     bufReader.onerror = () => res({file, dataUrl:null, dateTime:null, lat:null, lon:null, error:true});
     bufReader.readAsArrayBuffer(file);
   });
+}
+
+function fileLastModifiedToExif(file) {
+  // Convert file.lastModified timestamp to EXIF date string format
+  if (!file || !file.lastModified) return null;
+  const d = new Date(file.lastModified);
+  const pad = n => String(n).padStart(2,'0');
+  return d.getFullYear()+':'+pad(d.getMonth()+1)+':'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
 }
 
 
@@ -4689,7 +4731,7 @@ function renderBulkTileGrid() {
     const isLeader = inGroup && bulkTiles.find(x => x.groupId === t.groupId) === t;
 
     return '<div class="bulk-tile' + (inGroup?' grouped':'') + '" id="btile' + i + '" data-idx="' + i + '">'
-      + (t.dataUrl ? '<img src="' + t.dataUrl + '" alt="photo">' : '<div style="width:100%;height:100%;background:var(--line);display:flex;align-items:center;justify-content:center;font-size:20px;">📷</div>')
+      + (t.dataUrl ? '<img data-src="' + t.dataUrl + '" alt="photo" style="width:100%;height:100%;object-fit:cover;display:block;">' : '<div style="width:100%;height:100%;background:var(--line);display:flex;align-items:center;justify-content:center;font-size:20px;">📷</div>')
       + '<div class="bulk-tile-badges">'
       + (hasGps  ? '<span class="bulk-badge bulk-badge-gps">GPS</span>' : '')
       + (hasDate ? '<span class="bulk-badge bulk-badge-date">Date</span>' : '')
@@ -4702,10 +4744,19 @@ function renderBulkTileGrid() {
       + '</div>';
   }).join('');
 
+  // Set image srcs after DOM render to avoid timing issues
+  requestAnimationFrame(() => {
+    document.querySelectorAll('#bulkTileGrid img[data-src]').forEach(img => {
+      img.src = img.dataset.src;
+      img.removeAttribute('data-src');
+    });
+  });
+
   // Use event delegation on the grid for long press — more reliable on iOS
   const grid2 = document.getElementById('bulkTileGrid');
   grid2.ontouchstart = e => {
     const tile = e.target.closest('.bulk-tile'); if (!tile) return;
+    e.preventDefault();
     const idx = parseInt(tile.dataset.idx);
     bulkLongPressTimer = setTimeout(() => {
       if (!bulkSelMode) enterBulkSelMode(idx);
@@ -4817,6 +4868,11 @@ function renderBulkReview() {
       + '</div>'
       + '<div class="bulk-group-thumbs">'+thumbsHtml+'</div>'
       + rampHtml
+      + '<div class="bulk-depth-wrap">'
+      + '<div class="bulk-depth-label"><span>Water Depth</span><span class="bulk-depth-val" id="bdepth_val_'+gi+'">' + (g.depth||'—') + '</span></div>'
+      + '<input type="range" class="bulk-depth-slider" id="bdepth_'+gi+'" min="0" max="100" step="1" value="' + (g.depth||0) + '" oninput="updateBulkDepth('+gi+',this.value)">'
+      + '<div class="bulk-depth-marks"><span>0m</span><span>10m</span><span>25m</span><span>50m</span><span>100m</span></div>'
+      + '</div>'
       + '<div class="bulk-fields">'
       + '<div class="bulk-field full"><label>Species</label>'
       + '<div class="species-wrap" style="position:relative">'
@@ -4831,6 +4887,131 @@ function renderBulkReview() {
       + '<button class="bulk-skip-btn" onclick="toggleBulkSkip('+gi+')">Skip this catch</button>'
       + '</div>';
   }).join('');
+}
+
+
+function renderBulkLocPicker(gi, g) {
+  // Combine saved locations + unique previous catch spots
+  const catchSpots = [];
+  const seenSpots = new Set();
+  catches.forEach(c => {
+    if (c.gps && c.spotName && !seenSpots.has(c.spotName)) {
+      seenSpots.add(c.spotName);
+      const parts = c.gps.split(',').map(s => parseFloat(s.trim()));
+      if (parts.length===2&&!isNaN(parts[0])) catchSpots.push({id:'spot_'+c.id, name:c.spotName, sub:c.state||'', lat:parts[0], lon:parts[1], isCatch:true});
+    }
+  });
+  const allLocs = [...locations.map(l => ({id:l.id, name:l.name, sub:l.state, lat:l.lat, lon:l.lon})), ...catchSpots.slice(0,20)];
+
+  const listHtml = allLocs.map(l => {
+    const sel = g.rampLocId===l.id ? ' selected' : '';
+    return '<button class="bulk-loc-btn'+sel+'" id="bloc_'+gi+'_'+l.id+'" onclick="pickBulkLoc('+gi+',\''+l.id+'\')">'
+      + '<span class="bulk-loc-name">'+h(l.name)+'</span>'
+      + '<span class="bulk-loc-sub">'+h(l.sub)+'</span>'
+      + '</button>';
+  }).join('');
+
+  const selLoc = allLocs.find(l => l.id === g.rampLocId);
+  const selHtml = selLoc ? '<div class="bulk-selected-loc">Selected: '+h(selLoc.name)+'</div>' : '';
+
+  return '<div class="bulk-loc-picker">'
+    + '<div class="bulk-loc-picker-title">No GPS — where was this caught?</div>'
+    + '<div class="bulk-loc-tabs">'
+    + '<button class="bulk-loc-tab active" id="bltab_list_'+gi+'" onclick="switchBulkLocTab('+gi+',\'list\')">List</button>'
+    + '<button class="bulk-loc-tab" id="bltab_map_'+gi+'" onclick="switchBulkLocTab('+gi+',\'map\')">Map</button>'
+    + '</div>'
+    + '<div id="bloc_list_'+gi+'">'
+    + '<div class="bulk-loc-list">'+listHtml+'</div>'
+    + selHtml
+    + '</div>'
+    + '<div id="bloc_map_'+gi+'" style="display:none">'
+    + '<div class="bulk-loc-map" id="bloc_mapel_'+gi+'"></div>'
+    + selHtml
+    + '</div>'
+    + '</div>';
+}
+
+function switchBulkLocTab(gi, tab) {
+  const listEl = document.getElementById('bloc_list_'+gi);
+  const mapEl  = document.getElementById('bloc_map_'+gi);
+  const listTab = document.getElementById('bltab_list_'+gi);
+  const mapTab  = document.getElementById('bltab_map_'+gi);
+  if (!listEl||!mapEl) return;
+  const showList = tab==='list';
+  listEl.style.display = showList ? 'block' : 'none';
+  mapEl.style.display  = showList ? 'none'  : 'block';
+  listTab.classList.toggle('active', showList);
+  mapTab.classList.toggle('active',  !showList);
+  if (!showList) initBulkLocMap(gi);
+}
+
+function initBulkLocMap(gi) {
+  if (typeof L === 'undefined') return;
+  const mapEl = document.getElementById('bloc_mapel_'+gi); if (!mapEl) return;
+  if (mapEl._leaflet_id) return; // already initialised
+
+  const g = bulkGroups[gi];
+  const map = L.map(mapEl, {zoomControl:true}).setView([-34.4, 150.9], 10);
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
+    attribution:'Tiles © Esri', maxZoom:19
+  }).addTo(map);
+
+  // Plot saved locations
+  const catchSpots = [];
+  const seenSpots = new Set();
+  catches.forEach(c => {
+    if (c.gps && c.spotName && !seenSpots.has(c.spotName)) {
+      seenSpots.add(c.spotName);
+      const parts = c.gps.split(',').map(s => parseFloat(s.trim()));
+      if (parts.length===2&&!isNaN(parts[0])) catchSpots.push({id:'spot_'+c.id, name:c.spotName, sub:c.state||'', lat:parts[0], lon:parts[1]});
+    }
+  });
+  const allLocs = [...locations.map(l => ({id:l.id, name:l.name, sub:l.state, lat:l.lat, lon:l.lon})), ...catchSpots.slice(0,20)];
+
+  allLocs.forEach(loc => {
+    const isSelected = g.rampLocId === loc.id;
+    const pin = L.divIcon({
+      html:'<div style="width:'+(isSelected?22:16)+'px;height:'+(isSelected?22:16)+'px;background:'+(isSelected?'#f59e0b':'#059669')+';border:2.5px solid white;border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 6px rgba(0,0,0,0.4)"></div>',
+      iconSize:[isSelected?22:16, isSelected?22:16], iconAnchor:[isSelected?11:8, isSelected?22:16], className:''
+    });
+    L.marker([loc.lat, loc.lon], {icon:pin})
+      .bindPopup('<b>'+loc.name+'</b>')
+      .on('click', () => pickBulkLoc(gi, loc.id))
+      .addTo(map);
+  });
+
+  setTimeout(() => map.invalidateSize(), 200);
+}
+
+function pickBulkLoc(gi, locId) {
+  // Find in locations or catch spots
+  let loc = locations.find(l => l.id===locId);
+  if (!loc) {
+    catches.forEach(c => {
+      if ('spot_'+c.id === locId && c.gps) {
+        const parts = c.gps.split(',').map(s=>parseFloat(s.trim()));
+        if (parts.length===2&&!isNaN(parts[0])) loc = {id:locId, name:c.spotName||'', lat:parts[0], lon:parts[1]};
+      }
+    });
+  }
+  if (!loc) return;
+  bulkGroups[gi].rampLocId = locId;
+  bulkGroups[gi].lat = loc.lat;
+  bulkGroups[gi].lon = loc.lon;
+  // Re-render just this group's picker section
+  const card = document.getElementById('bgroup'+gi);
+  if (card) {
+    const pickerEl = card.querySelector('.bulk-loc-picker');
+    if (pickerEl) pickerEl.outerHTML = renderBulkLocPicker(gi, bulkGroups[gi]);
+  }
+  showToast(loc.name+' selected');
+}
+
+function updateBulkDepth(gi, val) {
+  const v = parseInt(val);
+  bulkGroups[gi].depth = v > 0 ? v : null;
+  const lbl = document.getElementById('bdepth_val_'+gi);
+  if (lbl) lbl.textContent = v > 0 ? v+'m' : '—';
 }
 
 function pickBulkRamp(gi, locId) {
@@ -4882,6 +5063,7 @@ async function saveBulkCatches() {
         species:g.species||'Unknown', speciesId:null,
         weight:g.weight, length:g.length, method:g.method,
         disposition:g.disposition, notes:g.notes, photos:savedPhotos, bulkImport:true,
+        depth:g.depth||null,
       });
       saved++;
     } catch(err) { console.warn('Bulk save error:', err); }
