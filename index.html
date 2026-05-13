@@ -5795,50 +5795,64 @@ async function callClaudeVision(imageB64, prompt, maxTokens) {
 
 async function measureFishFromPhoto(imageDataUrl, mediaType) {
   const dbg = document.getElementById('aiMeasureResult');
-  // Set debug BEFORE try block so we know function was called
-  if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">Step 1: Got image (' + Math.round((imageDataUrl||'').length/1000) + 'KB)...</div>'; dbg.classList.add('show'); }
+  if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">⌛ Analysing photo…</div>'; dbg.classList.add('show'); }
   await new Promise(r => setTimeout(r, 50)); // allow UI to update
 
+  // Load brag mat profile for context
+  const matProfile = loadBragMatProfile();
+  const matContext = matProfile
+    ? ' The brag mat in this photo has been calibrated: ' + matProfile.description
+    : ' There may or may not be a brag mat in this photo.';
+
   try {
-    if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">Step 2: Resizing...</div>'; }
-    const resized = await resizeImageForAI(imageDataUrl, 500);
+    // Resize to 1200px max — large enough for mat markings to be legible
+    const resized = await resizeImageForAI(imageDataUrl, 1200);
     const b64 = resized.split(',')[1];
-    if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">Step 3: Sending ' + Math.round(b64.length/1000) + 'KB to Claude... (wait up to 60s)</div>'; }
+
+    const prompt =
+      'You are an expert Australian fishing assistant. Analyse this photo of a fish (possibly on a brag mat).' + matContext +
+      ' Reply ONLY with a single JSON object — no markdown, no explanation — with these exact keys: ' +
+      '{"species":"Australian common name, or unknown if unsure",' +
+      '"confidence":"high, medium, or low",' +
+      '"nicknames":"comma-separated local names, or empty string",' +
+      '"length_cm":null or a number (measure against the mat ruler if visible, else null),' +
+      '"mat_detected":true or false,' +
+      '"legal_size_cm":null or the NSW minimum legal size as a number,' +
+      '"habitat_notes":"one short sentence about where this fish is typically caught, or empty string",' +
+      '"notes":"any extra observation, or empty string",' +
+      '"protected":false or true}';
 
     const resp = await fetch('https://bragmaster-proxy.lee-edwards-au.workers.dev?service=claude', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 100,
+        max_tokens: 300,
         messages: [{
           role: 'user',
           content: [
             {type:'image', source:{type:'base64', media_type:'image/jpeg', data:b64}},
-            {type:'text', text:'Identify the fish species. Reply ONLY with JSON: {"species":"Australian common name or unknown","confidence":"high/medium/low","protected":false}'}
+            {type:'text', text: prompt}
           ]
         }]
       })
     });
 
-    if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">Step 3: Reading response (HTTP ' + resp.status + ')...</div>'; }
-
-    const raw = await resp.text();
-    if (dbg) { dbg.innerHTML = '<div class="ai-measure-title" style="word-break:break-all;font-size:10px;">RAW: ' + raw.slice(0,500) + '</div>'; dbg.classList.add('show'); }
-    await new Promise(r => setTimeout(r, 5000)); // hold for 5s so user can read
-
-    if (!resp.ok) throw new Error('HTTP ' + resp.status + ': ' + raw.slice(0,100));
-    const data = JSON.parse(raw);
-    if (data.error) throw new Error(JSON.stringify(data.error).slice(0,100));
+    if (!resp.ok) {
+      const errText = await resp.text();
+      throw new Error('HTTP ' + resp.status + ': ' + errText.slice(0,120));
+    }
+    const data = await resp.json();
+    if (data.error) throw new Error(JSON.stringify(data.error).slice(0,120));
     const text = data.content?.[0]?.text || '';
     if (!text) throw new Error('Empty response from Claude');
     const clean = text.replace(/```json|```/g,'').trim();
     return JSON.parse(clean);
 
   } catch(err) {
-    console.warn('AI error:', err);
+    console.warn('AI measure error:', err);
     if (dbg) {
-      dbg.innerHTML = '<div class="ai-measure-title" style="color:var(--danger)">Error: ' + err.message.slice(0,150) + '</div><button class="ai-measure-btn ai-measure-edit" onclick="document.getElementById(\'aiMeasureResult\').classList.remove(\'show\')">Dismiss</button>';
+      dbg.innerHTML = '<div class="ai-measure-title" style="color:var(--danger)">⚠️ ' + err.message.slice(0,150) + '</div><button class="ai-measure-btn ai-measure-edit" onclick="document.getElementById(\'aiMeasureResult\').classList.remove(\'show\')">Dismiss</button>';
       dbg.classList.add('show');
     }
     return null;
