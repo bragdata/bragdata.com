@@ -1621,7 +1621,7 @@ body.map-open .content > #view-map { display: flex; }
   </div>
   <div class="tabs">
     <button class="tab active" id="tab-log"        onclick="showView('log')">Log</button>
-    <button class="tab"        id="tab-catches"    onclick="showView('catches')">Catches</button>
+    <button class="tab"        id="tab-catches"    onclick="showView('catches')">Brag Page</button>
     <button class="tab"        id="tab-reports"    onclick="showView('reports')">Reports</button>
     <button class="tab"        id="tab-map"        onclick="showView('map')">Map</button>
     <button class="tab"        id="tab-conditions" onclick="showView('conditions')">Conditions</button>
@@ -3986,7 +3986,6 @@ function renderCatches() {
         <div class="cd"><div class="lbl">Bait / Lure</div>${v(c.bait)}</div>
         <div class="cd"><div class="lbl">Length</div>${c.length ? `<span class="val">${h(c.length)}cm</span>` : `<span class="val dash">—</span>`}</div>
         <div class="cd"><div class="lbl">Depth 📏</div>${c.depth ? `<span class="val" style="color:var(--water);font-weight:600">${h(c.depth)}m</span>` : `<span class="val dash">—</span>`}</div>
-        <div class="cd"><div class="lbl">Tide</div>${v(c.tide)}</div>
         <div class="cd"><div class="lbl">Disposition</div>${v(c.disposition)}</div>
       </div>
       ${buildConditionsBadge(c)}
@@ -5777,7 +5776,7 @@ async function measureFishFromPhoto(imageDataUrl, mediaType) {
             },
             {
               type: 'text',
-              text: 'Identify the fish species in this photo and measure its length if a brag mat ruler is visible. Brag mats have cm markings every 10cm. Respond ONLY in valid JSON: {"length_cm": number or null, "confidence": "high/medium/low", "mat_detected": true/false, "species": "Australian common name", "nicknames": "comma list", "legal_size_cm": number or null, "habitat_notes": "brief", "protected": true/false, "protection_notes": "if protected why", "notes": "issues"}'
+              text: 'Identify the fish species and measure its length from the brag mat ruler if visible. MEASUREMENT METHOD: 1) Find the large numbered markers (10, 20, 30, 40, 50, 60, 70cm etc) on the mat. 2) Note which large number aligns with the nose tip. 3) Note which large number aligns with the tail tip. 4) Count the number of 10cm intervals between nose and tail. 5) Count any remaining 1cm marks past the last 10cm interval. 6) Length = (intervals x 10) + remainder cm. PERSPECTIVE: if photo is taken at an angle not directly overhead, add 5-10% to compensate for foreshortening. Respond ONLY in valid JSON: {"length_cm": number or null, "confidence": "high/medium/low", "mat_detected": true/false, "nose_at_cm": number, "tail_at_cm": number, "camera_angle": "overhead/angled", "species": "Australian common name", "nicknames": "comma list", "legal_size_cm": number or null, "habitat_notes": "brief", "protected": true/false, "protection_notes": "if protected why", "notes": "issues"}'
             }
           ]
         }]
