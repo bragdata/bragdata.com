@@ -5735,10 +5735,20 @@ async function measureFishFromPhoto(imageDataUrl, mediaType) {
     });
 
     const data = await response.json();
-    if (data.error) { console.warn('Claude API error:', data.error); return null; }
+    if (data.error) {
+      console.warn('Claude API error:', data.error);
+      const errEl = document.getElementById('aiMeasureResult');
+      if (errEl) { errEl.innerHTML = '<div class="ai-measure-title" style="color:var(--danger)">API Error: ' + JSON.stringify(data.error) + '</div><button class="ai-measure-btn ai-measure-edit" onclick="document.getElementById(\'aiMeasureResult\').classList.remove(\'show\')">Dismiss</button>'; errEl.classList.add('show'); }
+      return null;
+    }
     const text  = data.content?.[0]?.text || '';
+    console.log('Claude raw response:', text);
+    // Show raw response briefly so we can debug
+    const debugEl = document.getElementById('aiMeasureResult');
+    if (debugEl) { debugEl.innerHTML = '<div class="ai-measure-title">Claude says: ' + text.slice(0,200) + '</div>'; debugEl.classList.add('show'); }
+    if (!text) return null;
     const clean = text.replace(/```json|```/g, '').trim();
-    return JSON.parse(clean);
+    try { return JSON.parse(clean); } catch(e) { console.warn('JSON parse error:', e, 'Raw:', text); return null; }
   } catch(err) {
     console.warn('AI measurement error:', err);
     // Show error in result panel so user knows what happened
