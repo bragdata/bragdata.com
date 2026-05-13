@@ -5784,7 +5784,7 @@ async function measureFishFromPhoto(imageDataUrl, mediaType) {
 
   try {
     if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">Step 2: Resizing...</div>'; }
-    const resized = await resizeImageForAI(imageDataUrl, 1200);
+    const resized = await resizeImageForAI(imageDataUrl, 800);
     const b64 = resized.split(',')[1];
     if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">Step 3: Asking Claude (' + Math.round(b64.length/1000) + 'KB)...</div>'; }
 
@@ -5854,7 +5854,7 @@ async function tryAIMeasurement(dataUrl, mediaType) {
   resultEl.classList.add('show');
 
   // 30 second timeout — prevents hanging
-  const timeoutPromise = new Promise(res => setTimeout(() => res({_timeout:true}), 45000));
+  const timeoutPromise = new Promise(res => setTimeout(() => res({_timeout:true}), 60000));
   const result = await Promise.race([measureFishFromPhoto(dataUrl, mediaType), timeoutPromise]);
   if (result && result._timeout) {
     resultEl.innerHTML = '<div class="ai-measure-title" style="color:var(--danger)">⏱ AI timed out — check internet connection</div><button class="ai-measure-btn ai-measure-edit" onclick="document.getElementById(\'aiMeasureResult\').classList.remove(\'show\');">Dismiss</button>';
