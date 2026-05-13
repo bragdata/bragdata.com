@@ -5791,21 +5791,34 @@ async function measureFishFromPhoto(imageDataUrl, mediaType) {
       })
     });
 
-    const data = await response.json();
-    if (data.error) {
-      console.warn('Claude API error:', data.error);
-      const errEl = document.getElementById('aiMeasureResult');
-      if (errEl) { errEl.innerHTML = '<div class="ai-measure-title" style="color:var(--danger)">API Error: ' + JSON.stringify(data.error) + '</div><button class="ai-measure-btn ai-measure-edit" onclick="document.getElementById(\'aiMeasureResult\').classList.remove(\'show\')">Dismiss</button>'; errEl.classList.add('show'); }
+    console.log('Response status:', response.status, response.statusText);
+    const rawText = await response.text();
+    console.log('Raw response:', rawText.slice(0, 500));
+
+    // Show status in UI for debugging
+    const debugEl = document.getElementById('aiMeasureResult');
+    if (response.status !== 200) {
+      if (debugEl) { debugEl.innerHTML = '<div class="ai-measure-title" style="color:var(--danger)">HTTP ' + response.status + ': ' + rawText.slice(0,150) + '</div><button class="ai-measure-btn ai-measure-edit" onclick="document.getElementById(\'aiMeasureResult\').classList.remove(\'show\')">Dismiss</button>'; debugEl.classList.add('show'); }
       return null;
     }
-    const text  = data.content?.[0]?.text || '';
-    console.log('Claude raw response:', text);
-    // Show raw response briefly so we can debug
-    const debugEl = document.getElementById('aiMeasureResult');
-    if (debugEl) { debugEl.innerHTML = '<div class="ai-measure-title">Claude says: ' + text.slice(0,200) + '</div>'; debugEl.classList.add('show'); }
+
+    let data;
+    try { data = JSON.parse(rawText); } catch(e) {
+      if (debugEl) { debugEl.innerHTML = '<div class="ai-measure-title" style="color:var(--danger)">Parse error: ' + rawText.slice(0,150) + '</div>'; debugEl.classList.add('show'); }
+      return null;
+    }
+    if (data.error) {
+      if (debugEl) { debugEl.innerHTML = '<div class="ai-measure-title" style="color:var(--danger)">API Error: ' + JSON.stringify(data.error).slice(0,150) + '</div><button class="ai-measure-btn ai-measure-edit" onclick="document.getElementById(\'aiMeasureResult\').classList.remove(\'show\')">Dismiss</button>'; debugEl.classList.add('show'); }
+      return null;
+    }
+    const text = data.content?.[0]?.text || '';
+    if (debugEl) { debugEl.innerHTML = '<div class="ai-measure-title">Claude: ' + text.slice(0,300) + '</div>'; debugEl.classList.add('show'); }
     if (!text) return null;
     const clean = text.replace(/```json|```/g, '').trim();
-    try { return JSON.parse(clean); } catch(e) { console.warn('JSON parse error:', e, 'Raw:', text); return null; }
+    try { return JSON.parse(clean); } catch(e) {
+      if (debugEl) { debugEl.innerHTML = '<div class="ai-measure-title" style="color:var(--danger)">JSON error: ' + text.slice(0,200) + '</div>'; debugEl.classList.add('show'); }
+      return null;
+    }
   } catch(err) {
     console.warn('AI measurement error:', err);
     // Show error in result panel so user knows what happened
