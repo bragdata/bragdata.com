@@ -134,7 +134,7 @@
 .bulk-depth-val { font-size:14px; color:var(--ink); font-family:'Courier New',monospace; font-weight:600; }
 .bulk-depth-slider { width:100%; -webkit-appearance:none; appearance:none; height:6px; border-radius:3px; background:var(--line); outline:none; }
 .bulk-depth-slider::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:24px; height:24px; border-radius:50%; background:var(--ink); cursor:pointer; border:3px solid white; box-shadow:0 1px 4px rgba(0,0,0,0.3); }
-.bulk-depth-marks { display:flex; justify-content:space-between; font-size:9px; font-family:'Courier New',monospace; color:var(--mist); margin-top:4px; }
+.bulk-depth-marks { display:flex; justify-content:space-between; font-size:9px; font-family:'Courier New',monospace; color:var(--mist); margin-top:4px; padding:0 2px; }
 .bulk-skip-btn { background:none; border:none; color:var(--mist); font-size:11px; font-family:'Courier New',monospace; padding:4px 14px 10px; cursor:pointer; text-decoration:underline; display:block; }
 /* Footer */
 .bulk-footer { position:fixed; bottom:0; left:0; right:0; background:var(--ink); padding:10px 14px; z-index:801; display:flex; flex-direction:column; gap:6px; }
@@ -142,6 +142,122 @@
 .bulk-import-btn:disabled { opacity:0.4; cursor:not-allowed; }
 .bulk-footer-hint { font-size:10px; font-family:'Courier New',monospace; color:#64b5d9; text-align:center; }
 .bulk-empty { text-align:center; padding:40px 20px; color:var(--mist); font-style:italic; font-size:14px; }
+
+/* CONDITIONS COMPASS BADGE */
+.cond-badge {
+  padding: 10px 14px 12px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.cond-compass {
+  flex-shrink: 0;
+  position: relative;
+  width: 72px;
+  height: 72px;
+}
+.cond-compass svg { width: 72px; height: 72px; }
+.cond-legend {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.cond-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+}
+.cond-legend-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.cond-legend-dot.wind  { background: #f59e0b; }
+.cond-legend-dot.swell { background: #0ea5e9; }
+.cond-legend-label { color: var(--mist); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; }
+.cond-legend-val   { color: var(--ink);  font-size: 12px; font-weight: 600; }
+.cond-badge-weather {
+  font-size: 11px; font-family: 'Courier New', monospace;
+  color: var(--mist); border-top: 1px dashed var(--line);
+  padding-top: 4px; margin-top: 2px;
+}
+
+/* SAVE TO CAMERA ROLL */
+.save-photo-btn {
+  position: absolute; bottom: 4px; left: 4px;
+  background: rgba(10,22,40,0.75); border: none; color: white;
+  font-size: 10px; font-family: 'Courier New', monospace;
+  padding: 3px 6px; border-radius: 4px; cursor: pointer;
+  white-space: nowrap; letter-spacing: 0.05em;
+}
+.save-photo-btn:active { background: var(--catch); }
+.photo-save-notice {
+  font-size: 10px; font-family: 'Courier New', monospace;
+  color: var(--mist); padding: 4px 14px 8px;
+  display: flex; align-items: center; gap: 6px;
+}
+.photo-save-notice a {
+  color: var(--water); text-decoration: underline; cursor: pointer;
+}
+
+/* BRAG MAT CALIBRATION */
+.bragmat-preview {
+  width: 100%; aspect-ratio: 3/1; object-fit: cover;
+  border-radius: var(--radius-sm); border: 1px solid var(--line);
+  margin-bottom: 10px; background: var(--line);
+  display: flex; align-items: center; justify-content: center;
+}
+.bragmat-placeholder {
+  width: 100%; aspect-ratio: 3/1;
+  background: var(--foam); border: 2px dashed var(--line);
+  border-radius: var(--radius-sm); margin-bottom: 10px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 6px;
+}
+.bragmat-placeholder-icon { font-size: 32px; }
+.bragmat-placeholder-text { font-size: 11px; font-family: 'Courier New', monospace; color: var(--mist); }
+.bragmat-status {
+  font-size: 11px; font-family: 'Courier New', monospace;
+  padding: 8px 12px; border-radius: var(--radius-sm); margin-bottom: 10px;
+}
+.bragmat-status.calibrated { background: var(--catch-light); color: #065f46; border: 1px solid var(--catch); }
+.bragmat-status.uncalibrated { background: var(--sand); color: #92400e; border: 1px solid var(--dawn); }
+.bragmat-status.analysing { background: rgba(14,116,144,0.1); color: var(--water); border: 1px solid var(--water); }
+.bragmat-profile {
+  background: var(--foam); border: 1px solid var(--line);
+  border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 10px;
+  font-size: 11px; font-family: 'Courier New', monospace; color: var(--mist);
+  line-height: 1.7;
+}
+.bragmat-actions { display: flex; gap: 8px; }
+.bragmat-btn {
+  flex: 1; border: none; border-radius: var(--radius-sm);
+  padding: 10px; font-size: 13px; font-family: 'Georgia', serif;
+  cursor: pointer; text-align: center;
+}
+.bragmat-btn-primary { background: var(--ink); color: #e0f7fa; }
+.bragmat-btn-danger  { background: var(--foam); border: 1px solid var(--line); color: var(--danger); }
+
+/* AI MEASUREMENT RESULT */
+.ai-measure-result {
+  background: var(--catch-light); border: 1.5px solid var(--catch);
+  border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 12px;
+  display: none;
+}
+.ai-measure-result.show { display: block; }
+.ai-measure-title { font-size: 11px; font-family: 'Courier New', monospace; letter-spacing: 0.1em; text-transform: uppercase; color: var(--catch); margin-bottom: 8px; }
+.ai-measure-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.ai-measure-label { font-size: 12px; color: var(--mist); font-family: 'Courier New', monospace; }
+.ai-measure-val { font-size: 18px; color: var(--ink); font-family: 'Courier New', monospace; font-weight: 700; }
+.ai-measure-confidence { font-size: 10px; color: var(--mist); font-family: 'Courier New', monospace; }
+.ai-measure-btns { display: flex; gap: 8px; margin-top: 10px; }
+.ai-measure-btn { flex: 1; border: none; border-radius: var(--radius-sm); padding: 10px; font-size: 13px; font-family: 'Georgia', serif; cursor: pointer; }
+.ai-measure-accept { background: var(--catch); color: white; }
+.ai-measure-edit   { background: var(--foam); border: 1px solid var(--line); color: var(--ink); }
 </style> — never inside it.
      JS block order mirrors CSS order above.
      ═══════════════════════════════════════════════════════════════ -->
@@ -1359,7 +1475,7 @@ body.map-open .content > #view-map { display: flex; }
 .bulk-depth-val { font-size:14px; color:var(--ink); font-family:'Courier New',monospace; font-weight:600; }
 .bulk-depth-slider { width:100%; -webkit-appearance:none; appearance:none; height:6px; border-radius:3px; background:var(--line); outline:none; }
 .bulk-depth-slider::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:24px; height:24px; border-radius:50%; background:var(--ink); cursor:pointer; border:3px solid white; box-shadow:0 1px 4px rgba(0,0,0,0.3); }
-.bulk-depth-marks { display:flex; justify-content:space-between; font-size:9px; font-family:'Courier New',monospace; color:var(--mist); margin-top:4px; }
+.bulk-depth-marks { display:flex; justify-content:space-between; font-size:9px; font-family:'Courier New',monospace; color:var(--mist); margin-top:4px; padding:0 2px; }
 .bulk-skip-btn { background:none; border:none; color:var(--mist); font-size:11px; font-family:'Courier New',monospace; padding:4px 14px 10px; cursor:pointer; text-decoration:underline; display:block; }
 /* Footer */
 .bulk-footer { position:fixed; bottom:0; left:0; right:0; background:var(--ink); padding:10px 14px; z-index:801; display:flex; flex-direction:column; gap:6px; }
@@ -1367,6 +1483,122 @@ body.map-open .content > #view-map { display: flex; }
 .bulk-import-btn:disabled { opacity:0.4; cursor:not-allowed; }
 .bulk-footer-hint { font-size:10px; font-family:'Courier New',monospace; color:#64b5d9; text-align:center; }
 .bulk-empty { text-align:center; padding:40px 20px; color:var(--mist); font-style:italic; font-size:14px; }
+
+/* CONDITIONS COMPASS BADGE */
+.cond-badge {
+  padding: 10px 14px 12px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.cond-compass {
+  flex-shrink: 0;
+  position: relative;
+  width: 72px;
+  height: 72px;
+}
+.cond-compass svg { width: 72px; height: 72px; }
+.cond-legend {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.cond-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+}
+.cond-legend-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.cond-legend-dot.wind  { background: #f59e0b; }
+.cond-legend-dot.swell { background: #0ea5e9; }
+.cond-legend-label { color: var(--mist); font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; }
+.cond-legend-val   { color: var(--ink);  font-size: 12px; font-weight: 600; }
+.cond-badge-weather {
+  font-size: 11px; font-family: 'Courier New', monospace;
+  color: var(--mist); border-top: 1px dashed var(--line);
+  padding-top: 4px; margin-top: 2px;
+}
+
+/* SAVE TO CAMERA ROLL */
+.save-photo-btn {
+  position: absolute; bottom: 4px; left: 4px;
+  background: rgba(10,22,40,0.75); border: none; color: white;
+  font-size: 10px; font-family: 'Courier New', monospace;
+  padding: 3px 6px; border-radius: 4px; cursor: pointer;
+  white-space: nowrap; letter-spacing: 0.05em;
+}
+.save-photo-btn:active { background: var(--catch); }
+.photo-save-notice {
+  font-size: 10px; font-family: 'Courier New', monospace;
+  color: var(--mist); padding: 4px 14px 8px;
+  display: flex; align-items: center; gap: 6px;
+}
+.photo-save-notice a {
+  color: var(--water); text-decoration: underline; cursor: pointer;
+}
+
+/* BRAG MAT CALIBRATION */
+.bragmat-preview {
+  width: 100%; aspect-ratio: 3/1; object-fit: cover;
+  border-radius: var(--radius-sm); border: 1px solid var(--line);
+  margin-bottom: 10px; background: var(--line);
+  display: flex; align-items: center; justify-content: center;
+}
+.bragmat-placeholder {
+  width: 100%; aspect-ratio: 3/1;
+  background: var(--foam); border: 2px dashed var(--line);
+  border-radius: var(--radius-sm); margin-bottom: 10px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 6px;
+}
+.bragmat-placeholder-icon { font-size: 32px; }
+.bragmat-placeholder-text { font-size: 11px; font-family: 'Courier New', monospace; color: var(--mist); }
+.bragmat-status {
+  font-size: 11px; font-family: 'Courier New', monospace;
+  padding: 8px 12px; border-radius: var(--radius-sm); margin-bottom: 10px;
+}
+.bragmat-status.calibrated { background: var(--catch-light); color: #065f46; border: 1px solid var(--catch); }
+.bragmat-status.uncalibrated { background: var(--sand); color: #92400e; border: 1px solid var(--dawn); }
+.bragmat-status.analysing { background: rgba(14,116,144,0.1); color: var(--water); border: 1px solid var(--water); }
+.bragmat-profile {
+  background: var(--foam); border: 1px solid var(--line);
+  border-radius: var(--radius-sm); padding: 10px 12px; margin-bottom: 10px;
+  font-size: 11px; font-family: 'Courier New', monospace; color: var(--mist);
+  line-height: 1.7;
+}
+.bragmat-actions { display: flex; gap: 8px; }
+.bragmat-btn {
+  flex: 1; border: none; border-radius: var(--radius-sm);
+  padding: 10px; font-size: 13px; font-family: 'Georgia', serif;
+  cursor: pointer; text-align: center;
+}
+.bragmat-btn-primary { background: var(--ink); color: #e0f7fa; }
+.bragmat-btn-danger  { background: var(--foam); border: 1px solid var(--line); color: var(--danger); }
+
+/* AI MEASUREMENT RESULT */
+.ai-measure-result {
+  background: var(--catch-light); border: 1.5px solid var(--catch);
+  border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 12px;
+  display: none;
+}
+.ai-measure-result.show { display: block; }
+.ai-measure-title { font-size: 11px; font-family: 'Courier New', monospace; letter-spacing: 0.1em; text-transform: uppercase; color: var(--catch); margin-bottom: 8px; }
+.ai-measure-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.ai-measure-label { font-size: 12px; color: var(--mist); font-family: 'Courier New', monospace; }
+.ai-measure-val { font-size: 18px; color: var(--ink); font-family: 'Courier New', monospace; font-weight: 700; }
+.ai-measure-confidence { font-size: 10px; color: var(--mist); font-family: 'Courier New', monospace; }
+.ai-measure-btns { display: flex; gap: 8px; margin-top: 10px; }
+.ai-measure-btn { flex: 1; border: none; border-radius: var(--radius-sm); padding: 10px; font-size: 13px; font-family: 'Georgia', serif; cursor: pointer; }
+.ai-measure-accept { background: var(--catch); color: white; }
+.ai-measure-edit   { background: var(--foam); border: 1px solid var(--line); color: var(--ink); }
 </style>
 
 <!-- ─────────────────────────────────────────────────────────────
@@ -1480,8 +1712,7 @@ body.map-open .content > #view-map { display: flex; }
         <div class="field"><label>Fishfinder Waypoint ID</label><input type="text" id="waypointId" placeholder="e.g. WPT-042"></div>
         <div class="field"><label>Waypoint Name</label><input type="text" id="waypointName" placeholder="e.g. The Bombora"></div>
       </div>
-      <div class="form-row">
-        <div class="field"><label>Water Depth (m)</label><input type="number" id="depth" placeholder="4.5" step="0.5" min="0"></div>
+      <div class="form-row single">
         <div class="field"><label>Water Temp (°C)</label><input type="number" id="waterTemp" placeholder="18" step="0.5"></div>
       </div>
     </div>
@@ -1565,9 +1796,12 @@ body.map-open .content > #view-map { display: flex; }
           <input type="hidden" id="spId"><input type="hidden" id="spName">
         </div>
       </div>
-      <div class="form-row triple">
+      <div class="form-row">
         <div class="field"><label>Weight (kg)</label><input type="number" id="weight" placeholder="0.0" step="0.1" min="0"></div>
         <div class="field"><label>Length (cm)</label><input type="number" id="length" placeholder="0" step="1" min="0"></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Depth (m) 📏</label><input type="number" id="depth" placeholder="e.g. 12" step="1" min="0"></div>
         <div class="field"><label>Count</label><input type="number" id="count" placeholder="1" min="1" value="1"></div>
       </div>
       <div class="form-row">
@@ -1611,6 +1845,7 @@ body.map-open .content > #view-map { display: flex; }
     </div>
   </div>
 
+  <div class="ai-measure-result" id="aiMeasureResult"></div>
   <button class="btn btn-save" onclick="saveCatch()">✓ Save to Journal</button>
 </div><!-- /view-log -->
 
@@ -1825,6 +2060,28 @@ body.map-open .content > #view-map { display: flex; }
   </div>
 
   <div class="settings-section">
+    <div class="settings-section-hdr">📏 My Brag Mat</div>
+    <div class="settings-body">
+      <p>Optional — BragMaster automatically reads any standard brag mat. Calibrating your specific mat can improve accuracy for unusual mat designs.</p>
+      <div id="bragmatPreviewWrap">
+        <div class="bragmat-placeholder" id="bragmatPlaceholder">
+          <div class="bragmat-placeholder-icon">📐</div>
+          <div class="bragmat-placeholder-text">No mat calibrated yet</div>
+        </div>
+      </div>
+      <div class="bragmat-status uncalibrated" id="bragmatStatus">Not calibrated — tap below to set up your mat</div>
+      <div class="bragmat-profile" id="bragmatProfile" style="display:none"></div>
+      <div class="bragmat-actions">
+        <label class="bragmat-btn bragmat-btn-primary" style="cursor:pointer">
+          📷 Calibrate Mat
+          <input type="file" accept="image/*" style="display:none" onchange="calibrateBragMat(event)">
+        </label>
+        <button class="bragmat-btn bragmat-btn-danger" id="bragmatClearBtn" onclick="clearBragMat()" style="display:none">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="settings-section">
     <div class="settings-section-hdr">💾 Backup &amp; Restore</div>
     <div class="settings-body">
       <p>Export everything — catches, photos, species, locations — to a single backup file. Use this before moving to a new device or published app URL.</p>
@@ -2008,7 +2265,14 @@ body.map-open .content > #view-map { display: flex; }
   <div class="modal" style="padding-bottom:60px">
     <h2>Edit Catch</h2>
     <input type="hidden" id="eCatchId">
-    <div class="field" style="margin-bottom:10px"><label>Species</label><input type="text" id="eCatchSpecies"></div>
+    <div class="field" style="margin-bottom:10px">
+      <label>Species</label>
+      <div class="species-wrap" style="position:relative">
+        <input type="text" id="eCatchSpecies" placeholder="Type to search species..." autocomplete="off"
+          oninput="onEditSpInput(this.value)" onfocus="onEditSpInput(this.value)" onblur="schedEditSpClose()">
+        <div class="species-dropdown" id="editSpDrop"></div>
+      </div>
+    </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
       <div class="field"><label>Weight (kg)</label><input type="number" id="eCatchWeight" step="0.1" min="0"></div>
       <div class="field"><label>Length (cm)</label><input type="number" id="eCatchLength" step="1" min="0"></div>
@@ -2083,8 +2347,9 @@ body.map-open .content > #view-map { display: flex; }
   <img id="lightboxImg" src="" alt="Catch photo" onclick="lbNext(1)">
   <button class="photo-lightbox-close" onclick="closeLightbox()">×</button>
   <button class="lb-prev" id="lbPrev" onclick="lbNext(-1)">‹</button>
-  <button class="lb-next" id="lbNext" onclick="lbNext(1)">›</button>
+  <button class="lb-next" id="lbNextBtn" onclick="lbNext(1)">›</button>
   <div class="lb-counter" id="lbCounter"></div>
+  <button onclick="saveLightboxPhoto()" style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.15);border:none;color:white;font-size:12px;font-family:'Courier New',monospace;padding:8px 20px;border-radius:20px;cursor:pointer;letter-spacing:0.05em;">⬇ Save to Camera Roll</button>
 </div>
 
 <!-- Map picker modal -->
@@ -2326,6 +2591,7 @@ function saveLocs(){ localStorage.setItem('bragmaster_locations', JSON.stringify
    INITIALISATION
    ───────────────────────────────────────────────────────────── */
 function init() {
+  loadBragMatProfile();
   const sc = localStorage.getItem(DB_CATCHES);
   const ss = localStorage.getItem(DB_SPECIES);
   catches = sc ? JSON.parse(sc) : [];
@@ -2389,7 +2655,7 @@ function showView(v) {
   if (v === 'moon')     renderMoonView();
   if (v === 'reports')  buildRptFilters();
   if (v === 'species')  renderSpMgr();
-  if (v === 'settings') { loadSettingsView(); loadHomeLocSelect(); }
+  if (v === 'settings') { loadSettingsView(); loadHomeLocSelect(); updateBragMatUI(); }
   if (v === 'map')      { document.body.classList.add('map-open'); initMapTabFilters(); setTimeout(renderAllCatchesMap, 100); } else { document.body.classList.remove('map-open'); }
   if (v === 'map')      { document.body.classList.add('map-open'); initMapTabFilters(); setTimeout(renderAllCatchesMap, 100); } else { document.body.classList.remove('map-open'); }
 }
@@ -2775,6 +3041,22 @@ function closeLightbox() {
   document.getElementById('photoLightbox').classList.remove('open');
   lbSwipeX = null;
 }
+function saveLightboxPhoto() {
+  const img = document.getElementById('lightboxImg');
+  if (!img || !img.src) return;
+  // Try to get the full photo ID from the current lightbox image
+  const currentItem = lbImages[lbIndex];
+  if (currentItem && currentItem.pid && !currentItem.pid.startsWith('data:')) {
+    savePhotoToRoll(currentItem.pid, 'bragmaster-catch.jpg');
+  } else {
+    // Fall back to whatever is displayed (may be compressed)
+    const a = document.createElement('a');
+    a.href = img.src;
+    a.download = 'bragmaster-catch.jpg';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    showToast('Photo saved — original data may not be preserved');
+  }
+}
 
 /* ─────────────────────────────────────────────────────────────
    PHOTO MEASUREMENT TOOL
@@ -2895,7 +3177,7 @@ function importFromPhoto(e) {
         compressPhotoFromBase64(b64, data => {
           pendingPhotos.push(data);
           renderPhotoPreviews();
-          openMeasureModal(data);
+          tryAIMeasurement(data, file.type||'image/jpeg');
         });
       } catch(convErr) { console.warn('Photo conversion error:', convErr); }
 
@@ -3601,6 +3883,10 @@ async function saveCatch() {
     } catch(pe) { console.warn('Photo save error (catch still saved):', pe); }
     catches.unshift(entry);
     saveC(); showToast('🐟 Catch saved!'); clearForm();
+    // Auto-enrich the new catch in background if it has GPS
+    if (entry.gps && entry.date) {
+      setTimeout(() => enrichBulkCatches([entry]), 1000);
+    }
   } catch(e) { console.error('Save error:', e); showToast('⚠ Error saving — please try again'); }
 }
 function clearForm() {
@@ -3680,7 +3966,11 @@ function renderCatches() {
           const thumb = typeof p==='object' ? p.thumb : (p.startsWith('data:') ? p : null);
           const pid   = typeof p==='object' ? p.id    : (p.startsWith('data:') ? p : null);
           if (!thumb) return '';
-          return `<img class="catch-photo" src="${thumb}" alt="Photo" data-photoid="${pid||''}" data-catchid="${c.id}" onclick="openFullPhoto(this)">`;
+          const fname = (c.species||'catch').replace(/\s+/g,'-').toLowerCase()+'-'+( c.date||'').replace(/-/g,'')+'-'+(i+1)+'.jpg';
+          return `<div style="position:relative;display:inline-block">
+            <img class="catch-photo" src="${thumb}" alt="Photo" data-photoid="${pid||''}" data-catchid="${c.id}" onclick="openFullPhoto(this)">
+            <button class="save-photo-btn" onclick="savePhotoToRoll('${pid||thumb}','${fname}')" title="Save to camera roll">⬇ Save</button>
+          </div>`;
         }).join('')}</div>` : '';
     const hasGps = c.gps && c.gps.trim();
     return `<div class="catch-card">
@@ -3695,12 +3985,11 @@ function renderCatches() {
         <div class="cd"><div class="lbl">Method</div>${v(c.method)}</div>
         <div class="cd"><div class="lbl">Bait / Lure</div>${v(c.bait)}</div>
         <div class="cd"><div class="lbl">Length</div>${c.length ? `<span class="val">${h(c.length)}cm</span>` : `<span class="val dash">—</span>`}</div>
-        <div class="cd"><div class="lbl">Depth</div>${c.depth ? `<span class="val">${h(c.depth)}m</span>` : `<span class="val dash">—</span>`}</div>
-        <div class="cd"><div class="lbl">Conditions</div>${v(wx||null)}</div>
+        <div class="cd"><div class="lbl">Depth 📏</div>${c.depth ? `<span class="val" style="color:var(--water);font-weight:600">${h(c.depth)}m</span>` : `<span class="val dash">—</span>`}</div>
         <div class="cd"><div class="lbl">Tide</div>${v(c.tide)}</div>
-        <div class="cd"><div class="lbl">Swell</div>${v(swell||null)}</div>
         <div class="cd"><div class="lbl">Disposition</div>${v(c.disposition)}</div>
       </div>
+      ${buildConditionsBadge(c)}
       ${c.notes ? `<div class="catch-notes">${h(c.notes)}</div>` : ''}
       ${photoHtml}
       <div class="catch-actions">
@@ -4655,6 +4944,8 @@ async function startBulkImport(e) {
   const files = Array.from(e.target.files); if (!files.length) return;
   bulkTiles=[]; bulkGroups=[]; bulkSelMode=false; bulkSelSet=new Set(); bulkPhase='loading'; bulkNextGroupId=1;
   document.getElementById('bulkModal').classList.add('open');
+  document.body.style.webkitUserSelect = 'none';
+  document.body.style.userSelect = 'none';
   document.getElementById('bulkPhase1').style.display = 'none';
   document.getElementById('bulkPhase2').style.display = 'none';
   document.getElementById('bulkProgressWrap').style.display = 'block';
@@ -4763,8 +5054,9 @@ function renderBulkTileGrid() {
       else toggleBulkSel(idx);
     }, 500);
   };
-  grid2.ontouchend  = () => clearTimeout(bulkLongPressTimer);
-  grid2.ontouchmove = () => clearTimeout(bulkLongPressTimer);
+  grid2.ontouchend    = () => clearTimeout(bulkLongPressTimer);
+  grid2.ontouchmove   = () => clearTimeout(bulkLongPressTimer);
+  grid2.oncontextmenu = e => e.preventDefault();
   grid2.onclick = e => {
     const tile = e.target.closest('.bulk-tile'); if (!tile) return;
     const idx = parseInt(tile.dataset.idx);
@@ -4881,6 +5173,7 @@ function renderBulkReview() {
       + '</div></div>'
       + '<div class="bulk-field"><label>Weight (kg)</label><input type="number" id="bg_wt_'+gi+'" placeholder="0.0" step="0.1" min="0" oninput="bulkGroups['+gi+'].weight=this.value"></div>'
       + '<div class="bulk-field"><label>Length (cm)</label><input type="number" id="bg_ln_'+gi+'" placeholder="0" step="1" min="0" oninput="bulkGroups['+gi+'].length=this.value"></div>'
+      + '<div class="bulk-field"><label>Depth (m) 📏</label><input type="number" id="bg_dp_'+gi+'" placeholder="e.g. 12" step="1" min="0" oninput="bulkGroups['+gi+'].depth=this.value"></div>'
       + '<div class="bulk-field"><label>Method</label><select id="bg_me_'+gi+'" onchange="bulkGroups['+gi+'].method=this.value"><option value="">— Select —</option><option>Lure — Hard body</option><option>Lure — Soft plastic</option><option>Lure — Metal</option><option>Live bait</option><option>Cut bait</option><option>Prawns</option><option>Worms</option><option>Squid</option><option>Fly</option><option>Trolling</option><option>Jigging</option><option>Spinning</option></select></div>'
       + '<div class="bulk-field"><label>Disposition</label><select id="bg_di_'+gi+'" onchange="bulkGroups['+gi+'].disposition=this.value"><option value="Kept">Kept</option><option value="Released">Released</option><option value="Released — undersized">Released — undersized</option></select></div>'
       + '</div>'
@@ -5073,11 +5366,14 @@ async function saveBulkCatches() {
   saveC(); closeBulkModal();
   showToast('Saved '+saved+' catches — enriching in background…');
   showView('catches');
-  setTimeout(() => enrichBulkCatches(catches.slice(0, saved)), 600);
+  const savedIds = catches.slice(0, saved).map(c => c.id);
+  setTimeout(() => enrichBulkCatches(catches.filter(c => savedIds.includes(c.id))), 600);
 }
 
 function closeBulkModal() {
   document.getElementById('bulkModal').classList.remove('open');
+  document.body.style.webkitUserSelect = '';
+  document.body.style.userSelect = '';
   document.getElementById('bulkSelToolbar').classList.remove('show');
   bulkTiles=[]; bulkGroups=[]; bulkSelMode=false; bulkSelSet=new Set(); bulkPhase='tiles';
   document.getElementById('bulkContent').innerHTML = '';
@@ -5150,6 +5446,502 @@ function getHomeLocation() {
   }
   // Default to Port Kembla if nothing saved
   return locations.find(l => l.name && l.name.toLowerCase().includes('port kembla')) || locations[0] || null;
+}
+
+
+function onEditSpInput(q) {
+  const dd = document.getElementById('editSpDrop'); if (!dd) return;
+  const ql = q.toLowerCase().trim();
+  const hits = species.filter(s =>
+    s.name.toLowerCase().includes(ql) || (s.nicknames||[]).some(n => n.toLowerCase().includes(ql))
+  );
+  let html = hits.map(s => {
+    const safeName = s.name.replace(/'/g, "\\'");
+    return '<div class="species-option" onmousedown="pickEditSp(\''+safeName+'\')">'+s.name
+      + (s.nicknames&&s.nicknames.length ? '<span class="sp-nick">'+s.nicknames.slice(0,2).join(', ')+'</span>' : '')
+      + '</div>';
+  }).join('');
+  const safeQ = q.trim().replace(/'/g, "\\'");
+  if (q.trim()) html += '<div class="sp-add" onmousedown="addEditSp(\''+safeQ+'\')">+ Add "'+q.trim()+'" as new species</div>';
+  dd.innerHTML = html;
+  dd.classList.toggle('open', hits.length > 0 || q.trim().length > 0);
+}
+function pickEditSp(name) {
+  const inp = document.getElementById('eCatchSpecies'); if (inp) inp.value = name;
+  const dd  = document.getElementById('editSpDrop');    if (dd)  dd.classList.remove('open');
+}
+function addEditSp(name) {
+  if (!name) return;
+  const id = 'sp' + Date.now();
+  species.push({id, name, nicknames:[], notes:''}); saveSp();
+  pickEditSp(name); showToast('"'+name+'" added to species list');
+}
+function schedEditSpClose() {
+  setTimeout(() => { const dd=document.getElementById('editSpDrop'); if(dd) dd.classList.remove('open'); }, 200);
+}
+
+
+/* CONDITIONS COMPASS BADGE */
+const DIR_DEG = {N:0,NNE:22.5,NE:45,ENE:67.5,E:90,ESE:112.5,SE:135,SSE:157.5,S:180,SSW:202.5,SW:225,WSW:247.5,W:270,WNW:292.5,NW:315,NNW:337.5};
+
+function dirToDeg(dir) {
+  if (!dir) return null;
+  const d = DIR_DEG[dir.toUpperCase()]; if (d !== undefined) return d;
+  const n = parseFloat(dir); return isNaN(n) ? null : n;
+}
+
+function buildConditionsBadge(c) {
+  const windDeg  = dirToDeg(c.windDir);
+  const swellDeg = dirToDeg(c.swellDir);
+  const hasWind  = windDeg !== null && c.windSpeed;
+  const hasSwell = swellDeg !== null && c.swellHeight;
+  if (!hasWind && !hasSwell && !c.weather && !c.airTemp) return '';
+
+  // Build SVG compass
+  const cx = 36, cy = 36, r = 30, ri = 22;
+  let svg = '<svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">';
+  // Outer ring
+  svg += '<circle cx="36" cy="36" r="33" fill="none" stroke="#e2e8f0" stroke-width="1.5"/>';
+  // Cardinal labels
+  svg += '<text x="36" y="8"  text-anchor="middle" font-size="7" font-family="Courier New" fill="#94a3b8">N</text>';
+  svg += '<text x="36" y="68" text-anchor="middle" font-size="7" font-family="Courier New" fill="#94a3b8">S</text>';
+  svg += '<text x="66" y="39" text-anchor="middle" font-size="7" font-family="Courier New" fill="#94a3b8">E</text>';
+  svg += '<text x="6"  y="39" text-anchor="middle" font-size="7" font-family="Courier New" fill="#94a3b8">W</text>';
+  // Centre dot
+  svg += '<circle cx="36" cy="36" r="3" fill="#1e3a5f"/>';
+
+  // Wind arrow — amber, points FROM direction (where wind comes from)
+  if (hasWind) {
+    const rad = (windDeg - 90) * Math.PI / 180;
+    const x2 = cx + ri * Math.cos(rad), y2 = cy + ri * Math.sin(rad);
+    const x1 = cx - (ri-8) * Math.cos(rad), y1 = cy - (ri-8) * Math.sin(rad);
+    svg += '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/>';
+    // Arrowhead
+    const hx = x2 - 5*Math.cos(rad), hy = y2 - 5*Math.sin(rad);
+    svg += '<polygon points="'+x2+','+y2+' '+(hx+3*Math.sin(rad))+','+(hy-3*Math.cos(rad))+' '+(hx-3*Math.sin(rad))+','+(hy+3*Math.cos(rad))+'" fill="#f59e0b"/>';
+  }
+
+  // Swell arrow — sky blue, points FROM direction
+  if (hasSwell) {
+    const rad = (swellDeg - 90) * Math.PI / 180;
+    const x2 = cx + (ri-4) * Math.cos(rad), y2 = cy + (ri-4) * Math.sin(rad);
+    const x1 = cx - (ri-14) * Math.cos(rad), y1 = cy - (ri-14) * Math.sin(rad);
+    svg += '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="#0ea5e9" stroke-width="2" stroke-linecap="round" stroke-dasharray="3,2"/>';
+    const hx = x2 - 5*Math.cos(rad), hy = y2 - 5*Math.sin(rad);
+    svg += '<polygon points="'+x2+','+y2+' '+(hx+2.5*Math.sin(rad))+','+(hy-2.5*Math.cos(rad))+' '+(hx-2.5*Math.sin(rad))+','+(hy+2.5*Math.cos(rad))+'" fill="#0ea5e9"/>';
+  }
+
+  svg += '</svg>';
+
+  // Legend
+  let legend = '';
+  if (hasWind) {
+    legend += '<div class="cond-legend-row">'
+      + '<div class="cond-legend-dot wind"></div>'
+      + '<div><div class="cond-legend-label">Wind</div>'
+      + '<div class="cond-legend-val">'+c.windSpeed+'km/h '+h(c.windDir||'')+'</div></div>'
+      + '</div>';
+  }
+  if (hasSwell) {
+    legend += '<div class="cond-legend-row">'
+      + '<div class="cond-legend-dot swell"></div>'
+      + '<div><div class="cond-legend-label">Swell</div>'
+      + '<div class="cond-legend-val">'+c.swellHeight+'m'+(c.swellPeriod?' @'+c.swellPeriod+'s':'')+' '+h(c.swellDir||'')+'</div></div>'
+      + '</div>';
+  }
+  const wxLine = [c.weather, c.airTemp?c.airTemp+'°C':null].filter(Boolean).join(' · ');
+  if (wxLine) legend += '<div class="cond-badge-weather">'+h(wxLine)+'</div>';
+
+  return '<div class="cond-badge">'
+    + '<div class="cond-compass">'+svg+'</div>'
+    + '<div class="cond-legend">'+legend+'</div>'
+    + '</div>';
+}
+
+
+async function savePhotoToRoll(pid, filename) {
+  try {
+    let dataUrl = null;
+    if (!pid) { showToast('Photo not found'); return; }
+
+    if (pid.startsWith('data:')) {
+      // Already a data URL — use as-is (may be compressed)
+      dataUrl = pid;
+    } else {
+      // Fetch from IDB — use fullData (original, EXIF intact) not thumb
+      const rec = await idbGet(pid);
+      if (rec && rec.fullData) {
+        dataUrl = rec.fullData; // original file, EXIF preserved
+      } else if (rec && rec.thumb) {
+        dataUrl = rec.thumb;
+      }
+    }
+
+    if (!dataUrl) { showToast('Photo not available'); return; }
+
+    const a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = filename || 'bragmaster-catch.jpg';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast('Photo saved with original data intact');
+  } catch(e) {
+    showToast('Could not save photo');
+  }
+}
+
+
+/* BRAG MAT CALIBRATION + AI MEASUREMENT */
+let bragMatProfile = null; // {description, scaleNotes, imageThumb}
+
+function loadBragMatProfile() {
+  try {
+    const stored = localStorage.getItem('bragmaster_matprofile');
+    if (stored) { bragMatProfile = JSON.parse(stored); return true; }
+  } catch(e) {}
+  return false;
+}
+
+function saveBragMatProfile(profile) {
+  bragMatProfile = profile;
+  localStorage.setItem('bragmaster_matprofile', JSON.stringify(profile));
+}
+
+function clearBragMat() {
+  bragMatProfile = null;
+  localStorage.removeItem('bragmaster_matprofile');
+  updateBragMatUI();
+  showToast('Brag mat calibration cleared');
+}
+
+function updateBragMatUI() {
+  const statusEl  = document.getElementById('bragmatStatus');    if (!statusEl) return;
+  const profileEl = document.getElementById('bragmatProfile');
+  const clearBtn  = document.getElementById('bragmatClearBtn');
+  const placeholder = document.getElementById('bragmatPlaceholder');
+  const previewWrap = document.getElementById('bragmatPreviewWrap');
+
+  if (bragMatProfile) {
+    statusEl.className = 'bragmat-status calibrated';
+    statusEl.textContent = '✓ Mat calibrated — AI measurement ready';
+    if (profileEl) { profileEl.style.display = 'block'; profileEl.textContent = bragMatProfile.description; }
+    if (clearBtn) clearBtn.style.display = 'block';
+    // Show thumbnail
+    if (bragMatProfile.imageThumb && previewWrap) {
+      previewWrap.innerHTML = '<img src="' + bragMatProfile.imageThumb + '" style="width:100%;aspect-ratio:3/1;object-fit:cover;border-radius:var(--radius-sm);border:1px solid var(--line);margin-bottom:10px;">';
+    }
+  } else {
+    statusEl.className = 'bragmat-status uncalibrated';
+    statusEl.textContent = 'Not calibrated — tap below to set up your mat';
+    if (profileEl) { profileEl.style.display = 'none'; profileEl.textContent = ''; }
+    if (clearBtn) clearBtn.style.display = 'none';
+    if (previewWrap) previewWrap.innerHTML = '<div class="bragmat-placeholder" id="bragmatPlaceholder"><div class="bragmat-placeholder-icon">📐</div><div class="bragmat-placeholder-text">No mat calibrated yet</div></div>';
+  }
+}
+
+async function calibrateBragMat(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const statusEl = document.getElementById('bragmatStatus');
+  statusEl.className = 'bragmat-status analysing';
+  statusEl.textContent = '⌛ Analysing your brag mat…';
+
+  try {
+    // Read file as base64
+    const b64 = await new Promise((res, rej) => {
+      const reader = new FileReader();
+      reader.onload = ev => res(ev.target.result);
+      reader.onerror = rej;
+      reader.readAsDataURL(file);
+    });
+
+    // Create thumbnail
+    const thumb = await new Promise(res => {
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement('canvas');
+        const MAX = 600; let w = img.width, h = img.height;
+        if (w > MAX) { h = Math.round(h*MAX/w); w = MAX; }
+        c.width = w; c.height = h;
+        c.getContext('2d').drawImage(img, 0, 0, w, h);
+        res(c.toDataURL('image/jpeg', 0.7));
+      };
+      img.src = b64;
+    });
+
+    // Send to Claude for analysis
+    const response = await fetch('https://bragmaster-proxy.lee-edwards-au.workers.dev?service=claude', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        model: 'claude-opus-4-5',
+        max_tokens: 500,
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: {type: 'base64', media_type: file.type || 'image/jpeg', data: b64.split(',')[1]}
+            },
+            {
+              type: 'text',
+              text: 'This is a fishing brag mat / measurement mat. Please analyse it and describe: 1) The colour of the ruler numbers and background, 2) Where zero/start is (left or right end), 3) The interval between large numbers (e.g. every 10cm), 4) Any distinctive features that would help identify this mat in future photos. Be specific and concise. Format as a short paragraph I can store as a calibration profile.'
+            }
+          ]
+        }]
+      })
+    });
+
+    const data = await response.json();
+    const description = data.content?.[0]?.text || 'Mat analysed — scale detected';
+
+    saveBragMatProfile({description, imageThumb: thumb, calibratedAt: new Date().toISOString()});
+    updateBragMatUI();
+    showToast('Brag mat calibrated successfully');
+  } catch(err) {
+    statusEl.className = 'bragmat-status uncalibrated';
+    statusEl.textContent = 'Calibration failed — ' + err.message;
+    console.error('Brag mat calibration error:', err);
+  }
+  e.target.value = '';
+}
+
+async function measureFishFromPhoto(imageDataUrl, mediaType) {
+  try {
+    const response = await fetch('https://bragmaster-proxy.lee-edwards-au.workers.dev?service=claude', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        model: 'claude-opus-4-5',
+        max_tokens: 300,
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: {type: 'base64', media_type: mediaType || 'image/jpeg', data: imageDataUrl.split(',')[1]}
+            },
+            {
+              type: 'text',
+              text: 'This photo may show a fish on a standard fishing brag mat. Brag mats are typically dark coloured with numbered ruler markings every 10cm (10, 20, 30, 40, 50, 60, 70, 80, 90, 100cm) in green or white. Please: 1) Look for a ruler mat in the photo, 2) If visible find nose tip and tail tip cm readings and calculate total length, 3) If no mat visible estimate from proportions with low confidence, 4) Identify the Australian fish species with common name and nicknames, 5) Note the NSW legal size and habitat, 6) Flag if protected or rare in Australia. Respond ONLY in JSON: {"length_cm": number or null, "confidence": "high/medium/low", "mat_detected": true/false, "species": "name or unknown", "nicknames": "comma list", "legal_size_cm": number or null, "habitat_notes": "one line", "protected": true/false, "protection_notes": "explanation if protected", "notes": "any issues"}'
+            }
+          ]
+        }]
+      })
+    });
+
+    const data = await response.json();
+    const text = data.content?.[0]?.text || '';
+    const clean = text.replace(/```json|```/g, '').trim();
+    return JSON.parse(clean);
+  } catch(err) {
+    console.warn('AI measurement error:', err);
+    return null;
+  }
+}
+
+async function tryAIMeasurement(dataUrl, mediaType) {
+  const resultEl = document.getElementById('aiMeasureResult');
+  if (!resultEl) return;
+  resultEl.classList.remove('show');
+  resultEl.innerHTML = '<div class="ai-measure-title">⌛ AI measuring fish…</div>';
+  resultEl.classList.add('show');
+
+  const result = await measureFishFromPhoto(dataUrl, mediaType);
+  if (!result || (!result.length_cm && !result.species)) {
+    resultEl.innerHTML = '<div class="ai-measure-title" style="color:var(--mist)">Could not identify fish or measure length</div><button class="ai-measure-btn ai-measure-edit" onclick="document.getElementById(\'aiMeasureResult\').classList.remove(\'show\')">Dismiss</button>';
+    return;
+  }
+
+  const confColor = result.confidence === 'high' ? 'var(--catch)' : result.confidence === 'medium' ? 'var(--dawn)' : 'var(--mist)';
+  const hasLength  = result.length_cm && result.length_cm > 0;
+  const hasSpecies = result.species && result.species !== 'unknown';
+
+  // Check regulations
+  const userState = document.getElementById('catchState') ? document.getElementById('catchState').value||'NSW' : 'NSW';
+  const reg = result.species ? checkFishRegulations(result.species, result.length_cm, userState) : null;
+  const regHtml = reg ? '<div style="background:' + (reg.level==='PROTECTED'?'#fee2e2':reg.level==='LEGAL'?'#d1fae5':'#fef3c7') + ';border-radius:6px;padding:8px 10px;margin-top:6px;font-size:11px;font-family:Courier New,monospace;color:' + (reg.level==='PROTECTED'?'#991b1b':reg.level==='LEGAL'?'#065f46':'#92400e') + ';">' + (reg.level==='PROTECTED'?'🔴':reg.level==='LEGAL'?'✅':reg.level==='UNDERSIZED'?'🟠':'⚠️') + ' ' + reg.message + '</div>' : '';
+
+  const acceptArgs = hasLength
+    ? result.length_cm + ",'" + (result.species||'').replace(/'/g,"\'") + "','" + (result.nicknames||'').replace(/'/g,"\'") + "','" + (result.legal_size_cm||'') + "','" + (result.habitat_notes||'').replace(/'/g,"\'") + "'"
+    : "null,'" + (result.species||'').replace(/'/g,"\'") + "','" + (result.nicknames||'').replace(/'/g,"\'") + "','" + (result.legal_size_cm||'') + "','" + (result.habitat_notes||'').replace(/'/g,"\'") + "'";
+
+  resultEl.innerHTML =
+    '<div class="ai-measure-title">🤖 AI Analysis</div>'
+    + (hasSpecies ? '<div class="ai-measure-row"><span class="ai-measure-label">Species</span><span style="font-size:15px;font-family:Georgia,serif;color:var(--ink);font-weight:600;">' + h(result.species) + '</span></div>' : '')
+    + (hasLength  ? '<div class="ai-measure-row"><span class="ai-measure-label">Length</span><span class="ai-measure-val">' + result.length_cm + 'cm</span></div>' : '<div class="ai-measure-row"><span class="ai-measure-label">Length</span><span style="color:var(--mist);font-size:12px;font-family:Courier New">No mat detected — enter manually</span></div>')
+    + (result.nicknames ? '<div style="font-size:10px;font-family:Courier New,monospace;color:var(--mist);margin-bottom:4px;">Also known as: ' + h(result.nicknames) + '</div>' : '')
+    + '<div class="ai-measure-confidence" style="color:' + confColor + '">Confidence: ' + (result.confidence||'low') + (result.mat_detected===false?' · No mat detected':'') + (result.notes?' · '+result.notes:'') + '</div>'
+    + regHtml
+    + '<div class="ai-measure-btns">'
+    + '<button class="ai-measure-btn ai-measure-accept" onclick="acceptAIMeasurement(' + acceptArgs + ')">✓ Accept' + (hasLength?' '+result.length_cm+'cm':'') + (hasSpecies?' — '+result.species:'') + '</button>'
+    + '<button class="ai-measure-btn ai-measure-edit" onclick="document.getElementById(\'aiMeasureResult\').classList.remove(\'show\')">Edit manually</button>'
+    + '</div>';
+}
+
+// acceptAIMeasurement moved to regulations block
+
+
+/* AUSTRALIAN FISH REGULATIONS REFERENCE TABLE */
+const AUS_FISH_REGS = {
+  protected: [
+    {name:'Eastern Blue Grouper',scientific:'Achoerodus viridis',aliases:['Blue Groper','Blue Grouper','Bluethroat Wrasse'],states:['NSW','VIC'],message:'Totally protected in NSW and VIC. Must be returned to water immediately. Penalty up to $22,000.',notes:'Males are blue, females/juveniles reddish-brown. Common on rocky reefs.'},
+    {name:'Black Rockcod',scientific:'Epinephelus daemelii',aliases:['Saddled Rockcod','Black Grouper','Black Cod','Port Kembla Cod'],states:['NSW','QLD','VIC'],message:'Totally protected. Must be returned to water immediately. Common around Port Kembla and Sydney reefs. Penalty up to $22,000 in NSW.',notes:'Large dark grouper with white saddle patches.'},
+    {name:'Grey Nurse Shark',scientific:'Carcharias taurus',aliases:['Sand Tiger Shark','Spotted Ragged-tooth'],states:['NSW','QLD','VIC','WA','SA','TAS'],message:'Critically endangered. Totally protected Australia-wide. Heavy penalties apply.',notes:'Ragged teeth visible even when mouth closed.'},
+    {name:'White Shark',scientific:'Carcharodon carcharias',aliases:['Great White Shark','White Pointer','White Death'],states:['NSW','QLD','VIC','WA','SA','TAS','NT','ACT'],message:'Totally protected Australia-wide under federal law.',notes:''},
+    {name:'Whale Shark',scientific:'Rhincodon typus',aliases:['Whale Shark'],states:['NSW','QLD','VIC','WA','SA','TAS','NT','ACT'],message:'Totally protected Australia-wide under federal law.',notes:''},
+    {name:'Humphead Maori Wrasse',scientific:'Cheilinus undulatus',aliases:['Napoleon Wrasse','Giant Maori Wrasse'],states:['QLD','NSW','WA','NT'],message:'Protected under CITES. Must be returned to water immediately.',notes:'Very large wrasse with distinctive hump on forehead.'},
+    {name:'Dwarf Spotted Grouper',scientific:'Epinephelus ergastularius',aliases:['Dwarf Grouper','Small Spotted Rockcod'],states:['NSW'],message:'Totally protected in NSW. Must be returned to water immediately.',notes:''},
+    {name:'Weedy Seadragon',scientific:'Phyllopteryx taeniolatus',aliases:['Seadragon','Sea Dragon'],states:['NSW','VIC','TAS','SA','WA'],message:'Totally protected. Marine emblem of Victoria. Must not be taken or disturbed.',notes:''},
+    {name:'Seahorse',scientific:'Hippocampus spp.',aliases:['Sea Horse'],states:['NSW','QLD','VIC','WA','SA','TAS'],message:'All seahorse species protected in Australian waters. Release immediately.',notes:''},
+    {name:'Lungfish',scientific:'Neoceratodus forsteri',aliases:['Australian Lungfish','Queensland Lungfish','Barramunda'],states:['QLD'],message:'Totally protected in QLD. Ancient species — release immediately.',notes:'Found in Mary and Burnett river systems.'},
+    {name:'Manta Ray',scientific:'Mobula birostris',aliases:['Giant Manta','Oceanic Manta'],states:['NSW','QLD','VIC','WA','SA','TAS','NT','ACT'],message:'Totally protected Australia-wide under federal law.',notes:''},
+  ],
+  caution: [
+    {name:'Estuary Cod',aliases:['Orange-spotted Grouper','Greasy Cod'],states:['QLD','NSW'],message:'Bag limit of 0 in some NSW estuaries. Check local regulations before keeping.'},
+    {name:'Pipefish',aliases:['Pipe Fish'],states:['NSW','QLD','VIC','WA','SA','TAS'],message:'Protected species. Release immediately.',status:'PROTECTED'},
+  ],
+  legalSizes: {
+    NSW: [
+      {name:'Snapper',aliases:['Pink Snapper','Red Snapper','Pinkies','Squire','Red Bream'],minCm:30,bagLimit:10},
+      {name:'Flathead',aliases:['Dusky Flathead','Rock Flathead','Lizard','Sand Flathead'],minCm:36,bagLimit:10},
+      {name:'Bream',aliases:['Black Bream','Yellowfin Bream','Silver Bream'],minCm:25,bagLimit:20},
+      {name:'Kingfish',aliases:['Yellowtail Kingfish','Kingie','Samson Fish'],minCm:65,bagLimit:5},
+      {name:'Mulloway',aliases:['Jewfish','Jewie','Jewish','River Jew'],minCm:45,bagLimit:2},
+      {name:'Whiting',aliases:['Sand Whiting','King George Whiting','Trumpeter'],minCm:27,bagLimit:20},
+      {name:'Tailor',aliases:['Bluefish','Choppers'],minCm:30,bagLimit:20},
+      {name:'Luderick',aliases:['Blackfish'],minCm:27,bagLimit:20},
+      {name:'Mullet',aliases:['Sea Mullet','Striped Mullet'],minCm:30,bagLimit:20},
+      {name:'Drummer',aliases:['Rock Blackfish','Silver Drummer'],minCm:27,bagLimit:10},
+      {name:'Morwong',aliases:['Jackass Morwong','Blue Morwong'],minCm:30,bagLimit:10},
+      {name:'Barramundi',aliases:['Barra','Asian Seabass'],minCm:58,bagLimit:5},
+      {name:'Murray Cod',aliases:['Cod','Goodoo'],minCm:55,bagLimit:2},
+      {name:'Golden Perch',aliases:['Yellowbelly','Callop'],minCm:38,bagLimit:5},
+      {name:'Trout',aliases:['Brown Trout','Rainbow Trout'],minCm:25,bagLimit:5},
+    ],
+    QLD: [
+      {name:'Snapper',aliases:['Pink Snapper','Red Snapper','Pinkies'],minCm:35,bagLimit:10},
+      {name:'Flathead',aliases:['Dusky Flathead','Sand Flathead'],minCm:40,bagLimit:5},
+      {name:'Bream',aliases:['Yellowfin Bream','Black Bream'],minCm:25,bagLimit:20},
+      {name:'Barramundi',aliases:['Barra','Giant Perch'],minCm:58,bagLimit:5},
+      {name:'Mangrove Jack',aliases:['Jack','Red Bream','Dog Bream'],minCm:35,bagLimit:5},
+      {name:'Coral Trout',aliases:['Leopard Coral Trout'],minCm:38,bagLimit:8},
+      {name:'Kingfish',aliases:['Yellowtail Kingfish'],minCm:60,bagLimit:5},
+      {name:'Mulloway',aliases:['Jewfish','Jewie'],minCm:75,bagLimit:2},
+      {name:'Whiting',aliases:['Sand Whiting','Trumpeter Whiting'],minCm:23,bagLimit:30},
+      {name:'Tailor',aliases:['Bluefish'],minCm:35,bagLimit:20},
+      {name:'Mackerel',aliases:['Spanish Mackerel','Spotted Mackerel'],minCm:75,bagLimit:5},
+    ],
+    VIC: [
+      {name:'Snapper',aliases:['Pink Snapper'],minCm:28,bagLimit:10},
+      {name:'Flathead',aliases:['Tiger Flathead','Dusky Flathead'],minCm:27,bagLimit:10},
+      {name:'Bream',aliases:['Black Bream'],minCm:26,bagLimit:20},
+      {name:'Kingfish',aliases:['Yellowtail Kingfish'],minCm:60,bagLimit:5},
+      {name:'Mulloway',aliases:['Jewfish'],minCm:50,bagLimit:2},
+      {name:'Whiting',aliases:['King George Whiting','Sand Whiting'],minCm:27,bagLimit:20},
+      {name:'Trout',aliases:['Brown Trout','Rainbow Trout'],minCm:20,bagLimit:5},
+      {name:'Murray Cod',aliases:['Cod'],minCm:55,bagLimit:2},
+    ],
+    WA: [
+      {name:'Snapper',aliases:['Pink Snapper','Western Snapper'],minCm:41,bagLimit:4},
+      {name:'Dhufish',aliases:['West Australian Dhufish','Jewfish'],minCm:50,bagLimit:2},
+      {name:'Baldchin Groper',aliases:['Baldchin','Chinaman Fish'],minCm:40,bagLimit:2},
+      {name:'Flathead',aliases:['Rock Flathead'],minCm:30,bagLimit:10},
+      {name:'Bream',aliases:['Black Bream'],minCm:25,bagLimit:10},
+      {name:'Mulloway',aliases:['Jewfish'],minCm:50,bagLimit:2},
+      {name:'Barramundi',aliases:['Barra'],minCm:55,bagLimit:2},
+    ],
+    SA: [
+      {name:'Snapper',aliases:['Pink Snapper'],minCm:40,bagLimit:10},
+      {name:'King George Whiting',aliases:['KGW','Whiting'],minCm:27,bagLimit:20},
+      {name:'Flathead',aliases:['Southern Sand Flathead'],minCm:30,bagLimit:10},
+      {name:'Mulloway',aliases:['Jewfish'],minCm:50,bagLimit:2},
+      {name:'Garfish',aliases:['Sea Garfish'],minCm:23,bagLimit:40},
+    ],
+    TAS: [
+      {name:'Flathead',aliases:['Sand Flathead','Tiger Flathead'],minCm:30,bagLimit:30},
+      {name:'Bream',aliases:['Black Bream'],minCm:25,bagLimit:10},
+      {name:'Trout',aliases:['Brown Trout','Rainbow Trout'],minCm:25,bagLimit:12},
+    ],
+  },
+};
+
+function checkFishRegulations(speciesName, lengthCm, userState) {
+  if (!speciesName) return null;
+  const nameLower = speciesName.toLowerCase();
+  const state = userState || 'NSW';
+  for (const sp of AUS_FISH_REGS.protected) {
+    const allNames = [sp.name, ...(sp.aliases||[])].map(n => n.toLowerCase());
+    if (allNames.some(n => nameLower.includes(n) || n.includes(nameLower))) {
+      if (!sp.states || sp.states.includes(state) || sp.states.length > 4) {
+        return {level:'PROTECTED',icon:'',title:'PROTECTED SPECIES',message:sp.message,notes:sp.notes||'',disposition:'Released'};
+      }
+    }
+  }
+  for (const sp of AUS_FISH_REGS.caution) {
+    const allNames = [sp.name, ...(sp.aliases||[])].map(n => n.toLowerCase());
+    if (allNames.some(n => nameLower.includes(n) || n.includes(nameLower))) {
+      if (!sp.states || sp.states.includes(state)) {
+        if (sp.status === 'PROTECTED') return {level:'PROTECTED',icon:'',title:'PROTECTED SPECIES',message:sp.message,disposition:'Released'};
+        return {level:'CAUTION',icon:'',title:'RARE SPECIES',message:sp.message,disposition:null};
+      }
+    }
+  }
+  const stateSizes = AUS_FISH_REGS.legalSizes[state] || AUS_FISH_REGS.legalSizes['NSW'];
+  for (const sp of stateSizes) {
+    const allNames = [sp.name, ...(sp.aliases||[])].map(n => n.toLowerCase());
+    if (allNames.some(n => nameLower.includes(n) || n.includes(nameLower))) {
+      if (sp.minCm && lengthCm) {
+        const len = parseFloat(lengthCm);
+        if (len < sp.minCm) return {level:'UNDERSIZED',icon:'',title:'UNDERSIZED FISH',message:'Minimum legal size in '+state+' is '+sp.minCm+'cm for '+sp.name+'. Please measure carefully and release if undersized.',disposition:'Released — undersized'};
+        if (len < sp.minCm + 2) return {level:'BORDERLINE',icon:'',title:'BORDERLINE SIZE',message:sp.name+' legal minimum is '+sp.minCm+'cm in '+state+'. Measure carefully.',disposition:null};
+      }
+      return {level:'LEGAL',icon:'',title:'LEGAL SIZE',message:sp.name+' in '+state+(sp.minCm?' — legal size '+sp.minCm+'cm':'— no minimum')+(sp.bagLimit?' · Bag limit: '+sp.bagLimit:''),disposition:null};
+    }
+  }
+  return null;
+}
+
+function showRegulationAlert(reg) {
+  const existing = document.getElementById('regAlert'); if (existing) existing.remove();
+  const colors = {PROTECTED:{bg:'#fee2e2',border:'#dc2626',color:'#991b1b'},CAUTION:{bg:'#fef3c7',border:'#d97706',color:'#92400e'},UNDERSIZED:{bg:'#ffedd5',border:'#ea580c',color:'#9a3412'},BORDERLINE:{bg:'#fef3c7',border:'#d97706',color:'#92400e'},LEGAL:{bg:'#d1fae5',border:'#059669',color:'#065f46'}};
+  const c = colors[reg.level] || colors.LEGAL;
+  const icons = {PROTECTED:'🔴',CAUTION:'🟡',UNDERSIZED:'🟠',BORDERLINE:'⚠️',LEGAL:'✅'};
+  const icon = icons[reg.level] || '';
+  const div = document.createElement('div');
+  div.id = 'regAlert';
+  div.style.cssText = 'background:'+c.bg+';border:2px solid '+c.border+';border-radius:10px;padding:12px 14px;margin-bottom:12px;';
+  div.innerHTML = '<div style="font-size:14px;font-weight:600;color:'+c.color+';margin-bottom:4px;">'+icon+' '+reg.title+'</div>'
+    +'<div style="font-size:12px;color:'+c.color+';font-family:Courier New,monospace;line-height:1.5;">'+reg.message+'</div>'
+    +'<button onclick="this.parentElement.remove()" style="background:none;border:none;color:'+c.color+';font-size:11px;font-family:Courier New,monospace;margin-top:6px;cursor:pointer;padding:0;text-decoration:underline;">Dismiss</button>';
+  const saveBtn = document.querySelector('.btn-save');
+  if (saveBtn) saveBtn.parentNode.insertBefore(div, saveBtn);
+}
+
+function acceptAIMeasurement(lengthCm, species, nicknames, legalSize, habitatNotes) {
+  const lenField = document.getElementById('length');
+  if (lenField) lenField.value = lengthCm;
+  if (species && species !== 'unknown') {
+    const found = window.species ? window.species.find(s => s.name.toLowerCase().includes(species.toLowerCase()) || species.toLowerCase().includes(s.name.toLowerCase())) : null;
+    if (found) {
+      pickSp(found.id, found.name);
+    } else {
+      const id = 'sp' + Date.now();
+      const nicks = nicknames ? nicknames.split(',').map(n=>n.trim()).filter(Boolean) : [];
+      const notes = [legalSize ? 'Legal size: '+legalSize+'cm' : '', habitatNotes||''].filter(Boolean).join(' · ');
+      window.species.push({id, name:species, nicknames:nicks, notes});
+      saveSp(); pickSp(id, species);
+      showToast('"'+species+'" added to your species list');
+    }
+  }
+  const userState = document.getElementById('catchState') ? document.getElementById('catchState').value||'NSW' : 'NSW';
+  const reg = checkFishRegulations(species, lengthCm, userState);
+  if (reg) {
+    showRegulationAlert(reg);
+    if (reg.disposition) { const d=document.getElementById('disposition'); if(d) d.value=reg.disposition; }
+  }
+  document.getElementById('aiMeasureResult').classList.remove('show');
+  showToast('Length set to '+lengthCm+'cm');
 }
 
 /* ─────────────────────────────────────────────────────────────
