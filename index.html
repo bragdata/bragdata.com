@@ -3544,7 +3544,7 @@ async function lookupTide(exifDateTime, lat, lon) {
       const data = await resp.json();
       if (data.status && data.status !== 200) {
         el.className = 'tide-lookup error show';
-        el.textContent = `⚠ WorldTides error: ${data.error||data.status}. Check your API key in Settings.`;
+        el.textContent = `⚠ WorldTides error: ${data.error||data.status}.`;
         return;
       }
       if (!data.extremes || !data.extremes.length) {
@@ -3572,7 +3572,7 @@ async function lookupTide(exifDateTime, lat, lon) {
         el.textContent = `🌊 Tide auto-filled: ${tideState} — ${tideDetail}`;
         document.getElementById('exifRows').innerHTML += `<div class="exif-row"><span class="ek">Tide</span><span class="ev">${tideState}</span></div>`;
       }
-    } catch(err) { el.className = 'tide-lookup error show'; el.textContent = '⚠ Tide lookup requires internet — works when app is installed on your phone.'; }
+    } catch(err) { el.className = 'tide-lookup error show'; el.textContent = '⚠ Tide lookup failed: ' + err.message; console.warn('Tide error:', err); }
   } catch(outerErr) { console.warn('lookupTide outer error:', outerErr); }
 }
 
@@ -5741,6 +5741,13 @@ async function measureFishFromPhoto(imageDataUrl, mediaType) {
     return JSON.parse(clean);
   } catch(err) {
     console.warn('AI measurement error:', err);
+    // Show error in result panel so user knows what happened
+    const errEl = document.getElementById('aiMeasureResult');
+    if (errEl) {
+      errEl.innerHTML = '<div class="ai-measure-title" style="color:var(--danger)">AI error: ' + err.message + '</div>'
+        + '<button class="ai-measure-btn ai-measure-edit" onclick="document.getElementById(\'aiMeasureResult\').classList.remove(\'show\')">Dismiss</button>';
+      errEl.classList.add('show');
+    }
     return null;
   }
 }
@@ -5772,10 +5779,12 @@ async function tryAIMeasurement(dataUrl, mediaType) {
   resultEl.classList.add('show');
 
   // 30 second timeout — prevents hanging
-  const result = await Promise.race([
-    measureFishFromPhoto(dataUrl, mediaType),
-    new Promise(res => setTimeout(() => res(null), 30000))
-  ]);
+  const timeoutPromise = new Promise(res => setTimeout(() => res({_timeout:true}), 30000));
+  const result = await Promise.race([measureFishFromPhoto(dataUrl, mediaType), timeoutPromise]);
+  if (result && result._timeout) {
+    resultEl.innerHTML = '<div class="ai-measure-title" style="color:var(--danger)">⏱ AI timed out — check internet connection</div><button class="ai-measure-btn ai-measure-edit" onclick="document.getElementById(\'aiMeasureResult\').classList.remove(\'show\');">Dismiss</button>';
+    return;
+  }
   if (!result || (!result.length_cm && !result.species)) {
     resultEl.innerHTML = '<div class="ai-measure-title" style="color:var(--mist)">Could not identify fish or measure length</div><button class="ai-measure-btn ai-measure-edit" onclick="document.getElementById(\'aiMeasureResult\').classList.remove(\'show\')">Dismiss</button>';
     return;
