@@ -5719,9 +5719,13 @@ async function calibrateBragMat(e) {
     });
 
     // Send to Claude for analysis
-    const response = await fetch('https://bragmaster-proxy.lee-edwards-au.workers.dev?service=claude', {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': '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',
+        'anthropic-version': '2023-06-01',
+      },
       body: JSON.stringify({
         model: 'claude-opus-4-5',
         max_tokens: 500,
@@ -5761,9 +5765,13 @@ async function measureFishFromPhoto(imageDataUrl, mediaType) {
     const resized = await resizeImageForAI(imageDataUrl, 600);
     const base64  = resized.split(',')[1];
 
-    const response = await fetch('https://bragmaster-proxy.lee-edwards-au.workers.dev?service=claude', {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': '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',
+        'anthropic-version': '2023-06-01',
+      },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 400,
