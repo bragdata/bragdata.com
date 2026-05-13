@@ -3219,7 +3219,7 @@ function importFromPhoto(e) {
               const depthEl = document.getElementById('depth');
               if (depthEl && !depthEl.value) {
                 depthEl.value = depth;
-                showToast('📏 Depth auto-filled: ' + depth + 'm from GEBCO');
+                showToast('📏 Estimated depth: ~' + depth + 'm (GEBCO — tap to correct)');
               }
             }
           });
