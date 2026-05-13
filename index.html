@@ -5784,7 +5784,7 @@ async function measureFishFromPhoto(imageDataUrl, mediaType) {
 
   try {
     if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">Step 2: Resizing...</div>'; }
-    const resized = await resizeImageForAI(imageDataUrl, 600);
+    const resized = await resizeImageForAI(imageDataUrl, 800);
     const b64 = resized.split(',')[1];
     if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">Step 3: Sending ' + Math.round(b64.length/1000) + 'KB to Claude... (wait up to 60s)</div>'; }
 
@@ -5798,7 +5798,7 @@ async function measureFishFromPhoto(imageDataUrl, mediaType) {
           role: 'user',
           content: [
             {type:'image', source:{type:'base64', media_type:'image/jpeg', data:b64}},
-            {type:'text', text:'Look at this photo. 1) What Australian fish species is this? 2) Is there a brag mat ruler visible? If yes, read the LARGE NUMBERS on the bottom edge only (not the small mm marks on top) and measure nose-to-tail length. Respond ONLY as JSON: {"species":"name","nicknames":"list","length_cm":number or null,"nose_at_cm":number or null,"tail_at_cm":number or null,"confidence":"high/medium/low","legal_size_cm":number or null,"protected":false,"notes":"brief"}'}
+            {type:'text', text:'What species of fish is in this image? Reply with ONLY this JSON, nothing else: {"species":"common name","nicknames":"","length_cm":null,"confidence":"high/medium/low","legal_size_cm":null,"protected":false,"notes":""}'}
           ]
         }]
       })
