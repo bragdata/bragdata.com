@@ -5805,9 +5805,9 @@ async function measureFishFromPhoto(imageDataUrl, mediaType) {
     const b64 = resized.split(',')[1];
     if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">Step 3: Sending ' + Math.round(b64.length/1000) + 'KB to Claude... (wait up to 60s)</div>'; }
 
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    const resp = await fetch('https://bragmaster-proxy.lee-edwards-au.workers.dev?service=claude', {
       method: 'POST',
-      headers: {'Content-Type':'application/json','x-api-key':'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','anthropic-version':'2023-06-01'},
+      headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
         max_tokens: 500,
