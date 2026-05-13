@@ -5877,6 +5877,81 @@ async function tryAIMeasurement(dataUrl, mediaType) {
 
 // acceptAIMeasurement moved to regulations block
 
+function acceptAISpecies(species, nicknames, legalSize, habitatNotes) {
+  if (!species) return;
+  let spId = null;
+  const found = window.species ? window.species.find(s =>
+    s.name.toLowerCase().includes(species.toLowerCase()) ||
+    species.toLowerCase().includes(s.name.toLowerCase())
+  ) : null;
+  if (found) {
+    spId = found.id;
+  } else {
+    spId = 'sp' + Date.now();
+    const nicks = nicknames ? nicknames.split(',').map(n=>n.trim()).filter(Boolean) : [];
+    const notes = [legalSize ? 'Legal size: '+legalSize+'cm' : '', habitatNotes||''].filter(Boolean).join(' · ');
+    window.species.push({id:spId, name:species, nicknames:nicks, notes});
+    saveSp();
+    showToast('"'+species+'" added to your species list');
+  }
+  // Try pickSp first (updates badge UI)
+  try { pickSp(spId, species); } catch(e) {}
+  // Also set fields directly as fallback — ensures saveCatch validation passes
+  const spIdEl   = document.getElementById('spId');
+  const spNameEl = document.getElementById('spName');
+  const spBadge  = document.getElementById('spBadge');
+  const spBadgeName = document.getElementById('spBadgeName');
+  const spSearch = document.getElementById('spSearch');
+  if (spIdEl)   spIdEl.value   = spId;
+  if (spNameEl) spNameEl.value = species;
+  if (spBadge)  { spBadge.style.display = 'block'; }
+  if (spBadgeName) spBadgeName.textContent = species;
+  if (spSearch) spSearch.style.display = 'none';
+  selSpId   = spId;
+  selSpName = species;
+  // Update button
+  const btn = document.querySelector('[onclick*="acceptAISpecies"]');
+  if (btn) { btn.textContent = '✓ Accepted'; btn.disabled = true; btn.style.opacity = '0.6'; }
+  const decBtn = document.querySelector('[onclick*="declineAISpecies"]');
+  if (decBtn) decBtn.style.display = 'none';
+}
+
+function declineAISpecies() {
+  const btn = document.querySelector('[onclick*="declineAISpecies"]');
+  if (btn) { btn.textContent = '✗ Skipped'; btn.disabled = true; btn.style.opacity = '0.6'; }
+  const accBtn = document.querySelector('[onclick*="acceptAISpecies"]');
+  if (accBtn) accBtn.style.display = 'none';
+}
+
+function acceptAILength(lengthCm) {
+  const lenField = document.getElementById('length');
+  if (lenField) lenField.value = lengthCm;
+  showToast('Length set to ' + lengthCm + 'cm');
+  // Check regulations with current species
+  const spEl = document.getElementById('spSearch');
+  const sp = spEl ? spEl.value : '';
+  const userState = document.getElementById('catchState') ? document.getElementById('catchState').value||'NSW' : 'NSW';
+  const reg = checkFishRegulations(sp, lengthCm, userState);
+  if (reg) {
+    showRegulationAlert(reg);
+    if (reg.disposition) { const d=document.getElementById('disposition'); if(d) d.value=reg.disposition; }
+  }
+  const btn = document.querySelector('[onclick*="acceptAILength"]');
+  if (btn) { btn.textContent = '✓ Set'; btn.disabled = true; btn.style.opacity = '0.6'; }
+  const decBtn = document.querySelector('[onclick*="declineAILength"]');
+  if (decBtn) decBtn.style.display = 'none';
+}
+
+function declineAILength() {
+  // Focus the length field so user can type their own value
+  const lenField = document.getElementById('length');
+  if (lenField) { lenField.focus(); lenField.select(); }
+  const btn = document.querySelector('[onclick*="declineAILength"]');
+  if (btn) { btn.textContent = '✗ Skipped'; btn.disabled = true; btn.style.opacity = '0.6'; }
+  const accBtn = document.querySelector('[onclick*="acceptAILength"]');
+  if (accBtn) accBtn.style.display = 'none';
+}
+
 
 /* AUSTRALIAN FISH REGULATIONS REFERENCE TABLE */
 const AUS_FISH_REGS = {
