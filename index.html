@@ -3171,12 +3171,19 @@ function importFromPhoto(e) {
       const urlReader = new FileReader();
       urlReader.onload = urlEv => {
         const b64 = urlEv.target.result; // already a proper data URL
+        console.log('FileReader result length:', b64 ? b64.length : 'NULL');
         compressPhotoFromBase64(b64, data => {
           pendingPhotos.push(data);
           renderPhotoPreviews();
-          tryAIMeasurement(b64, file.type||'image/jpeg'); // original full res for AI
+          if (!b64 || b64.length < 100) {
+            console.warn('b64 is empty or too short — skipping AI');
+            return;
+          }
+          showToast('Starting AI... image is ' + Math.round(b64.length/1000) + 'KB');
+          tryAIMeasurement(b64, file.type||'image/jpeg');
         });
       };
+      urlReader.onerror = () => console.warn('FileReader failed');
       urlReader.readAsDataURL(file);
 
       let exif = {dateTime:null, gpsLat:null, gpsLon:null};
@@ -5817,7 +5824,8 @@ async function measureFishFromPhoto(imageDataUrl, mediaType) {
     if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">Step 3: Reading response (HTTP ' + resp.status + ')...</div>'; }
 
     const raw = await resp.text();
-    if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">Step 4: ' + raw.slice(0,200) + '</div>'; }
+    if (dbg) { dbg.innerHTML = '<div class="ai-measure-title" style="word-break:break-all;font-size:10px;">RAW: ' + raw.slice(0,500) + '</div>'; dbg.classList.add('show'); }
+    await new Promise(r => setTimeout(r, 5000)); // hold for 5s so user can read
 
     if (!resp.ok) throw new Error('HTTP ' + resp.status + ': ' + raw.slice(0,100));
     const data = JSON.parse(raw);
@@ -5871,6 +5879,8 @@ async function tryAIMeasurement(dataUrl, mediaType) {
     return;
   }
   if (!result || (!result.length_cm && !result.species)) {
+    // Wait 3s so user can read the Step 4 debug output
+    await new Promise(r => setTimeout(r, 3000));
     resultEl.innerHTML = '<div class="ai-measure-title" style="color:var(--mist)">Could not identify fish or measure length</div><button class="ai-measure-btn ai-measure-edit" onclick="document.getElementById(\'aiMeasureResult\').classList.remove(\'show\')">Dismiss</button>';
     return;
   }
