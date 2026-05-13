@@ -3213,6 +3213,16 @@ function importFromPhoto(e) {
         showToast('📸 Photo data imported — fill in the catch details');
         if (exif.dateTime && exif.gpsLat !== null && exif.gpsLon !== null) {
           lookupTide(exif.dateTime, exif.gpsLat, exif.gpsLon);
+          // Auto-lookup depth from GEBCO
+          lookupDepthFromGPS(exif.gpsLat, exif.gpsLon).then(depth => {
+            if (depth) {
+              const depthEl = document.getElementById('depth');
+              if (depthEl && !depthEl.value) {
+                depthEl.value = depth;
+                showToast('📏 Depth auto-filled: ' + depth + 'm from GEBCO');
+              }
+            }
+          });
         } else if (exif.dateTime) {
           pendingExifDateTime = exif.dateTime;
           showLocPicker();
@@ -6237,6 +6247,27 @@ function buildTideCurveSVG(entries, nowMs, dayIndex) {
   return '<div class="cond-section"><div class="cond-section-hdr">🌊 Tides — ' + dayLabel + '</div>'
     + '<div style="padding:8px 10px 4px;">' + svg + '</div>'
     + '</div>';
+}
+
+
+/* GEBCO AUTO-DEPTH FROM GPS */
+async function lookupDepthFromGPS(lat, lon) {
+  try {
+    // ODB Taiwan GEBCO API — free, CORS enabled, no key needed
+    const url = 'https://api.odb.ntu.edu.tw/gebco?lon=' + lon + '&lat=' + lat + '&mode=zonly';
+    const resp = await fetch(url);
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    // Returns array of z values — negative = below sea level (depth)
+    const z = Array.isArray(data) ? data[0] : (data.z || data.depth || null);
+    if (z === null || z === undefined) return null;
+    const depth = Math.abs(parseFloat(z));
+    if (isNaN(depth) || depth === 0) return null;
+    return Math.round(depth); // return positive depth in metres
+  } catch(e) {
+    console.warn('GEBCO depth lookup failed:', e.message);
+    return null;
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────
