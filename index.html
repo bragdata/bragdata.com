@@ -5762,7 +5762,7 @@ async function calibrateBragMat(e) {
 async function measureFishFromPhoto(imageDataUrl, mediaType) {
   try {
     // Resize image to max 800px before sending — reduces payload from ~3MB to ~100KB
-    const resized = await resizeImageForAI(imageDataUrl, 600);
+    const resized = await resizeImageForAI(imageDataUrl, 1200);
     const base64  = resized.split(',')[1];
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
@@ -5774,7 +5774,7 @@ async function measureFishFromPhoto(imageDataUrl, mediaType) {
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 400,
+        max_tokens: 600,
         messages: [{
           role: 'user',
           content: [
@@ -5831,7 +5831,7 @@ function resizeImageForAI(dataUrl, maxPx) {
       const c = document.createElement('canvas');
       c.width = w; c.height = h;
       c.getContext('2d').drawImage(img, 0, 0, w, h);
-      res(c.toDataURL('image/jpeg', 0.85));
+      res(c.toDataURL('image/jpeg', 0.92));
     };
     img.onerror = () => res(dataUrl);
     img.src = dataUrl;
