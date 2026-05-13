@@ -5739,7 +5739,7 @@ async function calibrateBragMat(e) {
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
         model: 'claude-opus-4-5',
-        max_tokens: 500,
+        max_tokens: 100,
         messages: [{
           role: 'user',
           content: [
@@ -5801,7 +5801,7 @@ async function measureFishFromPhoto(imageDataUrl, mediaType) {
 
   try {
     if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">Step 2: Resizing...</div>'; }
-    const resized = await resizeImageForAI(imageDataUrl, 800);
+    const resized = await resizeImageForAI(imageDataUrl, 500);
     const b64 = resized.split(',')[1];
     if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">Step 3: Sending ' + Math.round(b64.length/1000) + 'KB to Claude... (wait up to 60s)</div>'; }
 
@@ -5810,12 +5810,12 @@ async function measureFishFromPhoto(imageDataUrl, mediaType) {
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 500,
+        max_tokens: 100,
         messages: [{
           role: 'user',
           content: [
             {type:'image', source:{type:'base64', media_type:'image/jpeg', data:b64}},
-            {type:'text', text:'What species of fish is in this image? Reply with ONLY this JSON, nothing else: {"species":"common name","nicknames":"","length_cm":null,"confidence":"high/medium/low","legal_size_cm":null,"protected":false,"notes":""}'}
+            {type:'text', text:'Identify the fish species. Reply ONLY with JSON: {"species":"Australian common name or unknown","confidence":"high/medium/low","protected":false}'}
           ]
         }]
       })
@@ -5857,7 +5857,7 @@ function resizeImageForAI(dataUrl, maxPx) {
       const c = document.createElement('canvas');
       c.width = w; c.height = h;
       c.getContext('2d').drawImage(img, 0, 0, w, h);
-      res(c.toDataURL('image/jpeg', 0.80));
+      res(c.toDataURL('image/jpeg', 0.70));
     };
     img.onerror = () => res(dataUrl);
     img.src = dataUrl;
