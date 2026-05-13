@@ -3167,19 +3167,17 @@ function importFromPhoto(e) {
       const warnEl   = document.getElementById('exifWarn');
       resultEl.classList.remove('show'); warnEl.classList.remove('show');
 
-      // Convert ArrayBuffer → base64 and compress
-      try {
-        const bytes = new Uint8Array(buf);
-        let binary = ''; const chunkSize = 8192;
-        for (let i = 0; i < bytes.byteLength; i += chunkSize)
-          binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
-        const b64 = 'data:image/jpeg;base64,' + btoa(binary);
+      // Use FileReader.readAsDataURL — handles large files without btoa size limit
+      const urlReader = new FileReader();
+      urlReader.onload = urlEv => {
+        const b64 = urlEv.target.result; // already a proper data URL
         compressPhotoFromBase64(b64, data => {
           pendingPhotos.push(data);
           renderPhotoPreviews();
-          tryAIMeasurement(data, file.type||'image/jpeg');
+          tryAIMeasurement(b64, file.type||'image/jpeg'); // original full res for AI
         });
-      } catch(convErr) { console.warn('Photo conversion error:', convErr); }
+      };
+      urlReader.readAsDataURL(file);
 
       let exif = {dateTime:null, gpsLat:null, gpsLon:null};
       try { exif = parseExif(buf); }
@@ -5779,63 +5777,48 @@ async function callClaudeVision(imageB64, prompt, maxTokens) {
 }
 
 async function measureFishFromPhoto(imageDataUrl, mediaType) {
-  // Debug — show that we got here
   const dbg = document.getElementById('aiMeasureResult');
-  if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">Step 1: Resizing image...</div>'; dbg.classList.add('show'); }
 
   try {
+    if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">Step 1: Resizing...</div>'; dbg.classList.add('show'); }
     const resized = await resizeImageForAI(imageDataUrl, 1200);
     const b64 = resized.split(',')[1];
-    if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">Step 2: Calling Claude (' + Math.round(b64.length/1000) + 'KB)...</div>'; }
+    if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">Step 2: Asking Claude (' + Math.round(b64.length/1000) + 'KB)...</div>'; }
 
-    // Call 1 — species identification only (fast, no mat reading needed)
-    const speciesPromise = callClaudeVision(b64,
-      'What Australian fish species is in this photo? Reply ONLY in JSON: {"species":"common name","nicknames":"comma list","legal_size_cm":number or null,"habitat":"one line","protected":true/false,"protection_notes":"if protected"}',
-      150
-    );
+    const resp = await fetch('https://bragmaster-proxy.lee-edwards-au.workers.dev?service=claude', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 500,
+        messages: [{
+          role: 'user',
+          content: [
+            {type:'image', source:{type:'base64', media_type:'image/jpeg', data:b64}},
+            {type:'text', text:'Look at this photo. 1) What Australian fish species is this? 2) Is there a brag mat ruler visible? If yes, read the LARGE NUMBERS on the bottom edge only (not the small mm marks on top) and measure nose-to-tail length. Respond ONLY as JSON: {"species":"name","nicknames":"list","length_cm":number or null,"nose_at_cm":number or null,"tail_at_cm":number or null,"confidence":"high/medium/low","legal_size_cm":number or null,"protected":false,"notes":"brief"}'}
+          ]
+        }]
+      })
+    });
 
-    // Call 2 — measurement only (focused on mat reading)
-    const measurePromise = callClaudeVision(b64,
-      'Measure this fish using the brag mat ruler. Use ONLY the large bold numbers on the BOTTOM edge (10,20,30,40,50,60,70cm). Find nose tip cm and tail tip cm. Length = tail minus nose. If angled photo add 8-12%. Reply ONLY in JSON: {"length_cm":number or null,"nose_at_cm":number,"tail_at_cm":number,"confidence":"high/medium/low","camera_angle":"overhead/angled"}',
-      120
-    );
+    if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">Step 3: Reading response (HTTP ' + resp.status + ')...</div>'; }
 
-    // Race both with 25s timeout each
-    const timeout = ms => new Promise((_,rej) => setTimeout(() => rej(new Error('timeout')), ms));
+    const raw = await resp.text();
+    if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">Step 4: ' + raw.slice(0,200) + '</div>'; }
 
-    const [speciesText, measureText] = await Promise.all([
-      Promise.race([speciesPromise, timeout(25000)]).catch(e => {console.warn('Species call failed:',e.message); return null;}),
-      Promise.race([measurePromise, timeout(25000)]).catch(e => {console.warn('Measure call failed:',e.message); return null;})
-    ]);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status + ': ' + raw.slice(0,100));
+    const data = JSON.parse(raw);
+    if (data.error) throw new Error(JSON.stringify(data.error).slice(0,100));
+    const text = data.content?.[0]?.text || '';
+    if (!text) throw new Error('Empty response from Claude');
+    const clean = text.replace(/```json|```/g,'').trim();
+    return JSON.parse(clean);
 
-    const result = {};
-    if (speciesText) {
-      try {
-        const s = JSON.parse(speciesText.replace(/```json|```/g,'').trim());
-        Object.assign(result, s);
-      } catch(e) { console.warn('Species parse error:', speciesText); }
-    }
-    if (measureText) {
-      try {
-        const m = JSON.parse(measureText.replace(/```json|```/g,'').trim());
-        Object.assign(result, m);
-      } catch(e) { console.warn('Measure parse error:', measureText); }
-    }
-
-    // Show debug in panel
-    const debugEl = document.getElementById('aiMeasureResult');
-    if (debugEl) {
-      debugEl.innerHTML = '<div class="ai-measure-title">Species: ' + (result.species||'none') + ' · Length: ' + (result.length_cm||'none') + 'cm</div>';
-      debugEl.classList.add('show');
-    }
-
-    return Object.keys(result).length > 0 ? result : null;
   } catch(err) {
-    console.warn('AI measurement error:', err);
-    const errEl = document.getElementById('aiMeasureResult');
-    if (errEl) {
-      errEl.innerHTML = '<div class="ai-measure-title" style="color:var(--danger)">Error: ' + err.message + '</div><button class="ai-measure-btn ai-measure-edit" onclick="document.getElementById(\'aiMeasureResult\').classList.remove(\'show\')">Dismiss</button>';
-      errEl.classList.add('show');
+    console.warn('AI error:', err);
+    if (dbg) {
+      dbg.innerHTML = '<div class="ai-measure-title" style="color:var(--danger)">Error: ' + err.message.slice(0,150) + '</div><button class="ai-measure-btn ai-measure-edit" onclick="document.getElementById(\'aiMeasureResult\').classList.remove(\'show\')">Dismiss</button>';
+      dbg.classList.add('show');
     }
     return null;
   }
