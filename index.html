@@ -5805,29 +5805,18 @@ async function measureFishFromPhoto(imageDataUrl, mediaType) {
     : ' There may or may not be a brag mat in this photo.';
 
   try {
-    // Resize to 1200px max — large enough for mat markings to be legible
-    const resized = await resizeImageForAI(imageDataUrl, 1200);
+    // Resize to 512px — small payload for species ID only
+    const resized = await resizeImageForAI(imageDataUrl, 512);
     const b64 = resized.split(',')[1];
 
-    const prompt =
-      'You are an expert Australian fishing assistant. Analyse this photo of a fish (possibly on a brag mat).' + matContext +
-      ' Reply ONLY with a single JSON object — no markdown, no explanation — with these exact keys: ' +
-      '{"species":"Australian common name, or unknown if unsure",' +
-      '"confidence":"high, medium, or low",' +
-      '"nicknames":"comma-separated local names, or empty string",' +
-      '"length_cm":null or a number (measure against the mat ruler if visible, else null),' +
-      '"mat_detected":true or false,' +
-      '"legal_size_cm":null or the NSW minimum legal size as a number,' +
-      '"habitat_notes":"one short sentence about where this fish is typically caught, or empty string",' +
-      '"notes":"any extra observation, or empty string",' +
-      '"protected":false or true}';
+    const prompt = 'What species of fish is this? Reply ONLY with JSON, no markdown: {"species":"Australian common name or unknown","confidence":"high/medium/low","nicknames":"","legal_size_cm":null,"protected":false}';
 
     const resp = await fetch('https://bragmaster-proxy.lee-edwards-au.workers.dev?service=claude', {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 300,
+        max_tokens: 150,
         messages: [{
           role: 'user',
           content: [
