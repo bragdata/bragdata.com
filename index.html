@@ -5796,23 +5796,23 @@ async function callClaudeVision(imageB64, prompt, maxTokens) {
 async function measureFishFromPhoto(imageDataUrl, mediaType) {
   const dbg = document.getElementById('aiMeasureResult');
   if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">⌛ Analysing photo…</div>'; dbg.classList.add('show'); }
+  await new Promise(r => setTimeout(r, 50));
 
   try {
-    // Resize to 400px max — keep payload well under Worker limits
-    const resized = await resizeImageForAI(imageDataUrl, 400);
+    const resized = await resizeImageForAI(imageDataUrl, 500);
     const b64 = resized.split(',')[1];
 
     const resp = await fetch('https://bragmaster-proxy.lee-edwards-au.workers.dev?service=claude', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 200,
+        model: 'claude-sonnet-4-6',
+        max_tokens: 300,
         messages: [{
           role: 'user',
           content: [
             {type: 'image', source: {type: 'base64', media_type: 'image/jpeg', data: b64}},
-            {type: 'text', text: 'Identify the fish species in this photo. Reply ONLY with this JSON (no markdown): {"species":"Australian common name or unknown","confidence":"high/medium/low","nicknames":"","legal_size_cm":null,"protected":false,"notes":""}'}
+            {type: 'text', text: 'Analyse this fishing photo. Reply ONLY with JSON (no markdown): {"species":"Australian common name or unknown","confidence":"high/medium/low","nicknames":"","length_cm":null,"mat_detected":false,"legal_size_cm":null,"protected":false,"notes":""}. If a brag mat ruler is visible, read the fish length from it and set length_cm. Otherwise set length_cm to null.'}
           ]
         }]
       })
