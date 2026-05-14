@@ -5799,7 +5799,7 @@ async function measureFishFromPhoto(imageDataUrl, mediaType) {
   await new Promise(r => setTimeout(r, 50));
 
   try {
-    const resized = await resizeImageForAI(imageDataUrl, 400);
+    const resized = await resizeImageForAI(imageDataUrl, 800);
     const b64 = resized.split(',')[1];
 
     if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">Sending request… (' + Math.round(b64.length/1000) + 'KB)</div>'; }
@@ -5816,7 +5816,7 @@ async function measureFishFromPhoto(imageDataUrl, mediaType) {
             role: 'user',
             content: [
               {type: 'image', source: {type: 'base64', media_type: 'image/jpeg', data: b64}},
-              {type: 'text', text: 'Analyse this fishing photo. Reply ONLY with JSON (no markdown): {"species":"Australian common name or unknown","confidence":"high/medium/low","nicknames":"","length_cm":null,"mat_detected":false,"legal_size_cm":null,"protected":false,"notes":""}. If a brag mat ruler is visible, read the fish length from it and set length_cm. Otherwise set length_cm to null.'}
+              {type: 'text', text: 'You are an expert at identifying Australian fish species. Look carefully at the body shape, fins, scales, colour and markings. Also estimate the fish length in cm based on the fish body proportions, any visible context (hands, rod, boat, surroundings) or a brag mat ruler if present. Reply ONLY with JSON (no markdown): {"species":"Australian common name or unknown","confidence":"high/medium/low","nicknames":"","length_cm":null,"legal_size_cm":null,"protected":false,"notes":""}'}
             ]
           }]
         })
