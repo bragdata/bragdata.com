@@ -5796,62 +5796,46 @@ async function callClaudeVision(imageB64, prompt, maxTokens) {
 async function measureFishFromPhoto(imageDataUrl, mediaType) {
   const dbg = document.getElementById('aiMeasureResult');
   if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">⌛ Analysing photo…</div>'; dbg.classList.add('show'); }
-  await new Promise(r => setTimeout(r, 50)); // allow UI to update
-
-  // Load brag mat profile for context
-  const matProfile = loadBragMatProfile();
-  const matContext = matProfile
-    ? ' The brag mat in this photo has been calibrated: ' + matProfile.description
-    : ' There may or may not be a brag mat in this photo.';
 
   try {
-    // Resize to 512px — small payload for species ID only
-    const resized = await resizeImageForAI(imageDataUrl, 512);
+    // Resize to 400px max — keep payload well under Worker limits
+    const resized = await resizeImageForAI(imageDataUrl, 400);
     const b64 = resized.split(',')[1];
 
-    const prompt = 'What species of fish is this? Reply ONLY with JSON, no markdown: {"species":"Australian common name or unknown","confidence":"high/medium/low","nicknames":"","legal_size_cm":null,"protected":false}';
-
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    const resp = await fetch('https://bragmaster-proxy.lee-edwards-au.workers.dev?service=claude', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': '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',
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
+      headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 150,
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 200,
         messages: [{
           role: 'user',
           content: [
-            {type:'image', source:{type:'base64', media_type:'image/jpeg', data:b64}},
-            {type:'text', text: prompt}
+            {type: 'image', source: {type: 'base64', media_type: 'image/jpeg', data: b64}},
+            {type: 'text', text: 'Identify the fish species in this photo. Reply ONLY with this JSON (no markdown): {"species":"Australian common name or unknown","confidence":"high/medium/low","nicknames":"","legal_size_cm":null,"protected":false,"notes":""}'}
           ]
         }]
       })
     });
 
-    if (!resp.ok) {
-      const errText = await resp.text();
-      throw new Error('HTTP ' + resp.status + ': ' + errText.slice(0,120));
-    }
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const data = await resp.json();
-    if (data.error) throw new Error(JSON.stringify(data.error).slice(0,120));
+    if (data.error) throw new Error(JSON.stringify(data.error).slice(0, 100));
     const text = data.content?.[0]?.text || '';
-    if (!text) throw new Error('Empty response from Claude');
-    const clean = text.replace(/```json|```/g,'').trim();
+    if (!text) throw new Error('Empty response');
+    const clean = text.replace(/```json|```/g, '').trim();
     return JSON.parse(clean);
 
   } catch(err) {
-    console.warn('AI measure error:', err);
+    console.warn('AI error:', err);
     if (dbg) {
-      dbg.innerHTML = '<div class="ai-measure-title" style="color:var(--danger)">⚠️ ' + err.message.slice(0,150) + '</div><button class="ai-measure-btn ai-measure-edit" onclick="document.getElementById(\'aiMeasureResult\').classList.remove(\'show\')">Dismiss</button>';
+      dbg.innerHTML = '<div class="ai-measure-title" style="color:var(--danger)">⚠️ ' + err.message.slice(0, 150) + '</div><button class="ai-measure-btn ai-measure-edit" onclick="document.getElementById(\'aiMeasureResult\').classList.remove(\'show\')">Dismiss</button>';
       dbg.classList.add('show');
     }
     return null;
   }
 }
+
 
 function resizeImageForAI(dataUrl, maxPx) {
   return new Promise(res => {
