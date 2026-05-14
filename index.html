@@ -5811,9 +5811,14 @@ async function measureFishFromPhoto(imageDataUrl, mediaType) {
 
     const prompt = 'What species of fish is this? Reply ONLY with JSON, no markdown: {"species":"Australian common name or unknown","confidence":"high/medium/low","nicknames":"","legal_size_cm":null,"protected":false}';
 
-    const resp = await fetch('https://bragmaster-proxy.lee-edwards-au.workers.dev?service=claude', {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: {'Content-Type':'application/json'},
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': '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',
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
         max_tokens: 150,
