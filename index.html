@@ -5802,22 +5802,30 @@ async function measureFishFromPhoto(imageDataUrl, mediaType) {
     const resized = await resizeImageForAI(imageDataUrl, 500);
     const b64 = resized.split(',')[1];
 
-    const resp = await fetch('https://bragmaster-proxy.lee-edwards-au.workers.dev?service=claude', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 300,
-        messages: [{
-          role: 'user',
-          content: [
-            {type: 'image', source: {type: 'base64', media_type: 'image/jpeg', data: b64}},
-            {type: 'text', text: 'Analyse this fishing photo. Reply ONLY with JSON (no markdown): {"species":"Australian common name or unknown","confidence":"high/medium/low","nicknames":"","length_cm":null,"mat_detected":false,"legal_size_cm":null,"protected":false,"notes":""}. If a brag mat ruler is visible, read the fish length from it and set length_cm. Otherwise set length_cm to null.'}
-          ]
-        }]
-      })
-    });
+    if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">Sending request… (' + Math.round(b64.length/1000) + 'KB)</div>'; }
 
+    let resp;
+    try {
+      resp = await fetch('https://bragmaster-proxy.lee-edwards-au.workers.dev?service=claude', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 300,
+          messages: [{
+            role: 'user',
+            content: [
+              {type: 'image', source: {type: 'base64', media_type: 'image/jpeg', data: b64}},
+              {type: 'text', text: 'Analyse this fishing photo. Reply ONLY with JSON (no markdown): {"species":"Australian common name or unknown","confidence":"high/medium/low","nicknames":"","length_cm":null,"mat_detected":false,"legal_size_cm":null,"protected":false,"notes":""}. If a brag mat ruler is visible, read the fish length from it and set length_cm. Otherwise set length_cm to null.'}
+            ]
+          }]
+        })
+      });
+    } catch(fetchErr) {
+      throw new Error('Fetch failed: ' + fetchErr.message);
+    }
+
+    if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">Got response: HTTP ' + resp.status + '</div>'; }
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const data = await resp.json();
     if (data.error) throw new Error(JSON.stringify(data.error).slice(0, 100));
