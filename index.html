@@ -5799,7 +5799,7 @@ async function measureFishFromPhoto(imageDataUrl, mediaType) {
   await new Promise(r => setTimeout(r, 50));
 
   try {
-    const resized = await resizeImageForAI(imageDataUrl, 500);
+    const resized = await resizeImageForAI(imageDataUrl, 400);
     const b64 = resized.split(',')[1];
 
     if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">Sending request… (' + Math.round(b64.length/1000) + 'KB)</div>'; }
@@ -5810,8 +5810,8 @@ async function measureFishFromPhoto(imageDataUrl, mediaType) {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 300,
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 200,
           messages: [{
             role: 'user',
             content: [
