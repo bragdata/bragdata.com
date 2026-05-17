@@ -3176,11 +3176,24 @@ function filterSpeciesPicker() {
   const matches = (window.species || []).filter(s =>
     !q || s.name.toLowerCase().includes(q) || (s.nicknames||[]).join(' ').toLowerCase().includes(q)
   );
-  list.innerHTML = matches.map(s =>
-    '<button type="button" onclick="pickSpFromPicker('' + s.id + '','' + s.name.replace(/'/g,"\'") + '')"' +
-    ' style="width:100%;text-align:left;padding:14px 16px;background:rgba(255,255,255,0.06);border:none;border-bottom:1px solid rgba(255,255,255,0.08);font-size:16px;font-family:Georgia,serif;color:#e0f7fa;cursor:pointer;">' +
-    s.name + '</button>'
-  ).join('') + (q ? '<button type="button" onclick="addAndPickSpecies('' + q + '')" style="width:100%;text-align:left;padding:14px 16px;background:rgba(56,189,248,0.1);border:none;border-bottom:1px solid rgba(255,255,255,0.08);font-size:16px;font-family:Georgia,serif;color:#38bdf8;cursor:pointer;">+ Add \"' + q + '\"</button>' : '');
+  list.innerHTML = '';
+  const btnStyle = 'width:100%;text-align:left;padding:14px 16px;background:rgba(255,255,255,0.06);border:none;border-bottom:1px solid rgba(255,255,255,0.08);font-size:16px;font-family:Georgia,serif;color:#e0f7fa;cursor:pointer;';
+  matches.forEach(s => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.style.cssText = btnStyle;
+    btn.textContent = s.name;
+    btn.addEventListener('click', function() { pickSpFromPicker(s.id, s.name); });
+    list.appendChild(btn);
+  });
+  if (q) {
+    const addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.style.cssText = 'width:100%;text-align:left;padding:14px 16px;background:rgba(56,189,248,0.1);border:none;border-bottom:1px solid rgba(255,255,255,0.08);font-size:16px;font-family:Georgia,serif;color:#38bdf8;cursor:pointer;';
+    addBtn.textContent = '+ Add "' + q + '"';
+    addBtn.addEventListener('click', function() { addAndPickSpecies(q); });
+    list.appendChild(addBtn);
+  }
 }
 
 function pickSpFromPicker(id, name) {
@@ -6054,7 +6067,7 @@ async function tryAIMeasurement(dataUrl, mediaType, state) {
     return;
   }
   if (!result) {
-    resultEl.innerHTML = '<div class="ai-measure-title" style="color:var(--mist)">Could not identify fish</div><button class="ai-measure-btn ai-measure-edit" onclick="document.getElementById('aiMeasureResult').classList.remove('show')">Dismiss</button>';
+    resultEl.innerHTML = '<div class="ai-measure-title" style="color:var(--mist)">Could not identify fish</div><button class="ai-measure-btn ai-measure-edit" onclick="document.getElementById(\'aiMeasureResult\').classList.remove(\'show\')">Dismiss</button>';
     return;
   }
 
