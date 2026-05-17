@@ -1720,13 +1720,16 @@ body.map-open .content > #view-map { display: flex; }
     <div class="form-body">
       <!-- LENGTH SLIDER -->
       <div style="background:var(--ink);border-radius:var(--radius);padding:16px 16px 12px;margin-bottom:16px;">
-        <div style="display:flex;align-items:baseline;justify-content:center;gap:6px;margin-bottom:8px;">
-          <span id="lengthDisplay" style="font-size:64px;font-family:Georgia,serif;font-weight:700;color:#e0f7fa;line-height:1;">—</span>
-          <span style="font-size:20px;color:var(--mist);font-family:'Courier New',monospace;">cm</span>
+        <div style="text-align:center;margin-bottom:4px;">
+          <div style="display:flex;align-items:baseline;justify-content:center;gap:6px;">
+            <span id="lengthDisplay" style="font-size:64px;font-family:Georgia,serif;font-weight:700;color:#e0f7fa;line-height:1;">—</span>
+            <span style="font-size:20px;color:var(--mist);font-family:'Courier New',monospace;">cm</span>
+          </div>
+          <div id="aiLengthBadge" style="display:none;margin:4px auto 6px;width:fit-content;background:#38bdf8;color:#0e2a4a;font-size:10px;font-family:'Courier New',monospace;font-weight:900;padding:3px 10px;border-radius:20px;letter-spacing:1px;box-shadow:0 0 8px rgba(56,189,248,0.6);">🤖 AI estimate</div>
         </div>
-        <!-- AI badge floats above slider thumb -->
+        <!-- Slider -->
         <div style="position:relative;margin-bottom:4px;">
-          <div id="aiLengthBadge" style="display:none;position:absolute;top:-26px;transform:translateX(-50%);background:#38bdf8;color:#0e2a4a;font-size:10px;font-family:'Courier New',monospace;font-weight:900;padding:3px 7px;border-radius:20px;letter-spacing:1px;pointer-events:none;box-shadow:0 0 8px rgba(56,189,248,0.6);">🤖 AI</div>
+          <div style="display:none" id="aiLengthBadgeDummy"></div>
           <input type="range" id="length" min="0" max="150" step="1" value="0"
             style="width:100%;height:10px;accent-color:#38bdf8;cursor:pointer;"
             oninput="document.getElementById('lengthDisplay').textContent=this.value>0?this.value:'—';document.getElementById('lengthNum').value=this.value>0?this.value:'';document.getElementById('aiLengthBadge').style.display='none';updateSliderBadge();">
@@ -3288,11 +3291,7 @@ function numpadCancel() {
 }
 
 function updateSliderBadge() {
-  const slider = document.getElementById('length');
-  const badge = document.getElementById('aiLengthBadge');
-  if (!slider || !badge) return;
-  const pct = (slider.value - slider.min) / (slider.max - slider.min);
-  badge.style.left = 'calc(' + (pct * 100) + '% + ' + (8 - pct * 16) + 'px)';
+  // Badge is now inline — no positioning needed
 }
 
 function setAILength(lengthCm) {
