@@ -356,10 +356,6 @@ body.map-open .content > #view-map { display: flex; }
 #view-map #allCatchesMap { flex: 1; min-height: 0; border-radius: 0; border: none; }
 
 /* ── 3. FORM COMPONENTS ──────────────────────────────────────── */
-#logLauncher { display: block; }
-#logLauncher.hidden { display: none !important; }
-#logForm { display: block; }
-
 .form-card {
   background: var(--surface);
   border-radius: var(--radius);
@@ -1625,6 +1621,7 @@ body.map-open .content > #view-map { display: flex; }
   </div>
   <div class="tabs">
     <button class="tab active" id="tab-log"        onclick="showView('log')">Log</button>
+    <button class="tab" id="tab-newcatch" style="display:none" onclick="showView('newcatch')">New Catch</button>
     <button class="tab"        id="tab-catches"    onclick="showView('catches')">Brag Page</button>
     <button class="tab"        id="tab-reports"    onclick="showView('reports')">Reports</button>
     <button class="tab"        id="tab-map"        onclick="showView('map')">Map</button>
@@ -1646,7 +1643,7 @@ body.map-open .content > #view-map { display: flex; }
   <input type="file" id="bulkInput"   accept="image/*" multiple          style="display:none" onchange="startBulkImport(event)">
 
   <!-- LAUNCHER BUTTONS -->
-  <div id="logLauncher" style="padding:16px 0 8px">
+  <div id="logLauncher" style="padding:16px 0 8px;">
     <div style="text-align:center;margin-bottom:20px;">
       <div style="font-size:28px;margin-bottom:4px;">🎣</div>
       <div style="font-size:20px;font-family:Georgia,serif;color:var(--ink);font-weight:600;">Log a Catch</div>
@@ -1694,7 +1691,28 @@ body.map-open .content > #view-map { display: flex; }
     </button>
   </div>
 
-  <div id="logForm">
+
+</div><!-- /view-log -->
+
+<!-- ═══ NEW CATCH VIEW ═══ -->
+<div class="view" id="view-newcatch">
+  <div style="display:flex;align-items:center;gap:12px;padding:12px 0 4px;margin-bottom:4px;">
+    <button onclick="showView('log')" style="background:none;border:none;font-size:22px;cursor:pointer;padding:4px;color:var(--water);">‹</button>
+    <div style="font-size:17px;font-family:Georgia,serif;color:var(--ink);font-weight:600;">New Catch</div>
+  </div>
+  <div class="exif-result" id="exifResult">
+    <h4>✓ Data extracted from photo</h4>
+    <div id="exifRows"></div>
+  </div>
+  <div class="exif-warn" id="exifWarn"></div>
+  <div class="tide-lookup" id="tideLookup"></div>
+  <div class="ai-measure-result" id="aiMeasureResult"></div>
+  <div class="loc-picker-wrap" id="locPickerWrap">
+    <h4>📍 No GPS in photo — pick a location for tide lookup</h4>
+    <div class="loc-picker-grid" id="locPickerGrid"></div>
+    <button class="loc-lookup-btn" id="locLookupBtn" disabled onclick="lookupTideFromPicker()">🌊 Look up tide for selected location</button>
+  </div>
+
 
 
   <div class="form-card">
@@ -1822,8 +1840,7 @@ body.map-open .content > #view-map { display: flex; }
 
   <button id="btnSaveCatch" class="btn btn-save" onclick="saveCatch()">✓ Save to Journal</button>
 
-  </div><!-- end logForm -->
-</div><!-- /view-log -->
+</div><!-- /view-newcatch -->
 
 
 <!-- ═══ CATCHES VIEW ═══ -->
@@ -2632,6 +2649,7 @@ function showView(v) {
   if (v === 'reports')  buildRptFilters();
   if (v === 'species')  renderSpMgr();
   if (v === 'settings') { loadSettingsView(); loadHomeLocSelect(); updateBragMatUI(); }
+  if (v === 'newcatch')  { window.scrollTo(0,0); }
   if (v === 'map')      { document.body.classList.add('map-open'); initMapTabFilters(); setTimeout(renderAllCatchesMap, 100); } else { document.body.classList.remove('map-open'); }
   if (v === 'map')      { document.body.classList.add('map-open'); initMapTabFilters(); setTimeout(renderAllCatchesMap, 100); } else { document.body.classList.remove('map-open'); }
 }
@@ -3279,8 +3297,12 @@ function setAILength(lengthCm) {
 }
 
 function startManualEntry() {
+  showView('newcatch');
+}
+
 function importFromPhoto(e) {
   const file = e.target.files[0]; if (!file) return;
+  showView('newcatch');
   const reader = new FileReader();
   reader.onload = ev => {
     try {
@@ -4032,7 +4054,7 @@ async function saveCatch() {
       if (pendingPhotos.length) entry.photos = await savePendingPhotos(entry.id, pendingPhotos.slice());
     } catch(pe) { console.warn('Photo save error (catch still saved):', pe); }
     catches.unshift(entry);
-    saveC(); showToast('🐟 Catch saved!'); clearForm();
+    saveC(); showToast('🐟 Catch saved!'); clearForm(); showView('log');
     if (btn) { btn.disabled = false; btn.textContent = '✓ Save to Journal'; }
     // Scroll to top
     window.scrollTo({top: 0, behavior: 'smooth'});
@@ -4059,10 +4081,7 @@ function clearForm() {
   document.getElementById('photoPreviews').innerHTML = '';
   document.getElementById('photoInput').value = '';
   // Show launcher, hide form
-  const launcher = document.getElementById('logLauncher');
-  if (launcher) launcher.classList.remove('hidden');
-  const form = document.getElementById('logForm');
-  if (form) form.classList.remove('visible');
+  showView('log');
   const lenSlider = document.getElementById('length'); if(lenSlider) lenSlider.value=0;
   const aiBadge = document.getElementById('aiLengthBadge'); if(aiBadge) aiBadge.style.display='none';
   const numpadOverlay = document.getElementById('numpadOverlay'); if(numpadOverlay) numpadOverlay.style.display='none';
@@ -6489,16 +6508,3 @@ init();
 
 </body>
 </html>
-<div class="exif-result" id="exifResult">
-    <h4>✓ Data extracted from photo</h4>
-    <div id="exifRows"></div>
-  </div>
-  <div class="exif-warn" id="exifWarn"></div>
-  <div class="tide-lookup" id="tideLookup"></div>
-  <div class="ai-measure-result" id="aiMeasureResult"></div>
-  <div class="loc-picker-wrap" id="locPickerWrap">
-    <h4>📍 No GPS in photo — pick a location for tide lookup</h4>
-    <div class="loc-picker-grid" id="locPickerGrid"></div>
-    <button class="loc-lookup-btn" id="locLookupBtn" disabled onclick="lookupTideFromPicker()">🌊 Look up tide for selected location</button>
-  </div>
-
