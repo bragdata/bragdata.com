@@ -1715,9 +1715,49 @@ body.map-open .content > #view-map { display: flex; }
         <div style="display:flex;justify-content:space-between;font-size:10px;font-family:'Courier New',monospace;color:var(--mist);margin-top:6px;">
           <span>0</span><span>30</span><span>60</span><span>90</span><span>120</span><span>150cm</span>
         </div>
-        <input type="number" id="lengthNum" placeholder="Or type exact cm" min="0" max="300" step="1"
-          style="margin-top:10px;width:100%;padding:10px 12px;border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);font-size:16px;font-family:'Courier New',monospace;background:rgba(255,255,255,0.08);color:#e0f7fa;box-sizing:border-box;text-align:center;"
-          oninput="const v=parseInt(this.value)||0;document.getElementById('length').value=Math.min(v,150);document.getElementById('lengthDisplay').textContent=v>0?v:'—';">
+        <!-- Numpad trigger -->
+        <button type="button" onclick="openNumpad()" id="numpadTrigger"
+          style="margin-top:10px;width:100%;padding:12px;border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);font-size:15px;font-family:'Courier New',monospace;background:rgba(255,255,255,0.06);color:var(--mist);cursor:pointer;text-align:center;">
+          ✏️ Type exact cm
+        </button>
+        <input type="hidden" id="lengthNum">
+
+
+      </div>
+
+      <!-- SPECIES & DEPTH SIDE BY SIDE -->
+      <div style="display:flex;gap:10px;margin-bottom:16px;">
+
+        <div style="flex:1;background:var(--ink);border-radius:var(--radius);padding:16px;min-width:0;">
+          <div style="font-size:11px;font-family:'Courier New',monospace;color:var(--mist);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Species</div>
+          <div id="spBadge" style="display:none;margin-bottom:8px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(56,189,248,0.15);border:1px solid rgba(56,189,248,0.3);border-radius:8px;padding:8px 10px;">
+              <span id="spBadgeName" style="font-size:15px;font-family:Georgia,serif;color:#e0f7fa;font-weight:600;word-break:break-word;"></span>
+              <button onclick="clearSp()" style="background:none;border:none;color:var(--mist);font-size:18px;cursor:pointer;padding:0 2px;flex-shrink:0;">×</button>
+            </div>
+          </div>
+          <div class="species-wrap">
+            <input type="text" id="spSearch" placeholder="Search…" autocomplete="off"
+              oninput="onSpInput()" onfocus="onSpInput()" onblur="schedClose()"
+              style="width:100%;padding:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;font-size:13px;font-family:'Courier New',monospace;color:#e0f7fa;box-sizing:border-box;">
+            <div class="species-dropdown" id="spDrop"></div>
+          </div>
+          <input type="hidden" id="spId"><input type="hidden" id="spName">
+        </div>
+
+        <div style="flex:1;background:var(--ink);border-radius:var(--radius);padding:16px;min-width:0;">
+          <div style="font-size:11px;font-family:'Courier New',monospace;color:var(--mist);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Depth</div>
+          <div style="display:flex;align-items:baseline;justify-content:center;gap:4px;margin-bottom:12px;">
+            <span id="depthDisplay" style="font-size:40px;font-family:Georgia,serif;font-weight:700;color:#e0f7fa;line-height:1;">—</span>
+            <span style="font-size:14px;color:var(--mist);font-family:'Courier New',monospace;">m</span>
+          </div>
+          <button type="button" onclick="openDepthPad()" id="depthTrigger"
+            style="width:100%;padding:10px;border:1px solid rgba(255,255,255,0.15);border-radius:8px;font-size:12px;font-family:'Courier New',monospace;background:rgba(255,255,255,0.06);color:var(--mist);cursor:pointer;text-align:center;">
+            ✏️ Enter depth
+          </button>
+          <input type="hidden" id="depth">
+        </div>
+
       </div>
 
       <!-- DATE & TIME HERO -->
@@ -1733,160 +1773,7 @@ body.map-open .content > #view-map { display: flex; }
             style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);padding:10px 12px;font-size:18px;font-family:Georgia,serif;color:#e0f7fa;box-sizing:border-box;text-align:center;">
         </div>
       </div>
-    </div>
-    <div class="form-section-header">📍 Location &amp; Time</div>
-    <div class="form-body">
       <div class="form-row">
-        <div class="field">
-          <label>Spot Name</label>
-          <div class="spot-wrap">
-            <input type="text" id="spotName" placeholder="e.g. North Ramp, Hawkesbury"
-              oninput="onSpotInput()" onfocus="onSpotInput()" onblur="schedSpotClose()" autocomplete="off">
-            <div class="spot-dropdown" id="spotDrop"></div>
-          </div>
-        </div>
-        <div class="field">
-          <label>State</label>
-          <select id="catchState">
-            <option value="">— Select —</option>
-            <option>NSW</option><option>QLD</option><option>VIC</option>
-            <option>WA</option><option>SA</option><option>TAS</option>
-            <option>NT</option><option>ACT</option><option>NZ</option><option>OS</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row">
-        <!-- date/time moved to hero above -->
-      </div>
-      <div id="moonDisplay"></div>
-      <div class="field">
-        <label>GPS Coordinates</label>
-        <div class="gps-field">
-          <input type="text" id="gpsCoords" placeholder="Tap GPS to acquire" readonly>
-          <button class="btn btn-gps" onclick="getGPS()">📡 GPS</button>
-          <button class="btn btn-gps" style="background:var(--water)" onclick="openMapPicker()">🗺 Pin</button>
-        </div>
-        <div class="gps-status" id="gpsStatus" style="display:none"></div>
-      </div>
-      <div class="form-row" style="margin-top:10px">
-        <div class="field"><label>Fishfinder Waypoint ID</label><input type="text" id="waypointId" placeholder="e.g. WPT-042"></div>
-        <div class="field"><label>Waypoint Name</label><input type="text" id="waypointName" placeholder="e.g. The Bombora"></div>
-      </div>
-      <div class="form-row single">
-        <div class="field"><label>Water Temp (°C)</label><input type="number" id="waterTemp" placeholder="18" step="0.5"></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="form-card">
-    <div class="form-section-header">🌤 Conditions</div>
-    <div class="form-body">
-      <div class="field" style="margin-bottom:12px">
-        <label>Weather</label>
-        <div class="weather-tiles">
-          <div class="weather-tile" onclick="selWeather(event.currentTarget,'Sunny')"><span class="wi">☀️</span>Sunny</div>
-          <div class="weather-tile" onclick="selWeather(event.currentTarget,'Cloudy')"><span class="wi">⛅</span>Cloudy</div>
-          <div class="weather-tile" onclick="selWeather(event.currentTarget,'Overcast')"><span class="wi">☁️</span>Overcast</div>
-          <div class="weather-tile" onclick="selWeather(event.currentTarget,'Rain')"><span class="wi">🌧</span>Rain</div>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="field"><label>Air Temp (°C)</label><input type="number" id="airTemp" placeholder="22" step="1"></div>
-        <div class="field"><label>Wind Speed (km/h)</label><input type="number" id="windSpeed" placeholder="15" step="1" min="0"></div>
-      </div>
-      <div class="field">
-        <label>Wind Direction</label>
-        <div class="compass-wrap">
-          <div class="compass">
-            <span class="cl n">N</span><span class="cl s">S</span>
-            <span class="cl e">E</span><span class="cl w">W</span>
-            <div class="needle" id="needle"></div>
-            <div class="dot"></div>
-          </div>
-          <div class="dir-buttons">
-            <div class="dir-btn" onclick="selDir(event.currentTarget,'N')">N</div>
-            <div class="dir-btn" onclick="selDir(event.currentTarget,'NE')">NE</div>
-            <div class="dir-btn" onclick="selDir(event.currentTarget,'E')">E</div>
-            <div class="dir-btn" onclick="selDir(event.currentTarget,'SE')">SE</div>
-            <div class="dir-btn" onclick="selDir(event.currentTarget,'S')">S</div>
-            <div class="dir-btn" onclick="selDir(event.currentTarget,'SW')">SW</div>
-            <div class="dir-btn" onclick="selDir(event.currentTarget,'W')">W</div>
-            <div class="dir-btn" onclick="selDir(event.currentTarget,'NW')">NW</div>
-          </div>
-        </div>
-      </div>
-      <div class="field" style="margin-top:10px">
-        <label>Tide</label>
-        <select id="tide">
-          <option value="">— Select —</option>
-          <option>Incoming</option><option>High</option><option>Outgoing</option>
-          <option>Low</option><option>Slack</option>
-        </select>
-      </div>
-      <div class="form-row" style="margin-top:10px">
-        <div class="field"><label>Swell Height (m)</label><input type="number" id="swellHeight" placeholder="e.g. 1.2" step="0.1" min="0"></div>
-        <div class="field"><label>Swell Direction</label>
-          <select id="swellDir"><option value="">— Select —</option>
-            <option>N</option><option>NE</option><option>E</option><option>SE</option>
-            <option>S</option><option>SW</option><option>W</option><option>NW</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="field"><label>Swell Period (s)</label><input type="number" id="swellPeriod" placeholder="e.g. 8" step="1" min="0"></div>
-        <div class="field"><label>Wave Height (m)</label><input type="number" id="waveHeight" placeholder="e.g. 1.5" step="0.1" min="0"></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="form-card">
-    <div class="form-section-header">🐟 The Catch</div>
-    <div class="form-body">
-      <div class="form-row single">
-        <div class="field">
-          <label>Species</label>
-          <div class="species-wrap">
-            <input type="text" id="spSearch" placeholder="Type to search species…" autocomplete="off"
-              oninput="onSpInput()" onfocus="onSpInput()" onblur="schedClose()">
-            <div class="species-dropdown" id="spDrop"></div>
-          </div>
-          <div id="spBadge" style="display:none">
-            <span class="sp-badge"><span id="spBadgeName"></span><button onclick="clearSp()">×</button></span>
-          </div>
-          <input type="hidden" id="spId"><input type="hidden" id="spName">
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="field">
-          <label>Weight (kg)</label>
-          <div style="background:var(--ink);border-radius:var(--radius);padding:16px;">
-            <!-- Display -->
-            <div style="text-align:center;margin-bottom:12px;">
-              <span id="weightDisplay" style="font-size:48px;font-family:Georgia,serif;font-weight:700;color:#e0f7fa;letter-spacing:2px;">—</span>
-              <span style="font-size:16px;color:var(--mist);font-family:'Courier New',monospace;margin-left:6px;">kg</span>
-            </div>
-            <input type="hidden" id="weight">
-            <!-- Number pad -->
-            <div id="weightPad" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
-              <button type="button" onclick="weightPad('1')" style="padding:16px;font-size:22px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);color:#e0f7fa;cursor:pointer;">1</button>
-              <button type="button" onclick="weightPad('2')" style="padding:16px;font-size:22px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);color:#e0f7fa;cursor:pointer;">2</button>
-              <button type="button" onclick="weightPad('3')" style="padding:16px;font-size:22px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);color:#e0f7fa;cursor:pointer;">3</button>
-              <button type="button" onclick="weightPad('4')" style="padding:16px;font-size:22px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);color:#e0f7fa;cursor:pointer;">4</button>
-              <button type="button" onclick="weightPad('5')" style="padding:16px;font-size:22px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);color:#e0f7fa;cursor:pointer;">5</button>
-              <button type="button" onclick="weightPad('6')" style="padding:16px;font-size:22px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);color:#e0f7fa;cursor:pointer;">6</button>
-              <button type="button" onclick="weightPad('7')" style="padding:16px;font-size:22px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);color:#e0f7fa;cursor:pointer;">7</button>
-              <button type="button" onclick="weightPad('8')" style="padding:16px;font-size:22px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);color:#e0f7fa;cursor:pointer;">8</button>
-              <button type="button" onclick="weightPad('9')" style="padding:16px;font-size:22px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);color:#e0f7fa;cursor:pointer;">9</button>
-              <button type="button" onclick="weightPad('.')" style="padding:16px;font-size:22px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);color:#e0f7fa;cursor:pointer;">.</button>
-              <button type="button" onclick="weightPad('0')" style="padding:16px;font-size:22px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);color:#e0f7fa;cursor:pointer;">0</button>
-              <button type="button" onclick="weightPad('back')" style="padding:16px;font-size:22px;font-family:Georgia,serif;background:rgba(255,100,100,0.2);border:1px solid rgba(255,100,100,0.3);border-radius:var(--radius-sm);color:#fca5a5;cursor:pointer;">⌫</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="field"><label>Depth (m) 📏</label><input type="number" id="depth" placeholder="e.g. 12" step="1" min="0"></div>
         <div class="field"><label>Count</label><input type="number" id="count" placeholder="1" min="1" value="1"></div>
       </div>
       <div class="form-row">
@@ -3243,23 +3130,86 @@ function closeMeasureModal() {
 /* ─────────────────────────────────────────────────────────────
    EXIF PHOTO IMPORT
    ───────────────────────────────────────────────────────────── */
-function weightPad(val) {
-  const display = document.getElementById('weightDisplay');
-  const hidden = document.getElementById('weight');
+let numpadFresh = true;
+let numpadTarget = "length"; // first keypress replaces existing value
+
+function openDepthPad() {
+  const overlay = document.getElementById('numpadOverlay');
+  if (overlay) { overlay.style.display = 'flex'; }
+  document.getElementById('numpadLabel').textContent = 'Depth';
+  document.getElementById('numpadUnit').textContent = 'm';
+  document.getElementById('numpadDisplay').textContent = document.getElementById('depth').value || '—';
+  numpadTarget = 'depth';
+  numpadFresh = true;
+}
+
+function openNumpad() {
+  const overlay = document.getElementById('numpadOverlay');
+  if (overlay) { overlay.style.display = 'flex'; }
+  document.getElementById('numpadLabel').textContent = 'Fish Length';
+  document.getElementById('numpadUnit').textContent = 'cm';
+  const cur = document.getElementById('lengthNum').value;
+  document.getElementById('numpadDisplay').textContent = cur || '—';
+  numpadTarget = 'length';
+  numpadFresh = true;
+}
+
+function numpad(val) {
+  const display = document.getElementById('numpadDisplay');
+  const hidden = document.getElementById('lengthNum');
   let cur = hidden.value || '';
+
   if (val === 'back') {
     cur = cur.slice(0, -1);
-  } else if (val === '.') {
-    if (cur.includes('.')) return; // only one decimal
-    cur = cur + '.';
+    numpadFresh = false;
   } else {
-    if (cur === '0') cur = val;
-    else cur = cur + val;
+    if (numpadFresh) {
+      cur = val; // first press replaces
+      numpadFresh = false;
+    } else {
+      cur = cur + val;
+    }
   }
-  // Limit to reasonable weight
-  if (parseFloat(cur) > 999) return;
+
+  // Max 3 digits for fish length
+  if (parseInt(cur) > 999) return;
   hidden.value = cur;
   display.textContent = cur || '—';
+
+  // Live update target field
+  const v = parseInt(cur) || 0;
+  if (numpadTarget === 'length') {
+    const slider = document.getElementById('length');
+    const bigDisplay = document.getElementById('lengthDisplay');
+    const lenNum = document.getElementById('lengthNum');
+    if (slider) slider.value = Math.min(v, 150);
+    if (bigDisplay) bigDisplay.textContent = v > 0 ? v : '—';
+    if (lenNum) lenNum.value = cur;
+  } else if (numpadTarget === 'depth') {
+    const depthHidden = document.getElementById('depth');
+    const depthDisplay = document.getElementById('depthDisplay');
+    if (depthHidden) depthHidden.value = cur;
+    if (depthDisplay) depthDisplay.textContent = v > 0 ? v : '—';
+  }
+}
+
+function numpadDone() {
+  const overlay = document.getElementById('numpadOverlay');
+  if (overlay) overlay.style.display = 'none';
+  if (numpadTarget === 'length') {
+    const val = document.getElementById('lengthNum').value;
+    const trigger = document.getElementById('numpadTrigger');
+    if (trigger) trigger.textContent = val ? '✏️ ' + val + ' cm — tap to change' : '✏️ Type exact cm';
+  } else if (numpadTarget === 'depth') {
+    const val = document.getElementById('depth').value;
+    const trigger = document.getElementById('depthTrigger');
+    if (trigger) trigger.textContent = val ? '✏️ ' + val + ' m — tap to change' : '✏️ Enter depth';
+  }
+}
+
+function numpadCancel() {
+  const overlay = document.getElementById('numpadOverlay');
+  if (overlay) overlay.style.display = 'none';
 }
 
 function updateSliderBadge() {
@@ -3361,8 +3311,12 @@ function importFromPhoto(e) {
           lookupDepthFromGPS(exif.gpsLat, exif.gpsLon).then(depth => {
             if (depth) {
               const depthEl = document.getElementById('depth');
+              const depthDisplay = document.getElementById('depthDisplay');
+              const depthTrigger = document.getElementById('depthTrigger');
               if (depthEl && !depthEl.value) {
                 depthEl.value = depth;
+                if (depthDisplay) depthDisplay.textContent = depth;
+                if (depthTrigger) depthTrigger.textContent = '📏 ~' + depth + 'm (GEBCO — tap to edit)';
                 showToast('📏 Estimated depth: ~' + depth + 'm (GEBCO — tap to correct)');
               }
             }
@@ -4075,8 +4029,12 @@ function clearForm() {
   if (form) form.style.display = 'none';
   const lenSlider = document.getElementById('length'); if(lenSlider) lenSlider.value=0;
   const aiBadge = document.getElementById('aiLengthBadge'); if(aiBadge) aiBadge.style.display='none';
-  const wHidden = document.getElementById('weight'); if(wHidden) wHidden.value='';
-  const wDisplay = document.getElementById('weightDisplay'); if(wDisplay) wDisplay.textContent='—';
+  const numpadOverlay = document.getElementById('numpadOverlay'); if(numpadOverlay) numpadOverlay.style.display='none';
+  const depthHidden = document.getElementById('depth'); if(depthHidden) depthHidden.value='';
+  const depthDisplay = document.getElementById('depthDisplay'); if(depthDisplay) depthDisplay.textContent='—';
+  const depthTrigger = document.getElementById('depthTrigger'); if(depthTrigger) depthTrigger.textContent='✏️ Enter depth';
+  const numpadTrigger = document.getElementById('numpadTrigger'); if(numpadTrigger) numpadTrigger.textContent='✏️ Type exact cm';
+  const numpadHidden = document.getElementById('lengthNum'); if(numpadHidden) numpadHidden.value='';
   const lenNum = document.getElementById('lengthNum'); if(lenNum) lenNum.value='';
   const lenDisplay = document.getElementById('lengthDisplay'); if(lenDisplay) lenDisplay.textContent='—';
   const now = new Date();
@@ -6047,30 +6005,22 @@ async function tryAIMeasurement(dataUrl, mediaType, state) {
     return;
   }
 
-  const confColor = result.confidence === 'high' ? 'var(--catch)' : result.confidence === 'medium' ? 'var(--dawn)' : 'var(--mist)';
   const hasLength  = result.length_cm && result.length_cm > 0;
   const hasSpecies = result.species && result.species !== 'unknown';
 
-  // Check regulations
-  const userState = document.getElementById('catchState') ? document.getElementById('catchState').value||'NSW' : 'NSW';
-  const reg = result.species ? checkFishRegulations(result.species, result.length_cm, userState) : null;
-  const regHtml = reg ? '<div style="background:' + (reg.level==='PROTECTED'?'#fee2e2':reg.level==='LEGAL'?'#d1fae5':'#fef3c7') + ';border-radius:6px;padding:8px 10px;margin-top:6px;font-size:11px;font-family:Courier New,monospace;color:' + (reg.level==='PROTECTED'?'#991b1b':reg.level==='LEGAL'?'#065f46':'#92400e') + ';">' + (reg.level==='PROTECTED'?'🔴':reg.level==='LEGAL'?'✅':reg.level==='UNDERSIZED'?'🟠':'⚠️') + ' ' + reg.message + '</div>' : '';
+  // Auto-fill fields immediately — no accept button needed
+  acceptAIMeasurement(
+    hasLength ? result.length_cm : null,
+    result.species || '',
+    result.nicknames || '',
+    result.legal_size_cm || '',
+    result.habitat_notes || ''
+  );
 
-  const acceptArgs = hasLength
-    ? result.length_cm + ",'" + (result.species||'').replace(/'/g,"\'") + "','" + (result.nicknames||'').replace(/'/g,"\'") + "','" + (result.legal_size_cm||'') + "','" + (result.habitat_notes||'').replace(/'/g,"\'") + "'"
-    : "null,'" + (result.species||'').replace(/'/g,"\'") + "','" + (result.nicknames||'').replace(/'/g,"\'") + "','" + (result.legal_size_cm||'') + "','" + (result.habitat_notes||'').replace(/'/g,"\'") + "'";
-
-  resultEl.innerHTML =
-    '<div class="ai-measure-title">🤖 AI Analysis</div>'
-    + (hasSpecies ? '<div class="ai-measure-row"><span class="ai-measure-label">Species</span><span style="font-size:15px;font-family:Georgia,serif;color:var(--ink);font-weight:600;">' + h(result.species) + '</span></div>' : '')
-    + (hasLength  ? '<div class="ai-measure-row"><span class="ai-measure-label">Length</span><span class="ai-measure-val">' + result.length_cm + 'cm</span></div>' : '<div class="ai-measure-row"><span class="ai-measure-label">Length</span><span style="color:var(--mist);font-size:12px;font-family:Courier New">No mat detected — enter manually</span></div>')
-    + (result.nicknames ? '<div style="font-size:10px;font-family:Courier New,monospace;color:var(--mist);margin-bottom:4px;">Also known as: ' + h(result.nicknames) + '</div>' : '')
-    + '<div class="ai-measure-confidence" style="color:' + confColor + '">Confidence: ' + (result.confidence||'low') + (result.mat_detected===false?' · No mat detected':'') + (result.notes?' · '+result.notes:'') + '</div>'
-    + regHtml
-    + '<div class="ai-measure-btns">'
-    + '<button class="ai-measure-btn ai-measure-accept" onclick="acceptAIMeasurement(' + acceptArgs + ')">✓ Accept' + (hasLength?' '+result.length_cm+'cm':'') + (hasSpecies?' — '+result.species:'') + '</button>'
-    + '<button class="ai-measure-btn ai-measure-edit" onclick="document.getElementById(\'aiMeasureResult\').classList.remove(\'show\')">Edit manually</button>'
-    + '</div>';
+  // Show a small toast confirmation then hide the result panel
+  const confIcon = result.confidence === 'high' ? '🎯' : result.confidence === 'medium' ? '🤔' : '❓';
+  showToast(confIcon + ' AI: ' + (hasSpecies ? result.species : 'Unknown species') + (hasLength ? ' · ' + result.length_cm + 'cm' : ''));
+  resultEl.classList.remove('show');
 }
 
 // acceptAIMeasurement moved to regulations block
@@ -6465,6 +6415,33 @@ async function lookupDepthFromGPS(lat, lon) {
    ───────────────────────────────────────────────────────────── */
 init();
 </script>
+<!-- FULLSCREEN NUMPAD -->
+<div id="numpadOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#0a1628;z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;padding-top:env(safe-area-inset-top, 50px);box-sizing:border-box;">
+  <div style="width:100%;max-width:360px;">
+    <div id="numpadLabel" style="font-size:12px;font-family:'Courier New',monospace;color:var(--mist);letter-spacing:2px;text-transform:uppercase;text-align:center;margin-bottom:12px;">Fish Length</div>
+    <div style="text-align:center;margin-bottom:24px;min-height:80px;display:flex;align-items:baseline;justify-content:center;gap:8px;">
+      <span id="numpadDisplay" style="font-size:72px;font-family:Georgia,serif;font-weight:700;color:#e0f7fa;line-height:1;">—</span>
+      <span id="numpadUnit" style="font-size:24px;color:var(--mist);font-family:'Courier New',monospace;">cm</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px;">
+      <button type="button" onclick="numpad('1')" style="padding:22px;font-size:28px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:12px;color:#e0f7fa;cursor:pointer;">1</button>
+      <button type="button" onclick="numpad('2')" style="padding:22px;font-size:28px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:12px;color:#e0f7fa;cursor:pointer;">2</button>
+      <button type="button" onclick="numpad('3')" style="padding:22px;font-size:28px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:12px;color:#e0f7fa;cursor:pointer;">3</button>
+      <button type="button" onclick="numpad('4')" style="padding:22px;font-size:28px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:12px;color:#e0f7fa;cursor:pointer;">4</button>
+      <button type="button" onclick="numpad('5')" style="padding:22px;font-size:28px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:12px;color:#e0f7fa;cursor:pointer;">5</button>
+      <button type="button" onclick="numpad('6')" style="padding:22px;font-size:28px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:12px;color:#e0f7fa;cursor:pointer;">6</button>
+      <button type="button" onclick="numpad('7')" style="padding:22px;font-size:28px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:12px;color:#e0f7fa;cursor:pointer;">7</button>
+      <button type="button" onclick="numpad('8')" style="padding:22px;font-size:28px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:12px;color:#e0f7fa;cursor:pointer;">8</button>
+      <button type="button" onclick="numpad('9')" style="padding:22px;font-size:28px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:12px;color:#e0f7fa;cursor:pointer;">9</button>
+      <button type="button" onclick="numpadDone()" style="padding:22px;font-size:20px;font-family:Georgia,serif;background:rgba(56,189,248,0.2);border:1px solid rgba(56,189,248,0.4);border-radius:12px;color:#38bdf8;cursor:pointer;font-weight:700;">OK</button>
+      <button type="button" onclick="numpad('0')" style="padding:22px;font-size:28px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:12px;color:#e0f7fa;cursor:pointer;">0</button>
+      <button type="button" onclick="numpad('back')" style="padding:22px;font-size:28px;font-family:Georgia,serif;background:rgba(255,80,80,0.25);border:1px solid rgba(255,80,80,0.3);border-radius:12px;color:#fca5a5;cursor:pointer;">⌫</button>
+    </div>
+    <button type="button" onclick="numpadCancel()"
+      style="width:100%;padding:14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;font-size:16px;font-family:'Courier New',monospace;color:var(--mist);cursor:pointer;margin-top:4px;">← Back to record</button>
+  </div>
+</div>
+
 </body>
 </html>
 <div class="exif-result" id="exifResult">
