@@ -3284,11 +3284,13 @@ function startManualEntry() {
 function importFromPhoto(e) {
   const file = e.target.files[0]; 
   if (!file) return; // cancelled — don't change the view
-  // Hide launcher, show form only when we have a file
-  const launcher = document.getElementById('logLauncher');
-  if (launcher) launcher.style.display = 'none';
-  const form = document.getElementById('logForm');
-  if (form) { form.style.display = 'block'; form.scrollIntoView({behavior:'smooth'}); }
+  // Small delay to let iOS photo picker fully close before showing form
+  setTimeout(() => {
+    const launcher = document.getElementById('logLauncher');
+    if (launcher) launcher.style.display = 'none';
+    const form = document.getElementById('logForm');
+    if (form) { form.style.display = 'block'; window.scrollTo({top:0, behavior:'smooth'}); }
+  }, 100);
   const reader = new FileReader();
   reader.onload = ev => {
     try {
