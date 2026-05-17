@@ -1636,44 +1636,104 @@ body.map-open .content > #view-map { display: flex; }
 <!-- ═══ LOG VIEW ═══ -->
 <div class="view active" id="view-log">
 
-  <div class="photo-hero">
-    <div class="photo-hero-btn import-btn" onclick="document.getElementById('exifInput').click()">
-      <div class="photo-hero-fish">🐟</div>
-      <div class="photo-hero-tag">Tight Lines</div>
-      <div class="photo-hero-sub">Import from gallery</div>
+  <!-- Hidden file inputs -->
+  <input type="file" id="exifInput"   accept="image/*"                   style="display:none" onchange="importFromPhoto(event)">
+  <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" onchange="importFromPhoto(event)">
+  <input type="file" id="bulkInput"   accept="image/*" multiple          style="display:none" onchange="startBulkImport(event)">
+
+  <!-- LAUNCHER BUTTONS -->
+  <div id="logLauncher" style="padding:16px 0 8px;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:28px;margin-bottom:4px;">🎣</div>
+      <div style="font-size:20px;font-family:Georgia,serif;color:var(--ink);font-weight:600;">Log a Catch</div>
+      <div style="font-size:11px;font-family:'Courier New',monospace;color:var(--mist);margin-top:4px;">What do you want to do?</div>
     </div>
-    <div class="photo-hero-btn camera-btn" onclick="document.getElementById('cameraInput').click()">
-      <div class="photo-hero-fish">🎣</div>
-      <div class="photo-hero-tag">Fish On!</div>
-      <div class="photo-hero-sub">Take photo now</div>
-    </div>
-    <input type="file" id="exifInput"   accept="image/*"                   style="display:none" onchange="importFromPhoto(event)">
-    <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" onchange="importFromPhoto(event)">
-    <input type="file" id="bulkInput"   accept="image/*" multiple          style="display:none" onchange="startBulkImport(event)">
+
+    <!-- Camera -->
+    <button onclick="document.getElementById('cameraInput').click()"
+      style="width:100%;background:linear-gradient(135deg,#0e4d6b,#0e7490);border:none;border-radius:var(--radius);padding:18px 16px;margin-bottom:10px;display:flex;align-items:center;gap:16px;cursor:pointer;text-align:left;">
+      <span style="font-size:36px;min-width:44px;text-align:center;">📷</span>
+      <div>
+        <div style="font-size:17px;font-family:Georgia,serif;color:#e0f7fa;font-weight:600;">Take Photo</div>
+        <div style="font-size:11px;font-family:'Courier New',monospace;color:#7dd3fc;margin-top:3px;">Open camera — AI will identify species &amp; size</div>
+      </div>
+    </button>
+
+    <!-- Gallery import -->
+    <button onclick="document.getElementById('exifInput').click()"
+      style="width:100%;background:linear-gradient(135deg,#0e2a4a,#0e4d6b);border:1px solid rgba(14,116,144,0.4);border-radius:var(--radius);padding:18px 16px;margin-bottom:10px;display:flex;align-items:center;gap:16px;cursor:pointer;text-align:left;">
+      <span style="font-size:36px;min-width:44px;text-align:center;">🖼️</span>
+      <div>
+        <div style="font-size:17px;font-family:Georgia,serif;color:#e0f7fa;font-weight:600;">Import from Gallery</div>
+        <div style="font-size:11px;font-family:'Courier New',monospace;color:#7dd3fc;margin-top:3px;">Pick a photo — extracts GPS, date &amp; time automatically</div>
+      </div>
+    </button>
+
+    <!-- No photo -->
+    <button onclick="startManualEntry()"
+      style="width:100%;background:var(--foam);border:1px solid var(--line);border-radius:var(--radius);padding:18px 16px;margin-bottom:10px;display:flex;align-items:center;gap:16px;cursor:pointer;text-align:left;">
+      <span style="font-size:36px;min-width:44px;text-align:center;">📝</span>
+      <div>
+        <div style="font-size:17px;font-family:Georgia,serif;color:var(--ink);font-weight:600;">No Photo Entry</div>
+        <div style="font-size:11px;font-family:'Courier New',monospace;color:var(--mist);margin-top:3px;">Log manually — enter details by hand</div>
+      </div>
+    </button>
+
+    <!-- Bulk import -->
+    <button onclick="document.getElementById('bulkInput').click()"
+      style="width:100%;background:var(--foam);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:16px;cursor:pointer;text-align:left;">
+      <span style="font-size:28px;min-width:44px;text-align:center;">📚</span>
+      <div>
+        <div style="font-size:15px;font-family:Georgia,serif;color:var(--ink);font-weight:600;">Bulk Import</div>
+        <div style="font-size:11px;font-family:'Courier New',monospace;color:var(--mist);margin-top:3px;">Select 50+ photos — auto-grouped by location &amp; time</div>
+      </div>
+    </button>
   </div>
 
-  <button onclick="document.getElementById('bulkInput').click()" style="width:100%;background:linear-gradient(135deg,#0e2a4a,#0e4d6b);border:1px solid rgba(14,116,144,0.4);border-radius:var(--radius);padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;gap:12px;cursor:pointer;">
-    <span style="font-size:22px">📚</span>
-    <div style="text-align:left">
-      <div style="font-size:14px;font-family:'Georgia',serif;color:#e0f7fa">Bulk photo import</div>
-      <div style="font-size:10px;font-family:'Courier New',monospace;color:#64b5d9;margin-top:2px">Select 50+ photos — auto-grouped by location &amp; time</div>
-    </div>
-  </button>
+  <div id="logForm" style="display:none">
 
-  <div class="exif-result" id="exifResult">
-    <h4>✓ Data extracted from photo</h4>
-    <div id="exifRows"></div>
-  </div>
-  <div class="exif-warn" id="exifWarn"></div>
-  <div class="tide-lookup" id="tideLookup"></div>
-  <div class="ai-measure-result" id="aiMeasureResult"></div>
-  <div class="loc-picker-wrap" id="locPickerWrap">
-    <h4>📍 No GPS in photo — pick a location for tide lookup</h4>
-    <div class="loc-picker-grid" id="locPickerGrid"></div>
-    <button class="loc-lookup-btn" id="locLookupBtn" disabled onclick="lookupTideFromPicker()">🌊 Look up tide for selected location</button>
-  </div>
 
   <div class="form-card">
+    <div class="form-section-header">🐟 My Catch</div>
+    <div class="form-body">
+      <!-- LENGTH SLIDER - HERO -->
+      <div style="background:var(--ink);border-radius:var(--radius);padding:20px 16px;margin-bottom:16px;">
+        <div style="text-align:center;margin-bottom:12px;">
+          <div style="font-size:11px;font-family:'Courier New',monospace;color:var(--mist);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Fish Length</div>
+          <div style="display:flex;align-items:baseline;justify-content:center;gap:6px;">
+            <span id="lengthDisplay" style="font-size:64px;font-family:Georgia,serif;font-weight:700;color:#e0f7fa;line-height:1;">—</span>
+            <span style="font-size:20px;color:var(--mist);font-family:'Courier New',monospace;">cm</span>
+          </div>
+        </div>
+        <!-- AI badge floats above slider thumb -->
+        <div style="position:relative;margin-bottom:4px;">
+          <div id="aiLengthBadge" style="display:none;position:absolute;top:-22px;transform:translateX(-50%);background:#38bdf8;color:#0e2a4a;font-size:9px;font-family:'Courier New',monospace;font-weight:700;padding:2px 5px;border-radius:4px;letter-spacing:1px;pointer-events:none;">AI</div>
+          <input type="range" id="length" min="0" max="150" step="1" value="0"
+            style="width:100%;height:10px;accent-color:#38bdf8;cursor:pointer;"
+            oninput="document.getElementById('lengthDisplay').textContent=this.value>0?this.value:'—';document.getElementById('lengthNum').value=this.value>0?this.value:'';document.getElementById('aiLengthBadge').style.display='none';updateSliderBadge();">
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;font-family:'Courier New',monospace;color:var(--mist);margin-top:6px;">
+          <span>0</span><span>30</span><span>60</span><span>90</span><span>120</span><span>150cm</span>
+        </div>
+        <input type="number" id="lengthNum" placeholder="Or type exact cm" min="0" max="300" step="1"
+          style="margin-top:10px;width:100%;padding:10px 12px;border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);font-size:16px;font-family:'Courier New',monospace;background:rgba(255,255,255,0.08);color:#e0f7fa;box-sizing:border-box;text-align:center;"
+          oninput="const v=parseInt(this.value)||0;document.getElementById('length').value=Math.min(v,150);document.getElementById('lengthDisplay').textContent=v>0?v:'—';">
+      </div>
+
+      <!-- DATE & TIME HERO -->
+      <div style="background:var(--ink);border-radius:var(--radius);padding:20px 16px;margin-bottom:16px;display:flex;gap:10px;">
+        <div style="flex:1;">
+          <div style="font-size:11px;font-family:'Courier New',monospace;color:var(--mist);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Date</div>
+          <input type="date" id="catchDate" onchange="updateMoonDisplay()" oninput="updateMoonDisplay()"
+            style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);padding:10px 12px;font-size:18px;font-family:Georgia,serif;color:#e0f7fa;box-sizing:border-box;text-align:center;">
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:11px;font-family:'Courier New',monospace;color:var(--mist);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Time</div>
+          <input type="time" id="catchTime" onchange="updateMoonDisplay()"
+            style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);padding:10px 12px;font-size:18px;font-family:Georgia,serif;color:#e0f7fa;box-sizing:border-box;text-align:center;">
+        </div>
+      </div>
+    </div>
     <div class="form-section-header">📍 Location &amp; Time</div>
     <div class="form-body">
       <div class="form-row">
@@ -1696,8 +1756,7 @@ body.map-open .content > #view-map { display: flex; }
         </div>
       </div>
       <div class="form-row">
-        <div class="field"><label>Date</label><input type="date" id="catchDate" onchange="updateMoonDisplay()" oninput="updateMoonDisplay()"></div>
-        <div class="field"><label>Time</label><input type="time" id="catchTime" onchange="updateMoonDisplay()"></div>
+        <!-- date/time moved to hero above -->
       </div>
       <div id="moonDisplay"></div>
       <div class="field">
@@ -1797,9 +1856,34 @@ body.map-open .content > #view-map { display: flex; }
           <input type="hidden" id="spId"><input type="hidden" id="spName">
         </div>
       </div>
+
       <div class="form-row">
-        <div class="field"><label>Weight (kg)</label><input type="number" id="weight" placeholder="0.0" step="0.1" min="0"></div>
-        <div class="field"><label>Length (cm)</label><input type="number" id="length" placeholder="0" step="1" min="0"></div>
+        <div class="field">
+          <label>Weight (kg)</label>
+          <div style="background:var(--ink);border-radius:var(--radius);padding:16px;">
+            <!-- Display -->
+            <div style="text-align:center;margin-bottom:12px;">
+              <span id="weightDisplay" style="font-size:48px;font-family:Georgia,serif;font-weight:700;color:#e0f7fa;letter-spacing:2px;">—</span>
+              <span style="font-size:16px;color:var(--mist);font-family:'Courier New',monospace;margin-left:6px;">kg</span>
+            </div>
+            <input type="hidden" id="weight">
+            <!-- Number pad -->
+            <div id="weightPad" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+              <button type="button" onclick="weightPad('1')" style="padding:16px;font-size:22px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);color:#e0f7fa;cursor:pointer;">1</button>
+              <button type="button" onclick="weightPad('2')" style="padding:16px;font-size:22px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);color:#e0f7fa;cursor:pointer;">2</button>
+              <button type="button" onclick="weightPad('3')" style="padding:16px;font-size:22px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);color:#e0f7fa;cursor:pointer;">3</button>
+              <button type="button" onclick="weightPad('4')" style="padding:16px;font-size:22px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);color:#e0f7fa;cursor:pointer;">4</button>
+              <button type="button" onclick="weightPad('5')" style="padding:16px;font-size:22px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);color:#e0f7fa;cursor:pointer;">5</button>
+              <button type="button" onclick="weightPad('6')" style="padding:16px;font-size:22px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);color:#e0f7fa;cursor:pointer;">6</button>
+              <button type="button" onclick="weightPad('7')" style="padding:16px;font-size:22px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);color:#e0f7fa;cursor:pointer;">7</button>
+              <button type="button" onclick="weightPad('8')" style="padding:16px;font-size:22px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);color:#e0f7fa;cursor:pointer;">8</button>
+              <button type="button" onclick="weightPad('9')" style="padding:16px;font-size:22px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);color:#e0f7fa;cursor:pointer;">9</button>
+              <button type="button" onclick="weightPad('.')" style="padding:16px;font-size:22px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);color:#e0f7fa;cursor:pointer;">.</button>
+              <button type="button" onclick="weightPad('0')" style="padding:16px;font-size:22px;font-family:Georgia,serif;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);color:#e0f7fa;cursor:pointer;">0</button>
+              <button type="button" onclick="weightPad('back')" style="padding:16px;font-size:22px;font-family:Georgia,serif;background:rgba(255,100,100,0.2);border:1px solid rgba(255,100,100,0.3);border-radius:var(--radius-sm);color:#fca5a5;cursor:pointer;">⌫</button>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="form-row">
         <div class="field"><label>Depth (m) 📏</label><input type="number" id="depth" placeholder="e.g. 12" step="1" min="0"></div>
@@ -1846,7 +1930,9 @@ body.map-open .content > #view-map { display: flex; }
     </div>
   </div>
 
-  <button class="btn btn-save" onclick="saveCatch()">✓ Save to Journal</button>
+  <button id="btnSaveCatch" class="btn btn-save" onclick="saveCatch()">✓ Save to Journal</button>
+
+  </div><!-- end logForm -->
 </div><!-- /view-log -->
 
 
@@ -3157,7 +3243,57 @@ function closeMeasureModal() {
 /* ─────────────────────────────────────────────────────────────
    EXIF PHOTO IMPORT
    ───────────────────────────────────────────────────────────── */
+function weightPad(val) {
+  const display = document.getElementById('weightDisplay');
+  const hidden = document.getElementById('weight');
+  let cur = hidden.value || '';
+  if (val === 'back') {
+    cur = cur.slice(0, -1);
+  } else if (val === '.') {
+    if (cur.includes('.')) return; // only one decimal
+    cur = cur + '.';
+  } else {
+    if (cur === '0') cur = val;
+    else cur = cur + val;
+  }
+  // Limit to reasonable weight
+  if (parseFloat(cur) > 999) return;
+  hidden.value = cur;
+  display.textContent = cur || '—';
+}
+
+function updateSliderBadge() {
+  const slider = document.getElementById('length');
+  const badge = document.getElementById('aiLengthBadge');
+  if (!slider || !badge) return;
+  const pct = (slider.value - slider.min) / (slider.max - slider.min);
+  badge.style.left = 'calc(' + (pct * 100) + '% + ' + (8 - pct * 16) + 'px)';
+}
+
+function setAILength(lengthCm) {
+  const slider = document.getElementById('length');
+  const num = document.getElementById('lengthNum');
+  const display = document.getElementById('lengthDisplay');
+  const badge = document.getElementById('aiLengthBadge');
+  if (slider) slider.value = Math.min(parseInt(lengthCm)||0, 150);
+  if (num) num.value = lengthCm;
+  if (display) display.textContent = lengthCm;
+  if (badge) { badge.style.display = 'block'; updateSliderBadge(); }
+}
+
+function startManualEntry() {
+  const launcher = document.getElementById('logLauncher');
+  if (launcher) launcher.style.display = 'none';
+  const form = document.getElementById('logForm');
+  if (form) { form.style.display = 'block'; form.scrollIntoView({behavior:'smooth'}); }
+}
+
 function importFromPhoto(e) {
+  // Hide launcher, show form
+  const launcher = document.getElementById('logLauncher');
+  if (launcher) launcher.style.display = 'none';
+  const form = document.getElementById('logForm');
+  if (form) form.style.display = 'block';
   const file = e.target.files[0]; if (!file) return;
   const reader = new FileReader();
   reader.onload = ev => {
@@ -3180,7 +3316,8 @@ function importFromPhoto(e) {
             return;
           }
           showToast('Starting AI... image is ' + Math.round(b64.length/1000) + 'KB');
-          tryAIMeasurement(b64, file.type||'image/jpeg');
+          const stateVal = (document.getElementById('catchState')||{}).value || stateFromGPS(exif.gpsLat, exif.gpsLon) || 'NSW';
+          tryAIMeasurement(b64, file.type||'image/jpeg', stateVal);
         });
       };
       urlReader.onerror = () => console.warn('FileReader failed');
@@ -3854,8 +3991,16 @@ function delSp(id) {
    SAVE CATCH
    ───────────────────────────────────────────────────────────── */
 async function saveCatch() {
-  const sName = document.getElementById('spName').value.trim();
-  if (!sName) { showToast('Select or add a species first'); return; }
+  const btn = document.getElementById('btnSaveCatch');
+  if (btn && btn.disabled) return;
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Saving…'; }
+  const sName = document.getElementById('spName').value.trim() || selSpName;
+  if (!sName) { 
+    if (btn) { btn.disabled = false; btn.textContent = '✓ Save to Journal'; }
+    showToast('Select or add a species first'); return; 
+  }
+  // Ensure hidden field is in sync
+  if (sName) document.getElementById('spName').value = sName;
   try {
     let moonData = null;
     try { const d=document.getElementById('catchDate').value, t=document.getElementById('catchTime').value; if(d) moonData=getMoonPhase(d,t); } catch(me){}
@@ -3883,7 +4028,7 @@ async function saveCatch() {
       speciesId:   selSpId || null,
       species:     sName,
       weight:      document.getElementById('weight').value,
-      length:      document.getElementById('length').value,
+      length:      document.getElementById('lengthNum').value || document.getElementById('length').value || null,
       count:       Number(document.getElementById('count').value) || 1,
       method:      document.getElementById('method').value,
       bait:        document.getElementById('bait').value.trim(),
@@ -3898,11 +4043,16 @@ async function saveCatch() {
     } catch(pe) { console.warn('Photo save error (catch still saved):', pe); }
     catches.unshift(entry);
     saveC(); showToast('🐟 Catch saved!'); clearForm();
+    if (btn) { btn.disabled = false; btn.textContent = '✓ Save to Journal'; }
+    // Scroll to top
+    window.scrollTo({top: 0, behavior: 'smooth'});
+    const contentEl = document.querySelector('.content');
+    if (contentEl) contentEl.scrollTo({top: 0, behavior: 'smooth'});
     // Auto-enrich the new catch in background if it has GPS
     if (entry.gps && entry.date) {
       setTimeout(() => enrichBulkCatches([entry]), 1000);
     }
-  } catch(e) { console.error('Save error:', e); showToast('⚠ Error saving — please try again'); }
+  } catch(e) { console.error('Save error:', e); showToast('⚠ Error saving — please try again'); if (btn) { btn.disabled = false; btn.textContent = '✓ Save to Journal'; } }
 }
 function clearForm() {
   ['spotName','gpsCoords','waypointId','waypointName','depth','waterTemp','airTemp','windSpeed','bait','lineWeight','leader','notes']
@@ -3915,8 +4065,20 @@ function clearForm() {
   document.getElementById('needle').style.transform = 'translateX(-50%) translateY(-100%) rotate(0deg)';
   document.getElementById('gpsStatus').style.display = 'none';
   selWx=''; selWindDir=''; clearSp(); pendingPhotos=[];
+  document.getElementById('aiMeasureResult').classList.remove('show');
   document.getElementById('photoPreviews').innerHTML = '';
   document.getElementById('photoInput').value = '';
+  // Show launcher, hide form
+  const launcher = document.getElementById('logLauncher');
+  if (launcher) launcher.style.display = 'block';
+  const form = document.getElementById('logForm');
+  if (form) form.style.display = 'none';
+  const lenSlider = document.getElementById('length'); if(lenSlider) lenSlider.value=0;
+  const aiBadge = document.getElementById('aiLengthBadge'); if(aiBadge) aiBadge.style.display='none';
+  const wHidden = document.getElementById('weight'); if(wHidden) wHidden.value='';
+  const wDisplay = document.getElementById('weightDisplay'); if(wDisplay) wDisplay.textContent='—';
+  const lenNum = document.getElementById('lengthNum'); if(lenNum) lenNum.value='';
+  const lenDisplay = document.getElementById('lengthDisplay'); if(lenDisplay) lenDisplay.textContent='—';
   const now = new Date();
   document.getElementById('catchDate').value = now.toISOString().slice(0, 10);
   document.getElementById('catchTime').value = now.toTimeString().slice(0, 5);
@@ -5793,7 +5955,7 @@ async function callClaudeVision(imageB64, prompt, maxTokens) {
   return data.content?.[0]?.text || '';
 }
 
-async function measureFishFromPhoto(imageDataUrl, mediaType) {
+async function measureFishFromPhoto(imageDataUrl, mediaType, state) {
   const dbg = document.getElementById('aiMeasureResult');
   if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">⌛ Analysing photo…</div>'; dbg.classList.add('show'); }
   await new Promise(r => setTimeout(r, 50));
@@ -5816,7 +5978,7 @@ async function measureFishFromPhoto(imageDataUrl, mediaType) {
             role: 'user',
             content: [
               {type: 'image', source: {type: 'base64', media_type: 'image/jpeg', data: b64}},
-              {type: 'text', text: 'Analyse this fishing photo. Reply ONLY with JSON (no markdown): {"species":"Australian common name or unknown","confidence":"high/medium/low","nicknames":"","length_cm":null,"mat_detected":false,"legal_size_cm":null,"protected":false,"notes":""}. If a brag mat ruler is visible, read the fish length from it and set length_cm. Otherwise set length_cm to null.'}
+              {type: 'text', text: 'Australian fish ID, caught in ' + (state||'Australia') + '. Note: Mulloway=silver, large scales, temperate; Kingfish=green back, yellow tail. Estimate length from context. JSON only: {"species":"name or unknown","confidence":"high/medium/low","nicknames":"","length_cm":null,"legal_size_cm":null,"protected":false,"notes":""}'}
             ]
           }]
         })
@@ -5857,14 +6019,14 @@ function resizeImageForAI(dataUrl, maxPx) {
       const c = document.createElement('canvas');
       c.width = w; c.height = h;
       c.getContext('2d').drawImage(img, 0, 0, w, h);
-      res(c.toDataURL('image/jpeg', 0.70));
+      res(c.toDataURL('image/jpeg', 0.40));
     };
     img.onerror = () => res(dataUrl);
     img.src = dataUrl;
   });
 }
 
-async function tryAIMeasurement(dataUrl, mediaType) {
+async function tryAIMeasurement(dataUrl, mediaType, state) {
   const resultEl = document.getElementById('aiMeasureResult');
   if (!resultEl) return;
   resultEl.classList.remove('show');
@@ -5873,7 +6035,7 @@ async function tryAIMeasurement(dataUrl, mediaType) {
 
   // 30 second timeout — prevents hanging
   const timeoutPromise = new Promise(res => setTimeout(() => res({_timeout:true}), 60000));
-  const result = await Promise.race([measureFishFromPhoto(dataUrl, mediaType), timeoutPromise]);
+  const result = await Promise.race([measureFishFromPhoto(dataUrl, mediaType, state), timeoutPromise]);
   if (result && result._timeout) {
     resultEl.innerHTML = '<div class="ai-measure-title" style="color:var(--danger)">⏱ AI timed out — check internet connection</div><button class="ai-measure-btn ai-measure-edit" onclick="document.getElementById(\'aiMeasureResult\').classList.remove(\'show\');">Dismiss</button>';
     return;
@@ -5960,8 +6122,7 @@ function declineAISpecies() {
 }
 
 function acceptAILength(lengthCm) {
-  const lenField = document.getElementById('length');
-  if (lenField) lenField.value = lengthCm;
+  setAILength(lengthCm);
   showToast('Length set to ' + lengthCm + 'cm');
   // Check regulations with current species
   const spEl = document.getElementById('spSearch');
@@ -6121,34 +6282,53 @@ function showRegulationAlert(reg) {
   div.innerHTML = '<div style="font-size:14px;font-weight:600;color:'+c.color+';margin-bottom:4px;">'+icon+' '+reg.title+'</div>'
     +'<div style="font-size:12px;color:'+c.color+';font-family:Courier New,monospace;line-height:1.5;">'+reg.message+'</div>'
     +'<button onclick="this.parentElement.remove()" style="background:none;border:none;color:'+c.color+';font-size:11px;font-family:Courier New,monospace;margin-top:6px;cursor:pointer;padding:0;text-decoration:underline;">Dismiss</button>';
-  const saveBtn = document.querySelector('.btn-save');
-  if (saveBtn) saveBtn.parentNode.insertBefore(div, saveBtn);
+  // Insert after species badge so it doesn't push the save button
+  const spBadge = document.getElementById('spBadge');
+  if (spBadge) spBadge.parentNode.insertBefore(div, spBadge.nextSibling);
+  else {
+    const saveBtn = document.getElementById('btnSaveCatch');
+    if (saveBtn) saveBtn.parentNode.insertBefore(div, saveBtn);
+  }
 }
 
 function acceptAIMeasurement(lengthCm, species, nicknames, legalSize, habitatNotes) {
-  const lenField = document.getElementById('length');
-  if (lenField) lenField.value = lengthCm;
-  if (species && species !== 'unknown') {
-    const found = window.species ? window.species.find(s => s.name.toLowerCase().includes(species.toLowerCase()) || species.toLowerCase().includes(s.name.toLowerCase())) : null;
-    if (found) {
-      pickSp(found.id, found.name);
-    } else {
-      const id = 'sp' + Date.now();
-      const nicks = nicknames ? nicknames.split(',').map(n=>n.trim()).filter(Boolean) : [];
-      const notes = [legalSize ? 'Legal size: '+legalSize+'cm' : '', habitatNotes||''].filter(Boolean).join(' · ');
-      window.species.push({id, name:species, nicknames:nicks, notes});
-      saveSp(); pickSp(id, species);
-      showToast('"'+species+'" added to your species list');
+  try {
+    // Set length (only if we have a real number)
+    if (lengthCm && lengthCm !== 'null') {
+      setAILength(lengthCm);
     }
+    // Set species
+    if (species && species !== 'unknown') {
+      const found = window.species ? window.species.find(s =>
+        s.name.toLowerCase().includes(species.toLowerCase()) ||
+        species.toLowerCase().includes(s.name.toLowerCase())
+      ) : null;
+      if (found) {
+        pickSp(found.id, found.name);
+      } else {
+        const id = 'sp' + Date.now();
+        const nicks = nicknames ? nicknames.split(',').map(n=>n.trim()).filter(Boolean) : [];
+        const notes = [legalSize ? 'Legal size: '+legalSize+'cm' : '', habitatNotes||''].filter(Boolean).join(' · ');
+        window.species.push({id, name:species, nicknames:nicks, notes});
+        saveSp();
+        pickSp(id, species);
+      }
+    }
+    // Regulations check
+    try {
+      const userState = (document.getElementById('catchState')||{}).value || 'NSW';
+      const reg = checkFishRegulations(species, lengthCm, userState);
+      if (reg) {
+        showRegulationAlert(reg);
+        if (reg.disposition) { const d=document.getElementById('disposition'); if(d) d.value=reg.disposition; }
+      }
+    } catch(e) {}
+    // Hide result panel
+    document.getElementById('aiMeasureResult').classList.remove('show');
+    showToast(species && species !== 'unknown' ? '✓ ' + species + ' set' : '✓ Done');
+  } catch(e) {
+    console.warn('acceptAIMeasurement error:', e);
   }
-  const userState = document.getElementById('catchState') ? document.getElementById('catchState').value||'NSW' : 'NSW';
-  const reg = checkFishRegulations(species, lengthCm, userState);
-  if (reg) {
-    showRegulationAlert(reg);
-    if (reg.disposition) { const d=document.getElementById('disposition'); if(d) d.value=reg.disposition; }
-  }
-  document.getElementById('aiMeasureResult').classList.remove('show');
-  showToast('Length set to '+lengthCm+'cm');
 }
 
 
@@ -6287,3 +6467,16 @@ init();
 </script>
 </body>
 </html>
+<div class="exif-result" id="exifResult">
+    <h4>✓ Data extracted from photo</h4>
+    <div id="exifRows"></div>
+  </div>
+  <div class="exif-warn" id="exifWarn"></div>
+  <div class="tide-lookup" id="tideLookup"></div>
+  <div class="ai-measure-result" id="aiMeasureResult"></div>
+  <div class="loc-picker-wrap" id="locPickerWrap">
+    <h4>📍 No GPS in photo — pick a location for tide lookup</h4>
+    <div class="loc-picker-grid" id="locPickerGrid"></div>
+    <button class="loc-lookup-btn" id="locLookupBtn" disabled onclick="lookupTideFromPicker()">🌊 Look up tide for selected location</button>
+  </div>
+
