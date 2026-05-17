@@ -356,6 +356,10 @@ body.map-open .content > #view-map { display: flex; }
 #view-map #allCatchesMap { flex: 1; min-height: 0; border-radius: 0; border: none; }
 
 /* ── 3. FORM COMPONENTS ──────────────────────────────────────── */
+#logLauncher { display: block; }
+#logLauncher.hidden { display: none !important; }
+#logForm { display: block; }
+
 .form-card {
   background: var(--surface);
   border-radius: var(--radius);
@@ -1642,7 +1646,7 @@ body.map-open .content > #view-map { display: flex; }
   <input type="file" id="bulkInput"   accept="image/*" multiple          style="display:none" onchange="startBulkImport(event)">
 
   <!-- LAUNCHER BUTTONS -->
-  <div id="logLauncher" style="padding:16px 0 8px;">
+  <div id="logLauncher" style="padding:16px 0 8px">
     <div style="text-align:center;margin-bottom:20px;">
       <div style="font-size:28px;margin-bottom:4px;">🎣</div>
       <div style="font-size:20px;font-family:Georgia,serif;color:var(--ink);font-weight:600;">Log a Catch</div>
@@ -1690,7 +1694,7 @@ body.map-open .content > #view-map { display: flex; }
     </button>
   </div>
 
-  <div id="logForm" style="display:none">
+  <div id="logForm">
 
 
   <div class="form-card">
@@ -3275,22 +3279,8 @@ function setAILength(lengthCm) {
 }
 
 function startManualEntry() {
-  const launcher = document.getElementById('logLauncher');
-  if (launcher) launcher.style.display = 'none';
-  const form = document.getElementById('logForm');
-  if (form) { form.style.display = 'block'; form.scrollIntoView({behavior:'smooth'}); }
-}
-
 function importFromPhoto(e) {
-  const file = e.target.files[0]; 
-  if (!file) return; // cancelled — don't change the view
-  // Small delay to let iOS photo picker fully close before showing form
-  setTimeout(() => {
-    const launcher = document.getElementById('logLauncher');
-    if (launcher) launcher.style.display = 'none';
-    const form = document.getElementById('logForm');
-    if (form) { form.style.display = 'block'; window.scrollTo({top:0, behavior:'smooth'}); }
-  }, 100);
+  const file = e.target.files[0]; if (!file) return;
   const reader = new FileReader();
   reader.onload = ev => {
     try {
@@ -4070,9 +4060,9 @@ function clearForm() {
   document.getElementById('photoInput').value = '';
   // Show launcher, hide form
   const launcher = document.getElementById('logLauncher');
-  if (launcher) launcher.style.display = 'block';
+  if (launcher) launcher.classList.remove('hidden');
   const form = document.getElementById('logForm');
-  if (form) form.style.display = 'none';
+  if (form) form.classList.remove('visible');
   const lenSlider = document.getElementById('length'); if(lenSlider) lenSlider.value=0;
   const aiBadge = document.getElementById('aiLengthBadge'); if(aiBadge) aiBadge.style.display='none';
   const numpadOverlay = document.getElementById('numpadOverlay'); if(numpadOverlay) numpadOverlay.style.display='none';
