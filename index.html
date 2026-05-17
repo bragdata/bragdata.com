@@ -1718,14 +1718,11 @@ body.map-open .content > #view-map { display: flex; }
   <div class="form-card">
     <div class="form-section-header">🐟 My Catch</div>
     <div class="form-body">
-      <!-- LENGTH SLIDER - HERO -->
-      <div style="background:var(--ink);border-radius:var(--radius);padding:20px 16px;margin-bottom:16px;">
-        <div style="text-align:center;margin-bottom:12px;">
-          <div style="font-size:11px;font-family:'Courier New',monospace;color:var(--mist);letter-spacing:2px;text-transform:uppercase;margin-bottom:4px;">Fish Length</div>
-          <div style="display:flex;align-items:baseline;justify-content:center;gap:6px;">
-            <span id="lengthDisplay" style="font-size:64px;font-family:Georgia,serif;font-weight:700;color:#e0f7fa;line-height:1;">—</span>
-            <span style="font-size:20px;color:var(--mist);font-family:'Courier New',monospace;">cm</span>
-          </div>
+      <!-- LENGTH SLIDER -->
+      <div style="background:var(--ink);border-radius:var(--radius);padding:16px 16px 12px;margin-bottom:16px;">
+        <div style="display:flex;align-items:baseline;justify-content:center;gap:6px;margin-bottom:8px;">
+          <span id="lengthDisplay" style="font-size:64px;font-family:Georgia,serif;font-weight:700;color:#e0f7fa;line-height:1;">—</span>
+          <span style="font-size:20px;color:var(--mist);font-family:'Courier New',monospace;">cm</span>
         </div>
         <!-- AI badge floats above slider thumb -->
         <div style="position:relative;margin-bottom:4px;">
@@ -6519,5 +6516,34 @@ init();
   </div>
 </div>
 
+<div id="debugPanel" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#1a1a1a;color:#ff4444;font-family:'Courier New',monospace;font-size:11px;padding:10px;max-height:200px;overflow-y:auto;z-index:99999;"></div>
+
+<script>
+if (window.location.search.includes('debug=1')) {
+  document.getElementById('debugPanel').style.display = 'block';
+  window.onerror = function(msg, src, line, col, err) {
+    const p = document.getElementById('debugPanel');
+    p.innerHTML += '<div>❌ ' + msg + ' (line ' + line + ')</div>';
+    p.scrollTop = p.scrollHeight;
+    return false;
+  };
+  const origLog = console.log;
+  const origWarn = console.warn;
+  const origErr = console.error;
+  console.error = function() {
+    const p = document.getElementById('debugPanel');
+    p.innerHTML += '<div style="color:#ff6666">⚠️ ' + Array.from(arguments).join(' ') + '</div>';
+    p.scrollTop = p.scrollHeight;
+    origErr.apply(console, arguments);
+  };
+  console.warn = function() {
+    const p = document.getElementById('debugPanel');
+    p.innerHTML += '<div style="color:#ffaa44">⚡ ' + Array.from(arguments).join(' ') + '</div>';
+    p.scrollTop = p.scrollHeight;
+    origWarn.apply(console, arguments);
+  };
+  document.getElementById('debugPanel').innerHTML = '<div style="color:#44ff44">✓ Debug mode on — errors will appear here</div>';
+}
+</script>
 </body>
 </html>
