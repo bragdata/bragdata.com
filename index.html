@@ -3282,12 +3282,13 @@ function startManualEntry() {
 }
 
 function importFromPhoto(e) {
-  // Hide launcher, show form
+  const file = e.target.files[0]; 
+  if (!file) return; // cancelled — don't change the view
+  // Hide launcher, show form only when we have a file
   const launcher = document.getElementById('logLauncher');
   if (launcher) launcher.style.display = 'none';
   const form = document.getElementById('logForm');
-  if (form) form.style.display = 'block';
-  const file = e.target.files[0]; if (!file) return;
+  if (form) { form.style.display = 'block'; form.scrollIntoView({behavior:'smooth'}); }
   const reader = new FileReader();
   reader.onload = ev => {
     try {
