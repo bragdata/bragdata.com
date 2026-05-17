@@ -1736,13 +1736,12 @@ body.map-open .content > #view-map { display: flex; }
               <button onclick="clearSp()" style="background:none;border:none;color:var(--mist);font-size:18px;cursor:pointer;padding:0 2px;flex-shrink:0;">×</button>
             </div>
           </div>
-          <div class="species-wrap">
-            <input type="text" id="spSearch" placeholder="Search…" autocomplete="off"
-              oninput="onSpInput()" onfocus="onSpInput()" onblur="schedClose()"
-              style="width:100%;padding:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;font-size:13px;font-family:'Courier New',monospace;color:#e0f7fa;box-sizing:border-box;">
-            <div class="species-dropdown" id="spDrop"></div>
-          </div>
+          <button type="button" onclick="openSpeciesPicker()" id="spPickerBtn"
+            style="width:100%;padding:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;font-size:13px;font-family:'Courier New',monospace;color:var(--mist);cursor:pointer;text-align:center;">
+            ✏️ Search species
+          </button>
           <input type="hidden" id="spId"><input type="hidden" id="spName">
+          <input type="hidden" id="spSearch">
         </div>
 
         <div style="flex:1;background:var(--ink);border-radius:var(--radius);padding:16px;min-width:0;">
@@ -2812,17 +2811,19 @@ function pickSp(id, name) {
   selSpId = id; selSpName = name;
   document.getElementById('spId').value   = id;
   document.getElementById('spName').value = name;
-  document.getElementById('spSearch').value = '';
-  document.getElementById('spSearch').style.display = '';
-  document.getElementById('spDrop').classList.remove('open');
+  try { document.getElementById('spSearch').value = ''; } catch(e) {}
+  try { document.getElementById('spDrop').classList.remove('open'); } catch(e) {}
   document.getElementById('spBadge').style.display = 'block';
   document.getElementById('spBadgeName').textContent = name;
+  const btn = document.getElementById('spPickerBtn');
+  if (btn) btn.textContent = '✏️ ' + name + ' — tap to change';
 }
 function clearSp() {
   selSpId = null; selSpName = '';
-  ['spId','spName','spSearch'].forEach(i => document.getElementById(i).value = '');
-  document.getElementById('spSearch').style.display = '';
-  document.getElementById('spBadge').style.display  = 'none';
+  ['spId','spName','spSearch'].forEach(i => { try { document.getElementById(i).value = ''; } catch(e) {} });
+  document.getElementById('spBadge').style.display = 'none';
+  const btn = document.getElementById('spPickerBtn');
+  if (btn) btn.textContent = '✏️ Search species';
 }
 function addSpFromLog() {
   const name = document.getElementById('spSearch').value.trim(); if (!name) return;
@@ -3132,6 +3133,48 @@ function closeMeasureModal() {
    ───────────────────────────────────────────────────────────── */
 let numpadFresh = true;
 let numpadTarget = "length"; // first keypress replaces existing value
+
+function openSpeciesPicker() {
+  const overlay = document.getElementById('speciesPickerOverlay');
+  if (overlay) { overlay.style.display = 'flex'; overlay.style.flexDirection = 'column'; }
+  const search = document.getElementById('spSearchFull');
+  if (search) { search.value = ''; search.focus(); }
+  filterSpeciesPicker();
+}
+
+function closeSpeciesPicker() {
+  const overlay = document.getElementById('speciesPickerOverlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+function filterSpeciesPicker() {
+  const q = (document.getElementById('spSearchFull').value || '').toLowerCase();
+  const list = document.getElementById('speciesPickerList');
+  if (!list) return;
+  const matches = (window.species || []).filter(s =>
+    !q || s.name.toLowerCase().includes(q) || (s.nicknames||[]).join(' ').toLowerCase().includes(q)
+  );
+  list.innerHTML = matches.map(s =>
+    '<button type="button" onclick="pickSpFromPicker('' + s.id + '','' + s.name.replace(/'/g,"\'") + '')"' +
+    ' style="width:100%;text-align:left;padding:14px 16px;background:rgba(255,255,255,0.06);border:none;border-bottom:1px solid rgba(255,255,255,0.08);font-size:16px;font-family:Georgia,serif;color:#e0f7fa;cursor:pointer;">' +
+    s.name + '</button>'
+  ).join('') + (q ? '<button type="button" onclick="addAndPickSpecies('' + q + '')" style="width:100%;text-align:left;padding:14px 16px;background:rgba(56,189,248,0.1);border:none;border-bottom:1px solid rgba(255,255,255,0.08);font-size:16px;font-family:Georgia,serif;color:#38bdf8;cursor:pointer;">+ Add \"' + q + '\"</button>' : '');
+}
+
+function pickSpFromPicker(id, name) {
+  pickSp(id, name);
+  closeSpeciesPicker();
+  const btn = document.getElementById('spPickerBtn');
+  if (btn) btn.textContent = '✏️ ' + name + ' — tap to change';
+}
+
+function addAndPickSpecies(name) {
+  const id = 'sp' + Date.now();
+  const proper = name.charAt(0).toUpperCase() + name.slice(1);
+  window.species.push({id, name:proper, nicknames:[], notes:''});
+  saveSp();
+  pickSpFromPicker(id, proper);
+}
 
 function openDepthPad() {
   const overlay = document.getElementById('numpadOverlay');
@@ -5998,10 +6041,8 @@ async function tryAIMeasurement(dataUrl, mediaType, state) {
     resultEl.innerHTML = '<div class="ai-measure-title" style="color:var(--danger)">⏱ AI timed out — check internet connection</div><button class="ai-measure-btn ai-measure-edit" onclick="document.getElementById(\'aiMeasureResult\').classList.remove(\'show\');">Dismiss</button>';
     return;
   }
-  if (!result || (!result.length_cm && !result.species)) {
-    // Wait 3s so user can read the Step 4 debug output
-    await new Promise(r => setTimeout(r, 3000));
-    resultEl.innerHTML = '<div class="ai-measure-title" style="color:var(--mist)">Could not identify fish or measure length</div><button class="ai-measure-btn ai-measure-edit" onclick="document.getElementById(\'aiMeasureResult\').classList.remove(\'show\')">Dismiss</button>';
+  if (!result) {
+    resultEl.innerHTML = '<div class="ai-measure-title" style="color:var(--mist)">Could not identify fish</div><button class="ai-measure-btn ai-measure-edit" onclick="document.getElementById('aiMeasureResult').classList.remove('show')">Dismiss</button>';
     return;
   }
 
@@ -6415,6 +6456,17 @@ async function lookupDepthFromGPS(lat, lon) {
    ───────────────────────────────────────────────────────────── */
 init();
 </script>
+<!-- FULLSCREEN SPECIES PICKER -->
+<div id="speciesPickerOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#0a1628;z-index:9999;flex-direction:column;padding:20px;padding-top:env(safe-area-inset-top,50px);box-sizing:border-box;">
+  <div style="font-size:12px;font-family:'Courier New',monospace;color:var(--mist);letter-spacing:2px;text-transform:uppercase;text-align:center;margin-bottom:16px;">Select Species</div>
+  <input type="text" id="spSearchFull" placeholder="Type to search…" autocomplete="off"
+    oninput="filterSpeciesPicker()"
+    style="width:100%;padding:14px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:12px;font-size:18px;font-family:'Courier New',monospace;color:#e0f7fa;box-sizing:border-box;margin-bottom:12px;">
+  <div id="speciesPickerList" style="flex:1;overflow-y:auto;"></div>
+  <button type="button" onclick="closeSpeciesPicker()"
+    style="width:100%;padding:14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;font-size:16px;font-family:'Courier New',monospace;color:var(--mist);cursor:pointer;margin-top:10px;">← Back to record</button>
+</div>
+
 <!-- FULLSCREEN NUMPAD -->
 <div id="numpadOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#0a1628;z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;padding-top:env(safe-area-inset-top, 50px);box-sizing:border-box;">
   <div style="width:100%;max-width:360px;">
