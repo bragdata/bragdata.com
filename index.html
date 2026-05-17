@@ -1720,12 +1720,12 @@ body.map-open .content > #view-map { display: flex; }
     <div class="form-body">
       <!-- LENGTH SLIDER -->
       <div style="background:var(--ink);border-radius:var(--radius);padding:16px 16px 12px;margin-bottom:16px;">
-        <div style="text-align:center;margin-bottom:4px;">
+        <div style="text-align:center;margin-bottom:16px;min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;">
           <div style="display:flex;align-items:baseline;justify-content:center;gap:6px;">
             <span id="lengthDisplay" style="font-size:64px;font-family:Georgia,serif;font-weight:700;color:#e0f7fa;line-height:1;">—</span>
             <span style="font-size:20px;color:var(--mist);font-family:'Courier New',monospace;">cm</span>
           </div>
-          <div id="aiLengthBadge" style="display:none;margin:4px auto 6px;width:fit-content;background:#38bdf8;color:#0e2a4a;font-size:10px;font-family:'Courier New',monospace;font-weight:900;padding:3px 10px;border-radius:20px;letter-spacing:1px;box-shadow:0 0 8px rgba(56,189,248,0.6);">🤖 AI estimate</div>
+          <div id="aiLengthBadge" style="display:none;margin-top:8px;background:#38bdf8;color:#0e2a4a;font-size:10px;font-family:'Courier New',monospace;font-weight:900;padding:3px 10px;border-radius:20px;letter-spacing:1px;box-shadow:0 0 8px rgba(56,189,248,0.6);">🤖 AI estimate</div>
         </div>
         <!-- Slider -->
         <div style="position:relative;margin-bottom:4px;">
@@ -3160,7 +3160,7 @@ function openSpeciesPicker() {
   const overlay = document.getElementById('speciesPickerOverlay');
   if (overlay) { overlay.style.display = 'flex'; overlay.style.flexDirection = 'column'; }
   const search = document.getElementById('spSearchFull');
-  if (search) { search.value = ''; search.focus(); }
+  if (search) { search.value = ''; setTimeout(() => search.focus(), 100); }
   filterSpeciesPicker();
 }
 
@@ -3173,6 +3173,10 @@ function filterSpeciesPicker() {
   const q = (document.getElementById('spSearchFull').value || '').toLowerCase();
   const list = document.getElementById('speciesPickerList');
   if (!list) return;
+  // Load from localStorage if window.species not ready
+  if (!window.species || window.species.length === 0) {
+    try { window.species = JSON.parse(localStorage.getItem('bragmaster_species') || '[]'); } catch(e) {}
+  }
   const matches = (window.species || []).filter(s =>
     !q || s.name.toLowerCase().includes(q) || (s.nicknames||[]).join(' ').toLowerCase().includes(q)
   );
