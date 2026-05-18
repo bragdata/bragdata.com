@@ -1806,34 +1806,74 @@ body.map-open .content > #view-map { display: flex; }
             style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);padding:10px 12px;font-size:18px;font-family:Georgia,serif;color:#e0f7fa;box-sizing:border-box;text-align:center;">
         </div>
       </div>
-      <div class="form-row">
-        <div class="field"><label>Count</label><input type="number" id="count" placeholder="1" min="1" value="1"></div>
-      </div>
-      <div class="form-row">
-        <div class="field">
-          <label>Method</label>
-          <select id="method"><option value="">— Select —</option>
-            <option>Lure — Hard body</option><option>Lure — Soft plastic</option><option>Lure — Metal</option>
-            <option>Live bait</option><option>Cut bait</option><option>Prawns</option><option>Worms</option>
-            <option>Squid</option><option>Fly</option><option>Trolling</option><option>Jigging</option><option>Spinning</option>
-          </select>
+      <!-- EXPANDABLE DETAIL FIELDS -->
+      <div style="background:var(--ink);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;">
+
+        <!-- Method + Disposition row -->
+        <div onclick="toggleDetail('methodDetail')" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;">
+          <div style="font-size:12px;font-family:'Courier New',monospace;color:#7dd3fc;letter-spacing:2px;text-transform:uppercase;font-weight:700;">Method &amp; Outcome</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span id="methodSummary" style="font-size:13px;font-family:'Courier New',monospace;color:var(--mist);"></span>
+            <span id="methodChevron" style="color:var(--mist);font-size:16px;">›</span>
+          </div>
         </div>
-        <div class="field">
-          <label>Kept / Released</label>
-          <select id="disposition"><option value="">— Select —</option>
-            <option>Kept</option><option>Released</option><option>Released — undersized</option>
-          </select>
+        <div id="methodDetail" style="display:none;padding:0 16px 14px;border-top:1px solid rgba(255,255,255,0.08);">
+          <div style="display:flex;gap:10px;margin-top:12px;">
+            <div style="flex:1;">
+              <div style="font-size:10px;font-family:'Courier New',monospace;color:var(--mist);margin-bottom:6px;">METHOD</div>
+              <select id="method" onchange="updateMethodSummary()" style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:10px;font-size:14px;color:#e0f7fa;font-family:'Courier New',monospace;">
+                <option value="">— Select —</option>
+                <option>Lure — Hard body</option><option>Lure — Soft plastic</option><option>Lure — Metal</option>
+                <option>Live bait</option><option>Cut bait</option><option>Prawns</option><option>Worms</option>
+                <option>Squid</option><option>Fly</option><option>Trolling</option><option>Jigging</option><option>Spinning</option>
+              </select>
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:10px;font-family:'Courier New',monospace;color:var(--mist);margin-bottom:6px;">OUTCOME</div>
+              <select id="disposition" onchange="updateMethodSummary()" style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:10px;font-size:14px;color:#e0f7fa;font-family:'Courier New',monospace;">
+                <option value="">— Select —</option>
+                <option>Kept</option><option>Released</option><option>Released — undersized</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top:10px;">
+            <div style="font-size:10px;font-family:'Courier New',monospace;color:var(--mist);margin-bottom:6px;">BAIT / LURE DETAIL</div>
+            <input type="text" id="bait" placeholder="e.g. 4in pearl ZMan, #2 hook, 1/4oz jig"
+              style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:10px;font-size:14px;color:#e0f7fa;font-family:'Courier New',monospace;box-sizing:border-box;">
+          </div>
+          <div style="display:flex;gap:10px;margin-top:10px;">
+            <div style="flex:1;">
+              <div style="font-size:10px;font-family:'Courier New',monospace;color:var(--mist);margin-bottom:6px;">LINE (lb)</div>
+              <input type="number" id="lineWeight" placeholder="10" step="1" min="0"
+                style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:10px;font-size:14px;color:#e0f7fa;font-family:'Courier New',monospace;box-sizing:border-box;">
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:10px;font-family:'Courier New',monospace;color:var(--mist);margin-bottom:6px;">LEADER (lb)</div>
+              <input type="number" id="leader" placeholder="20" step="1" min="0"
+                style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:10px;font-size:14px;color:#e0f7fa;font-family:'Courier New',monospace;box-sizing:border-box;">
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:10px;font-family:'Courier New',monospace;color:var(--mist);margin-bottom:6px;">COUNT</div>
+              <input type="number" id="count" placeholder="1" min="1" value="1"
+                style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:10px;font-size:14px;color:#e0f7fa;font-family:'Courier New',monospace;box-sizing:border-box;">
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="form-row single">
-        <div class="field"><label>Bait / Lure Detail</label><input type="text" id="bait" placeholder="e.g. 4in pearl ZMan, #2 hook, 1/4oz jig"></div>
-      </div>
-      <div class="form-row">
-        <div class="field"><label>Line (lb)</label><input type="number" id="lineWeight" placeholder="10" step="1" min="0"></div>
-        <div class="field"><label>Leader (lb)</label><input type="number" id="leader" placeholder="20" step="1" min="0"></div>
-      </div>
-      <div class="form-row single">
-        <div class="field"><label>Notes</label><textarea id="notes" placeholder="What worked, structure, how you found them…"></textarea></div>
+
+        <!-- Notes row -->
+        <div onclick="toggleDetail('notesDetail')" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;border-top:1px solid rgba(255,255,255,0.08);">
+          <div style="font-size:12px;font-family:'Courier New',monospace;color:#7dd3fc;letter-spacing:2px;text-transform:uppercase;font-weight:700;">Notes</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span id="notesSummary" style="font-size:13px;font-family:'Courier New',monospace;color:var(--mist);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></span>
+            <span id="notesChevron" style="color:var(--mist);font-size:16px;">›</span>
+          </div>
+        </div>
+        <div id="notesDetail" style="display:none;padding:0 16px 14px;border-top:1px solid rgba(255,255,255,0.08);">
+          <textarea id="notes" placeholder="What worked, structure, how you found them…"
+            oninput="document.getElementById('notesSummary').textContent=this.value.slice(0,40)+(this.value.length>40?'…':'')"
+            style="margin-top:12px;width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:10px;font-size:14px;color:#e0f7fa;font-family:'Courier New',monospace;box-sizing:border-box;min-height:100px;resize:vertical;"></textarea>
+        </div>
+
       </div>
     </div>
   </div>
@@ -3308,6 +3348,24 @@ function numpadCancel() {
 
 function updateSliderBadge() {
   // Badge is now inline — no positioning needed
+}
+
+function toggleDetail(id) {
+  const el = document.getElementById(id);
+  const chevronId = id.replace('Detail', 'Chevron');
+  const chevron = document.getElementById(chevronId);
+  if (!el) return;
+  const open = el.style.display === 'block';
+  el.style.display = open ? 'none' : 'block';
+  if (chevron) chevron.textContent = open ? '›' : '⌄';
+}
+
+function updateMethodSummary() {
+  const method = document.getElementById('method').value;
+  const disp = document.getElementById('disposition').value;
+  const summary = [method, disp].filter(Boolean).join(' · ');
+  const el = document.getElementById('methodSummary');
+  if (el) el.textContent = summary;
 }
 
 function updateConditionsGraphic() {
