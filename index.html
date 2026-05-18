@@ -1890,6 +1890,22 @@ body.map-open .content > #view-map { display: flex; }
     </div>
   </div>
 
+  <!-- Hidden fields for save compatibility -->
+  <input type="hidden" id="spotName">
+  <input type="hidden" id="catchState" value="NSW">
+  <input type="hidden" id="gpsCoords">
+  <input type="hidden" id="waypointId">
+  <input type="hidden" id="waypointName">
+  <input type="hidden" id="waterTemp">
+  <input type="hidden" id="airTemp">
+  <input type="hidden" id="windSpeed">
+  <input type="hidden" id="swellHeight">
+  <input type="hidden" id="swellDir">
+  <input type="hidden" id="swellPeriod">
+  <input type="hidden" id="waveHeight">
+  <input type="hidden" id="weight">
+  <select id="tide" style="display:none"><option value="">—</option><option>Incoming</option><option>High</option><option>Outgoing</option><option>Low</option><option>Slack</option></select>
+
   <button id="btnSaveCatch" class="btn btn-save" onclick="saveCatch()">✓ Save to Journal</button>
 
 </div><!-- /view-newcatch -->
@@ -2890,13 +2906,14 @@ function pickSp(id, name) {
   document.getElementById('spBadge').style.display = 'block';
   document.getElementById('spBadgeName').textContent = name;
   const btn = document.getElementById('spPickerBtn');
-  if (btn) btn.textContent = '✏️ ' + name + ' — tap to change';
+  if (btn) btn.style.display = 'none';
 }
 function clearSp() {
   selSpId = null; selSpName = '';
   ['spId','spName','spSearch'].forEach(i => { try { document.getElementById(i).value = ''; } catch(e) {} });
   document.getElementById('spBadge').style.display = 'none';
   const btn = document.getElementById('spPickerBtn');
+  if (btn) btn.style.display = '';
   if (btn) btn.textContent = '✏️ Search species';
 }
 function addSpFromLog() {
@@ -3486,7 +3503,7 @@ function importFromPhoto(e) {
               if (depthEl && !depthEl.value) {
                 depthEl.value = depth;
                 if (depthDisplay) depthDisplay.textContent = depth;
-                if (depthTrigger) depthTrigger.textContent = '📏 ~' + depth + 'm (GEBCO — tap to edit)';
+                if (depthTrigger) depthTrigger.textContent = '📏 ~' + depth + 'm (GEBCO)';
                 showToast('📏 Estimated depth: ~' + depth + 'm (GEBCO — tap to correct)');
               }
             }
