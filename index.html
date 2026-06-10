@@ -6215,19 +6215,20 @@ async function tryAIMeasurement(dataUrl, mediaType, state) {
   const hasLength  = result.length_cm && result.length_cm > 0;
   const hasSpecies = result.species && result.species !== 'unknown';
 
-  // Auto-fill fields immediately — no accept button needed
-  acceptAIMeasurement(
-    hasLength ? result.length_cm : null,
-    result.species || '',
-    result.nicknames || '',
-    result.legal_size_cm || '',
-    result.habitat_notes || ''
-  );
-
-  // Show a small toast confirmation then hide the result panel
+  // Show toast first, then apply after short delay to ensure UI is ready
   const confIcon = result.confidence === 'high' ? '🎯' : result.confidence === 'medium' ? '🤔' : '❓';
   showToast(confIcon + ' AI: ' + (hasSpecies ? result.species : 'Unknown species') + (hasLength ? ' · ' + result.length_cm + 'cm' : ''));
   resultEl.classList.remove('show');
+
+  setTimeout(() => {
+    acceptAIMeasurement(
+      hasLength ? result.length_cm : null,
+      result.species || '',
+      result.nicknames || '',
+      result.legal_size_cm || '',
+      result.habitat_notes || ''
+    );
+  }, 300);
 }
 
 // acceptAIMeasurement moved to regulations block
