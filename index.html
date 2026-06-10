@@ -1772,6 +1772,7 @@ body.map-open .content > #view-map { display: flex; }
           <div style="flex:1;">
             <div id="boatRampDisplay" style="font-size:16px;font-family:Georgia,serif;color:#e0f7fa;margin-bottom:4px;">Tap GPS to detect location</div>
             <div id="gpsDisplay" style="font-size:11px;font-family:'Courier New',monospace;color:var(--mist);"></div>
+            <div id="gpsStatus" style="display:none;font-size:11px;font-family:'Courier New',monospace;margin-top:4px;"></div>
           </div>
         </div>
         <input type="hidden" id="spotName">
@@ -1888,7 +1889,7 @@ body.map-open .content > #view-map { display: flex; }
   <select id="tide" style="display:none"><option value="">—</option><option>Incoming</option><option>High</option><option>Outgoing</option><option>Low</option><option>Slack</option></select>
 
   <button id="btnSaveCatch" class="btn btn-save" onclick="saveCatch()">✓ Save to Journal</button>
-  <button id="btnClearEntry" class="btn btn-cancel" onclick="confirmClearForm()" style="width:100%;padding:12px;margin-top:8px;font-size:14px;">✕ Clear Entry</button>
+  <button id="btnClearEntry" class="btn btn-cancel" onclick="clearForm();showToast('Entry cleared')" style="width:100%;padding:12px;margin-top:8px;font-size:14px;">✕ Clear Entry</button>
 
 </div>
 
@@ -2431,7 +2432,7 @@ body.map-open .content > #view-map { display: flex; }
     <p id="confirmMsg"></p>
     <div class="confirm-box-btns">
       <button class="confirm-cancel" onclick="confirmNo()">Cancel</button>
-      <button class="confirm-ok"     onclick="confirmYes()">Delete</button>
+      <button class="confirm-ok"     onclick="confirmYes()">Confirm</button>
     </div>
   </div>
 </div>
@@ -2494,7 +2495,7 @@ let measureImg       = null;
 let measurePoints    = [];
 let measureImgData   = null;
 let measureTarget    = 'length';
-let _confirmCallback = null;
+window._confirmCallback = null;
 let _idb             = null;
 
 // XSS-safe HTML escape
@@ -3504,9 +3505,6 @@ function importFromPhoto(e) {
       let exif = {dateTime:null, gpsLat:null, gpsLon:null};
       try {
         exif = parseExif(buf);
-        console.log('EXIF parse result:', JSON.stringify(exif));
-        console.log('Buffer size:', buf.byteLength, 'File type:', file.type, 'File name:', file.name);
-        showToast('EXIF: date=' + (exif.dateTime||'none') + ' lat=' + (exif.gpsLat||'none'));
       }
       catch(err) {
         warnEl.textContent = 'Photo added. Could not read EXIF data from this file — fill in date and location manually.';
@@ -3583,25 +3581,23 @@ function parseExif(buf) {
     const sig = view.getUint16(0);
     if (sig === 0xFFD8) {
       // JPEG — standard EXIF scan
+      // offset points to start of segment (marker bytes), NOT after marker
       let offset = 2, safety = 0;
-      while (offset < view.byteLength - 2 && safety++ < 200) {
-        const marker = view.getUint16(offset); offset += 2;
+      while (offset < view.byteLength - 4 && safety++ < 200) {
+        if (view.getUint8(offset) !== 0xFF) break;
+        const marker = view.getUint16(offset);
+        if (marker === 0xFFD9 || marker === 0xFFDA) break; // EOI or SOS
+        const len = view.getUint16(offset + 2); // length includes its own 2 bytes
         if (marker === 0xFFE1) {
-          const len = view.getUint16(offset);
-          if (len < 8) { offset += len; continue; }
           const exifHeader = String.fromCharCode(
-            view.getUint8(offset+2), view.getUint8(offset+3),
-            view.getUint8(offset+4), view.getUint8(offset+5)
+            view.getUint8(offset+4), view.getUint8(offset+5),
+            view.getUint8(offset+6), view.getUint8(offset+7)
           );
           if (exifHeader === 'Exif') {
-            try { parseExifBlock(view, offset+8, result); } catch(e) {}
+            try { parseExifBlock(view, offset+10, result); } catch(e) { console.warn('parseExifBlock error:', e); }
           }
-          offset += len;
-        } else if ((marker & 0xFF00) === 0xFF00) {
-          if (offset + 2 > view.byteLength) break;
-          const segLen = view.getUint16(offset); if (segLen < 2) break;
-          offset += segLen;
-        } else break;
+        }
+        offset += 2 + len; // 2 for marker + len (which includes its own 2 bytes)
       }
     } else {
       // HEIF/HEIC or other — scan entire buffer for 'Exif\0\0' marker
@@ -4247,7 +4243,7 @@ function clearForm() {
   document.querySelectorAll('.weather-tile').forEach(t => t.classList.remove('selected'));
   document.querySelectorAll('.dir-btn').forEach(b => b.classList.remove('selected'));
   document.getElementById('needle').style.transform = 'translateX(-50%) translateY(-100%) rotate(0deg)';
-  document.getElementById('gpsStatus').style.display = 'none';
+  const _gs = document.getElementById('gpsStatus'); if(_gs) _gs.style.display = 'none';
   selWx=''; selWindDir=''; clearSp(); pendingPhotos=[];
   document.getElementById('aiMeasureResult').classList.remove('show');
   document.getElementById('photoPreviews').innerHTML = '';
@@ -4460,12 +4456,12 @@ function delCatchFromEdit() {
 }
 
 function confirmAction(msg, callback) {
-  _confirmCallback = callback;
+  window._confirmCallback = callback;
   document.getElementById('confirmMsg').textContent = msg;
   document.getElementById('confirmDialog').classList.add('open');
 }
-function confirmYes() { document.getElementById('confirmDialog').classList.remove('open'); if (_confirmCallback) _confirmCallback(); _confirmCallback = null; }
-function confirmNo()  { document.getElementById('confirmDialog').classList.remove('open'); _confirmCallback = null; }
+function confirmYes() { document.getElementById('confirmDialog').classList.remove('open'); if (window._confirmCallback) window._confirmCallback(); window._confirmCallback = null; }
+function confirmNo()  { document.getElementById('confirmDialog').classList.remove('open'); window._confirmCallback = null; }
 
 function buildRptFilters() {
   const spSel = document.getElementById('rSp');
@@ -6133,7 +6129,7 @@ async function measureFishFromPhoto(imageDataUrl, mediaType, state) {
   await new Promise(r => setTimeout(r, 50));
 
   try {
-    const resized = await resizeImageForAI(imageDataUrl, 400);
+    const resized = await resizeImageForAI(imageDataUrl, 1024);
     const b64 = resized.split(',')[1];
 
     if (dbg) { dbg.innerHTML = '<div class="ai-measure-title">Sending request… (' + Math.round(b64.length/1000) + 'KB)</div>'; }
@@ -6144,13 +6140,13 @@ async function measureFishFromPhoto(imageDataUrl, mediaType, state) {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
-          model: 'claude-haiku-4-5',
-          max_tokens: 200,
+          model: 'claude-sonnet-4-6',
+          max_tokens: 300,
           messages: [{
             role: 'user',
             content: [
               {type: 'image', source: {type: 'base64', media_type: 'image/jpeg', data: b64}},
-              {type: 'text', text: 'Australian fish ID, caught in ' + (state||'Australia') + '. Note: Mulloway=silver, large scales, temperate; Kingfish=green back, yellow tail. Estimate length from context. JSON only: {"species":"name or unknown","confidence":"high/medium/low","nicknames":"","length_cm":null,"legal_size_cm":null,"protected":false,"notes":""}'}
+              {type: 'text', text: 'You are an expert Australian fish identification assistant. Look carefully at this photo and identify the fish species. If the fish is on a measuring mat or ruler, estimate its length precisely. Return ONLY valid JSON, no other text: {"species":"exact common name or unknown","confidence":"high/medium/low","nicknames":"comma separated","length_cm":null,"legal_size_cm":null,"protected":false,"notes":"brief ID notes"}'}
             ]
           }]
         })
