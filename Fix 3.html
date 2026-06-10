@@ -25,7 +25,7 @@
       13. Moon / solunar                 (line ~620)
       14. Misc utility classes           (line ~670)
      ─────────────────────────────────────────────
-     JavaScript begins after 
+     JavaScript begins after
 /* 16. CONDITIONS TAB */
 .cond-location-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
 .cond-loc-btn { flex:1; background:var(--surface); border:1.5px solid var(--line); border-radius:var(--radius-sm); padding:10px 8px; font-size:13px; font-family:'Georgia',serif; color:var(--mist); cursor:pointer; transition:all 0.15s; text-align:center; }
@@ -263,7 +263,6 @@
      ═══════════════════════════════════════════════════════════════ -->
 <style>
 
-/* ── 1. VARIABLES & RESET ─────────────────────────────────────── */
 :root {
   --ink:         #0a1628;
   --ink2:        #1e3a5f;
@@ -290,7 +289,6 @@ body {
   font-family: 'Georgia', serif;
 }
 
-/* ── 2. LAYOUT ───────────────────────────────────────────────── */
 .app-header {
   background: linear-gradient(160deg, #0a1628 0%, #0e2a4a 60%, #0e4d6b 100%);
   padding: 16px 16px 0;
@@ -355,7 +353,6 @@ body.map-open .content > #view-map { display: flex; }
 #view-map .map-tab-filters { flex-shrink: 0; padding: 8px 14px 6px; background: var(--foam); z-index: 10; position: relative; }
 #view-map #allCatchesMap { flex: 1; min-height: 0; border-radius: 0; border: none; }
 
-/* ── 3. FORM COMPONENTS ──────────────────────────────────────── */
 .form-card {
   background: var(--surface);
   border-radius: var(--radius);
@@ -415,7 +412,6 @@ body.map-open .content > #view-map { display: flex; }
 }
 .field textarea { resize: vertical; min-height: 70px; }
 
-/* ── 4. SPECIES AUTOCOMPLETE ─────────────────────────────────── */
 .species-wrap { position: relative; }
 .species-dropdown {
   position: absolute;
@@ -505,7 +501,6 @@ body.map-open .content > #view-map { display: flex; }
 .spot-option.hi { background: var(--water-light); color: var(--ink2); }
 .spot-option .spot-opt-count { font-size: 10px; color: var(--mist); font-family: 'Courier New', monospace; }
 
-/* ── 5. BUTTONS & GPS ────────────────────────────────────────── */
 .btn {
   border: none;
   border-radius: var(--radius-sm);
@@ -553,7 +548,6 @@ body.map-open .content > #view-map { display: flex; }
 .gps-status.got { color: var(--catch);   background: var(--catch-light); }
 .gps-status.err { color: var(--danger);  background: #fee2e2; }
 
-/* ── 6. WEATHER & COMPASS ────────────────────────────────────── */
 .weather-tiles { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; }
 .weather-tile {
   background: var(--foam);
@@ -617,7 +611,6 @@ body.map-open .content > #view-map { display: flex; }
 }
 .dir-btn.selected { background: var(--ink); border-color: var(--ink); color: #e0f7fa; }
 
-/* ── 7. CATCH CARDS & FILTERS ────────────────────────────────── */
 .filter-bar {
   display: flex; gap: 6px;
   margin-bottom: 12px;
@@ -785,7 +778,6 @@ body.map-open .content > #view-map { display: flex; }
 .brag-map { width: 100%; height: 300px; border-radius: var(--radius-sm); }
 .no-catches { text-align: center; padding: 40px 20px; color: var(--mist); font-style: italic; font-size: 14px; }
 
-/* ── 8. REPORTS ──────────────────────────────────────────────── */
 .rpt-header { margin-bottom: 14px; }
 .rpt-header h2 { font-size: 18px; font-weight: 400; margin-bottom: 3px; }
 .rpt-header p  { font-size: 13px; color: #4b5563; font-style: italic; }
@@ -853,7 +845,6 @@ body.map-open .content > #view-map { display: flex; }
 .spot-gps  { font-size: 10px; color: var(--water); font-family: 'Courier New', monospace; margin-top: 2px; }
 .no-results { text-align: center; padding: 40px 20px; color: var(--mist); font-style: italic; font-size: 14px; }
 
-/* ── 9. MODALS & OVERLAYS ────────────────────────────────────── */
 .modal-bg {
   display: none; position: fixed; inset: 0;
   background: rgba(10,22,40,0.75); z-index: 200;
@@ -901,7 +892,6 @@ body.map-open .content > #view-map { display: flex; }
 }
 .toast.show { transform: translateX(-50%) translateY(0); }
 
-/* ── 10. PHOTOS & EXIF ───────────────────────────────────────── */
 .photo-hero { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
 .photo-hero-btn {
   position: relative; overflow: hidden; border-radius: 16px;
@@ -1029,7 +1019,6 @@ body.map-open .content > #view-map { display: flex; }
 }
 .exif-warn.show { display: block; }
 
-/* ── 11. SETTINGS ────────────────────────────────────────────── */
 .settings-section {
   background: var(--surface); border-radius: var(--radius);
   border: 1px solid var(--line); overflow: hidden; margin-bottom: 14px;
@@ -1146,7 +1135,6 @@ body.map-open .content > #view-map { display: flex; }
 }
 .import-btn-label:active { transform: scale(0.98); }
 
-/* ── 12. MAP PICKER ──────────────────────────────────────────── */
 .map-modal-bg {
   display: none; position: fixed; inset: 0;
   background: rgba(10,22,40,0.85); z-index: 400; flex-direction: column;
@@ -1248,7 +1236,6 @@ body.map-open .content > #view-map { display: flex; }
 .measure-btn-reset   { background: rgba(255,255,255,0.1); color: #e0f7fa; }
 .measure-btn-confirm { background: var(--catch); color: white; }
 
-/* ── 13. MOON / SOLUNAR ──────────────────────────────────────── */
 .moon-header { margin-bottom: 12px; }
 .moon-header h2 { font-size: 18px; font-weight: 400; color: var(--ink); }
 .moon-header p  { font-size: 13px; color: var(--mist); font-style: italic; }
@@ -1312,14 +1299,12 @@ body.map-open .content > #view-map { display: flex; }
 
 .moon-empty { text-align: center; padding: 40px 20px; color: var(--mist); font-style: italic; font-size: 14px; }
 
-/* ── 14. MISC UTILITY ────────────────────────────────────────── */
 #moonDisplay {
   font-size: 12px; font-family: 'Courier New', monospace; color: var(--mist);
   margin-bottom: 8px; padding: 6px 10px;
   background: var(--foam); border-radius: 6px; border: 1px solid var(--line);
 }
 
-/* ── 15. ALL-CATCHES MAP TAB ─────────────────────────────────── */
 .map-tab-filters { display: flex; flex-direction: column; gap: 5px; margin-bottom: 0; }
 .map-tab-filter {
   background: var(--surface); border: 1.5px solid var(--line);
@@ -1610,10 +1595,6 @@ body.map-open .content > #view-map { display: flex; }
 </head>
 <body>
 
-<!-- ════════════════════════════════════════════════════════════
-     HTML STRUCTURE
-     ════════════════════════════════════════════════════════════ -->
-
 <div class="app-header">
   <div class="header-top">
     <div class="logo"><h1>🎣 BragMaster</h1><span>Fishing Journal</span></div>
@@ -1634,24 +1615,20 @@ body.map-open .content > #view-map { display: flex; }
 
 <div class="content">
 
-<!-- ═══ LOG VIEW ═══ -->
 <div class="view active" id="view-log">
 
-  <!-- Hidden file inputs -->
-  <input type="file" id="exifInput"   accept="image/*"                   style="display:none" onchange="importFromPhoto(event)">
+    <input type="file" id="exifInput"   accept="image/*"                   style="display:none" onchange="importFromPhoto(event)">
   <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" onchange="importFromPhoto(event)">
   <input type="file" id="bulkInput"   accept="image/*" multiple          style="display:none" onchange="startBulkImport(event)">
 
-  <!-- LAUNCHER BUTTONS -->
-  <div id="logLauncher" style="padding:16px 0 8px;">
+    <div id="logLauncher" style="padding:16px 0 8px;">
     <div style="text-align:center;margin-bottom:20px;">
       <div style="font-size:28px;margin-bottom:4px;">🎣</div>
       <div style="font-size:20px;font-family:Georgia,serif;color:var(--ink);font-weight:600;">Log a Catch</div>
       <div style="font-size:11px;font-family:'Courier New',monospace;color:var(--mist);margin-top:4px;">What do you want to do?</div>
     </div>
 
-    <!-- Camera -->
-    <button onclick="document.getElementById('cameraInput').click()"
+        <button onclick="document.getElementById('cameraInput').click()"
       style="width:100%;background:linear-gradient(135deg,#0e4d6b,#0e7490);border:none;border-radius:var(--radius);padding:18px 16px;margin-bottom:10px;display:flex;align-items:center;gap:16px;cursor:pointer;text-align:left;">
       <span style="font-size:36px;min-width:44px;text-align:center;">📷</span>
       <div>
@@ -1660,8 +1637,7 @@ body.map-open .content > #view-map { display: flex; }
       </div>
     </button>
 
-    <!-- Gallery import -->
-    <button onclick="document.getElementById('exifInput').click()"
+        <button onclick="document.getElementById('exifInput').click()"
       style="width:100%;background:linear-gradient(135deg,#0e2a4a,#0e4d6b);border:1px solid rgba(14,116,144,0.4);border-radius:var(--radius);padding:18px 16px;margin-bottom:10px;display:flex;align-items:center;gap:16px;cursor:pointer;text-align:left;">
       <span style="font-size:36px;min-width:44px;text-align:center;">🖼️</span>
       <div>
@@ -1670,8 +1646,7 @@ body.map-open .content > #view-map { display: flex; }
       </div>
     </button>
 
-    <!-- No photo -->
-    <button onclick="startManualEntry()"
+        <button onclick="startManualEntry()"
       style="width:100%;background:var(--foam);border:1px solid var(--line);border-radius:var(--radius);padding:18px 16px;margin-bottom:10px;display:flex;align-items:center;gap:16px;cursor:pointer;text-align:left;">
       <span style="font-size:36px;min-width:44px;text-align:center;">📝</span>
       <div>
@@ -1680,8 +1655,7 @@ body.map-open .content > #view-map { display: flex; }
       </div>
     </button>
 
-    <!-- Bulk import -->
-    <button onclick="document.getElementById('bulkInput').click()"
+        <button onclick="document.getElementById('bulkInput').click()"
       style="width:100%;background:var(--foam);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:16px;cursor:pointer;text-align:left;">
       <span style="font-size:28px;min-width:44px;text-align:center;">📚</span>
       <div>
@@ -1691,10 +1665,8 @@ body.map-open .content > #view-map { display: flex; }
     </button>
   </div>
 
+</div>
 
-</div><!-- /view-log -->
-
-<!-- ═══ NEW CATCH VIEW ═══ -->
 <div class="view" id="view-newcatch">
   <div style="display:flex;align-items:center;gap:12px;padding:12px 0 4px;margin-bottom:4px;">
     <button onclick="showView('log')" style="background:none;border:none;font-size:22px;cursor:pointer;padding:4px;color:var(--water);">‹</button>
@@ -1713,113 +1685,175 @@ body.map-open .content > #view-map { display: flex; }
     <button class="loc-lookup-btn" id="locLookupBtn" disabled onclick="lookupTideFromPicker()">🌊 Look up tide for selected location</button>
   </div>
 
-
-
   <div class="form-card">
-    <div class="form-section-header">🐟 My Catch</div>
     <div class="form-body">
-      <!-- LENGTH SLIDER - HERO -->
-      <div style="background:var(--ink);border-radius:var(--radius);padding:16px 16px 12px;margin-bottom:16px;">
-        <div style="display:flex;align-items:baseline;justify-content:center;gap:6px;margin-bottom:8px;">
-          <span id="lengthDisplay" style="font-size:64px;font-family:Georgia,serif;font-weight:700;color:#e0f7fa;line-height:1;">—</span>
-          <span style="font-size:20px;color:var(--mist);font-family:'Courier New',monospace;">cm</span>
-        </div>
-        <!-- AI badge floats above slider thumb -->
-        <div style="position:relative;margin-bottom:4px;">
-          <div id="aiLengthBadge" style="display:none;position:absolute;top:-26px;transform:translateX(-50%);background:#38bdf8;color:#0e2a4a;font-size:10px;font-family:'Courier New',monospace;font-weight:900;padding:3px 7px;border-radius:20px;letter-spacing:1px;pointer-events:none;box-shadow:0 0 8px rgba(56,189,248,0.6);">🤖 AI</div>
-          <input type="range" id="length" min="0" max="150" step="1" value="0"
-            style="width:100%;height:10px;accent-color:#38bdf8;cursor:pointer;"
-            oninput="document.getElementById('lengthDisplay').textContent=this.value>0?this.value:'—';document.getElementById('lengthNum').value=this.value>0?this.value:'';document.getElementById('aiLengthBadge').style.display='none';updateSliderBadge();">
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:10px;font-family:'Courier New',monospace;color:var(--mist);margin-top:6px;">
-          <span>0</span><span>30</span><span>60</span><span>90</span><span>120</span><span>150cm</span>
-        </div>
-        <!-- Numpad trigger -->
-        <button type="button" onclick="openNumpad()" id="numpadTrigger"
-          style="margin-top:10px;width:100%;padding:12px;border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);font-size:15px;font-family:'Courier New',monospace;background:rgba(255,255,255,0.06);color:var(--mist);cursor:pointer;text-align:center;">
-          ✏️ Type exact cm
-        </button>
-        <input type="hidden" id="lengthNum">
 
+            <div style="background:var(--ink);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;">
 
-      </div>
-
-      <!-- SPECIES & DEPTH SIDE BY SIDE -->
-      <div style="display:flex;gap:10px;margin-bottom:16px;">
-
-        <div style="flex:1;background:var(--ink);border-radius:var(--radius);padding:16px;min-width:0;">
-          <div style="font-size:11px;font-family:'Courier New',monospace;color:var(--mist);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Species</div>
-          <div id="spBadge" style="display:none;margin-bottom:8px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(56,189,248,0.15);border:1px solid rgba(56,189,248,0.3);border-radius:8px;padding:8px 10px;">
-              <span id="spBadgeName" style="font-size:15px;font-family:Georgia,serif;color:#e0f7fa;font-weight:600;word-break:break-word;"></span>
-              <button onclick="clearSp()" style="background:none;border:none;color:var(--mist);font-size:18px;cursor:pointer;padding:0 2px;flex-shrink:0;">×</button>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+          <div style="font-size:12px;font-family:'Courier New',monospace;color:#7dd3fc;letter-spacing:2px;text-transform:uppercase;min-width:56px;font-weight:700;">Species</div>
+          <div id="spBadge" style="display:none;flex:1;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <span id="spBadgeName" style="font-size:20px;font-family:Georgia,serif;color:#e0f7fa;font-weight:600;"></span>
+              <button onclick="clearSp()" style="background:none;border:none;color:var(--mist);font-size:18px;cursor:pointer;padding:0 4px;">×</button>
             </div>
           </div>
           <button type="button" onclick="openSpeciesPicker()" id="spPickerBtn"
-            style="width:100%;padding:10px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;font-size:13px;font-family:'Courier New',monospace;color:var(--mist);cursor:pointer;text-align:center;">
-            ✏️ Search species
+            style="flex:1;padding:8px 12px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;font-size:13px;font-family:'Courier New',monospace;color:var(--mist);cursor:pointer;text-align:center;">
+            Tap to select
           </button>
-          <input type="hidden" id="spId"><input type="hidden" id="spName">
-          <input type="hidden" id="spSearch">
         </div>
+        <input type="hidden" id="spId"><input type="hidden" id="spName"><input type="hidden" id="spSearch">
 
-        <div style="flex:1;background:var(--ink);border-radius:var(--radius);padding:16px;min-width:0;">
-          <div style="font-size:11px;font-family:'Courier New',monospace;color:var(--mist);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;">Depth</div>
-          <div style="display:flex;align-items:baseline;justify-content:center;gap:4px;margin-bottom:12px;">
+        <div style="height:1px;background:rgba(255,255,255,0.08);margin-bottom:14px;"></div>
+
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+          <div style="font-size:12px;font-family:'Courier New',monospace;color:#7dd3fc;letter-spacing:2px;text-transform:uppercase;min-width:56px;font-weight:700;">Length</div>
+          <div style="display:flex;align-items:baseline;gap:4px;">
+            <span id="lengthDisplay" style="font-size:40px;font-family:Georgia,serif;font-weight:700;color:#e0f7fa;line-height:1;">—</span>
+            <span style="font-size:14px;color:var(--mist);font-family:'Courier New',monospace;">cm</span>
+          </div>
+          <div id="aiLengthBadge" style="display:none;background:#38bdf8;color:#0e2a4a;font-size:9px;font-family:'Courier New',monospace;font-weight:900;padding:2px 8px;border-radius:20px;letter-spacing:1px;">🤖 AI</div>
+          <button type="button" onclick="openNumpad()" id="numpadTrigger"
+            style="margin-left:auto;padding:8px 12px;border:1px solid rgba(255,255,255,0.15);border-radius:8px;font-size:12px;font-family:'Courier New',monospace;background:rgba(255,255,255,0.06);color:var(--mist);cursor:pointer;">✏️ Edit</button>
+        </div>
+        <input type="range" id="length" min="0" max="150" step="1" value="0"
+          style="width:100%;height:10px;accent-color:#38bdf8;cursor:pointer;"
+          oninput="document.getElementById('lengthDisplay').textContent=this.value>0?this.value:'—';document.getElementById('lengthNum').value=this.value>0?this.value:'';document.getElementById('aiLengthBadge').style.display='none';">
+        <div style="display:flex;justify-content:space-between;font-size:10px;font-family:'Courier New',monospace;color:var(--mist);margin-top:4px;margin-bottom:14px;">
+          <span>0</span><span>30</span><span>60</span><span>90</span><span>120</span><span>150cm</span>
+        </div>
+        <input type="hidden" id="lengthNum">
+
+        <div style="height:1px;background:rgba(255,255,255,0.08);margin-bottom:14px;"></div>
+
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="font-size:12px;font-family:'Courier New',monospace;color:#7dd3fc;letter-spacing:2px;text-transform:uppercase;min-width:56px;font-weight:700;">Weight</div>
+          <div style="display:flex;align-items:baseline;gap:4px;">
+            <span id="weightDisplay" style="font-size:40px;font-family:Georgia,serif;font-weight:700;color:#e0f7fa;line-height:1;">—</span>
+            <span style="font-size:14px;color:var(--mist);font-family:'Courier New',monospace;">kg</span>
+          </div>
+          <button type="button" onclick="openWeightPad()" id="weightTrigger"
+            style="margin-left:auto;padding:8px 12px;border:1px solid rgba(255,255,255,0.15);border-radius:8px;font-size:12px;font-family:'Courier New',monospace;background:rgba(255,255,255,0.06);color:var(--mist);cursor:pointer;">✏️ Edit</button>
+          <input type="hidden" id="weight">
+        </div>
+      </div>
+
+            <div style="background:var(--ink);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="font-size:12px;font-family:'Courier New',monospace;color:#7dd3fc;letter-spacing:2px;text-transform:uppercase;min-width:56px;font-weight:700;">Depth</div>
+          <div style="display:flex;align-items:baseline;gap:4px;">
             <span id="depthDisplay" style="font-size:40px;font-family:Georgia,serif;font-weight:700;color:#e0f7fa;line-height:1;">—</span>
             <span style="font-size:14px;color:var(--mist);font-family:'Courier New',monospace;">m</span>
           </div>
           <button type="button" onclick="openDepthPad()" id="depthTrigger"
-            style="width:100%;padding:10px;border:1px solid rgba(255,255,255,0.15);border-radius:8px;font-size:12px;font-family:'Courier New',monospace;background:rgba(255,255,255,0.06);color:var(--mist);cursor:pointer;text-align:center;">
-            ✏️ Enter depth
-          </button>
+            style="margin-left:auto;padding:8px 12px;border:1px solid rgba(255,255,255,0.15);border-radius:8px;font-size:12px;font-family:'Courier New',monospace;background:rgba(255,255,255,0.06);color:var(--mist);cursor:pointer;">✏️ Edit</button>
           <input type="hidden" id="depth">
         </div>
-
       </div>
 
-      <!-- DATE & TIME HERO -->
-      <div style="background:var(--ink);border-radius:var(--radius);padding:20px 16px;margin-bottom:16px;display:flex;gap:10px;">
+            <div style="background:var(--ink);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;display:flex;gap:10px;">
         <div style="flex:1;">
-          <div style="font-size:11px;font-family:'Courier New',monospace;color:var(--mist);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Date</div>
+          <div style="font-size:12px;font-family:'Courier New',monospace;color:#7dd3fc;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:8px;">Date</div>
           <input type="date" id="catchDate" onchange="updateMoonDisplay()" oninput="updateMoonDisplay()"
-            style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);padding:10px 12px;font-size:18px;font-family:Georgia,serif;color:#e0f7fa;box-sizing:border-box;text-align:center;">
+            style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:10px;font-size:18px;font-family:Georgia,serif;color:#e0f7fa;box-sizing:border-box;text-align:center;">
         </div>
         <div style="flex:1;">
-          <div style="font-size:11px;font-family:'Courier New',monospace;color:var(--mist);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Time</div>
+          <div style="font-size:12px;font-family:'Courier New',monospace;color:#7dd3fc;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:8px;">Time</div>
           <input type="time" id="catchTime" onchange="updateMoonDisplay()"
-            style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:var(--radius-sm);padding:10px 12px;font-size:18px;font-family:Georgia,serif;color:#e0f7fa;box-sizing:border-box;text-align:center;">
+            style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:10px;font-size:18px;font-family:Georgia,serif;color:#e0f7fa;box-sizing:border-box;text-align:center;">
         </div>
       </div>
-      <div class="form-row">
-        <div class="field"><label>Count</label><input type="number" id="count" placeholder="1" min="1" value="1"></div>
-      </div>
-      <div class="form-row">
-        <div class="field">
-          <label>Method</label>
-          <select id="method"><option value="">— Select —</option>
-            <option>Lure — Hard body</option><option>Lure — Soft plastic</option><option>Lure — Metal</option>
-            <option>Live bait</option><option>Cut bait</option><option>Prawns</option><option>Worms</option>
-            <option>Squid</option><option>Fly</option><option>Trolling</option><option>Jigging</option><option>Spinning</option>
-          </select>
+
+            <div style="background:var(--ink);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;">
+        <div style="font-size:12px;font-family:'Courier New',monospace;color:#7dd3fc;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:10px;">Location</div>
+        <div style="display:flex;align-items:flex-start;gap:10px;">
+          <span style="font-size:24px;margin-top:2px;">🚢</span>
+          <div style="flex:1;">
+            <div id="boatRampDisplay" style="font-size:16px;font-family:Georgia,serif;color:#e0f7fa;margin-bottom:4px;">Detecting from GPS…</div>
+            <div id="gpsDisplay" style="font-size:11px;font-family:'Courier New',monospace;color:var(--mist);"></div>
+          </div>
         </div>
-        <div class="field">
-          <label>Kept / Released</label>
-          <select id="disposition"><option value="">— Select —</option>
-            <option>Kept</option><option>Released</option><option>Released — undersized</option>
-          </select>
+        <input type="hidden" id="spotName">
+        <input type="hidden" id="catchState" value="NSW">
+        <input type="hidden" id="gpsCoords">
+        <input type="hidden" id="waypointId">
+        <input type="hidden" id="waypointName">
+      </div>
+
+            <div style="background:var(--ink);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;">
+        <div style="font-size:12px;font-family:'Courier New',monospace;color:#7dd3fc;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:10px;">Conditions</div>
+        <div id="conditionsLoading" style="font-size:12px;font-family:'Courier New',monospace;color:var(--mist);">Auto-filling from GPS &amp; time…</div>
+        <div id="conditionsContent" style="display:none;">
+          <div id="condTideGraphic" style="margin-bottom:10px;"></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div style="background:rgba(255,255,255,0.05);border-radius:8px;padding:10px;text-align:center;">
+              <div style="font-size:10px;font-family:'Courier New',monospace;color:var(--mist);margin-bottom:4px;">WIND</div>
+              <div id="condWindDisplay" style="font-size:22px;font-family:Georgia,serif;color:#e0f7fa;font-weight:600;">—</div>
+              <div id="condWindDir" style="font-size:11px;font-family:'Courier New',monospace;color:var(--mist);margin-top:2px;"></div>
+            </div>
+            <div style="background:rgba(255,255,255,0.05);border-radius:8px;padding:10px;text-align:center;">
+              <div style="font-size:10px;font-family:'Courier New',monospace;color:var(--mist);margin-bottom:4px;">SWELL</div>
+              <div id="condSwellDisplay" style="font-size:22px;font-family:Georgia,serif;color:#e0f7fa;font-weight:600;">—</div>
+              <div id="condSwellDir" style="font-size:11px;font-family:'Courier New',monospace;color:var(--mist);margin-top:2px;"></div>
+            </div>
+          </div>
+        </div>
+        <input type="hidden" id="waterTemp">
+        <input type="hidden" id="airTemp">
+        <input type="hidden" id="windSpeed">
+        <input type="hidden" id="swellHeight">
+        <input type="hidden" id="swellDir">
+        <input type="hidden" id="swellPeriod">
+        <input type="hidden" id="waveHeight">
+        <select id="tide" style="display:none"><option value="">—</option><option>Incoming</option><option>High</option><option>Outgoing</option><option>Low</option><option>Slack</option></select>
+      </div>
+
+            <div style="background:var(--ink);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;">
+        <div onclick="toggleDetail('extraDetail')" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;cursor:pointer;">
+          <div style="font-size:12px;font-family:'Courier New',monospace;color:#7dd3fc;letter-spacing:2px;text-transform:uppercase;font-weight:700;">More Details</div>
+          <span id="extraChevron" style="color:var(--mist);font-size:20px;">›</span>
+        </div>
+        <div id="extraDetail" style="display:none;padding:0 16px 16px;border-top:1px solid rgba(255,255,255,0.08);">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;">
+            <div>
+              <div style="font-size:10px;font-family:'Courier New',monospace;color:var(--mist);margin-bottom:6px;">METHOD</div>
+              <select id="method" style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:10px;font-size:13px;color:#e0f7fa;font-family:'Courier New',monospace;">
+                <option value="">— Select —</option>
+                <option>Lure — Hard body</option><option>Lure — Soft plastic</option><option>Lure — Metal</option>
+                <option>Live bait</option><option>Cut bait</option><option>Prawns</option><option>Worms</option>
+                <option>Squid</option><option>Fly</option><option>Trolling</option><option>Jigging</option><option>Spinning</option>
+              </select>
+            </div>
+            <div>
+              <div style="font-size:10px;font-family:'Courier New',monospace;color:var(--mist);margin-bottom:6px;">OUTCOME</div>
+              <select id="disposition" style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:10px;font-size:13px;color:#e0f7fa;font-family:'Courier New',monospace;">
+                <option value="">— Select —</option>
+                <option>Kept</option><option>Released</option><option>Released — undersized</option>
+              </select>
+            </div>
+            <div>
+              <div style="font-size:10px;font-family:'Courier New',monospace;color:var(--mist);margin-bottom:6px;">LINE (lb)</div>
+              <input type="number" id="lineWeight" placeholder="10" style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:10px;font-size:13px;color:#e0f7fa;font-family:'Courier New',monospace;box-sizing:border-box;">
+            </div>
+            <div>
+              <div style="font-size:10px;font-family:'Courier New',monospace;color:var(--mist);margin-bottom:6px;">LEADER (lb)</div>
+              <input type="number" id="leader" placeholder="20" style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:10px;font-size:13px;color:#e0f7fa;font-family:'Courier New',monospace;box-sizing:border-box;">
+            </div>
+          </div>
+          <div style="margin-top:10px;">
+            <div style="font-size:10px;font-family:'Courier New',monospace;color:var(--mist);margin-bottom:6px;">BAIT / LURE</div>
+            <input type="text" id="bait" placeholder="e.g. 4in pearl ZMan" style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:10px;font-size:13px;color:#e0f7fa;font-family:'Courier New',monospace;box-sizing:border-box;">
+          </div>
+          <input type="hidden" id="count" value="1">
+          <div style="margin-top:10px;">
+            <div style="font-size:10px;font-family:'Courier New',monospace;color:var(--mist);margin-bottom:6px;">NOTES</div>
+            <textarea id="notes" placeholder="What worked, structure, how you found them…"
+              style="width:100%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:10px;font-size:13px;color:#e0f7fa;font-family:'Courier New',monospace;box-sizing:border-box;min-height:80px;resize:vertical;"></textarea>
+          </div>
         </div>
       </div>
-      <div class="form-row single">
-        <div class="field"><label>Bait / Lure Detail</label><input type="text" id="bait" placeholder="e.g. 4in pearl ZMan, #2 hook, 1/4oz jig"></div>
-      </div>
-      <div class="form-row">
-        <div class="field"><label>Line (lb)</label><input type="number" id="lineWeight" placeholder="10" step="1" min="0"></div>
-        <div class="field"><label>Leader (lb)</label><input type="number" id="leader" placeholder="20" step="1" min="0"></div>
-      </div>
-      <div class="form-row single">
-        <div class="field"><label>Notes</label><textarea id="notes" placeholder="What worked, structure, how you found them…"></textarea></div>
-      </div>
+
     </div>
   </div>
 
@@ -1835,12 +1869,26 @@ body.map-open .content > #view-map { display: flex; }
     </div>
   </div>
 
+    <input type="hidden" id="spotName">
+  <input type="hidden" id="catchState" value="NSW">
+  <input type="hidden" id="gpsCoords">
+  <input type="hidden" id="waypointId">
+  <input type="hidden" id="waypointName">
+  <input type="hidden" id="waterTemp">
+  <input type="hidden" id="airTemp">
+  <input type="hidden" id="windSpeed">
+  <input type="hidden" id="swellHeight">
+  <input type="hidden" id="swellDir">
+  <input type="hidden" id="swellPeriod">
+  <input type="hidden" id="waveHeight">
+  <input type="hidden" id="weight">
+  <select id="tide" style="display:none"><option value="">—</option><option>Incoming</option><option>High</option><option>Outgoing</option><option>Low</option><option>Slack</option></select>
+
   <button id="btnSaveCatch" class="btn btn-save" onclick="saveCatch()">✓ Save to Journal</button>
+  <button id="btnClearEntry" class="btn btn-cancel" onclick="confirmClearForm()" style="width:100%;padding:12px;margin-top:8px;font-size:14px;">✕ Clear Entry</button>
 
-</div><!-- /view-newcatch -->
+</div>
 
-
-<!-- ═══ CATCHES VIEW ═══ -->
 <div class="view" id="view-catches">
   <div class="filter-bar">
     <div class="filter-chip active" onclick="filterC(event.currentTarget,'all')">All</div>
@@ -1858,10 +1906,8 @@ body.map-open .content > #view-map { display: flex; }
   </div>
   <div class="log-count" id="catchCount"></div>
   <div id="catchList"></div>
-</div><!-- /view-catches -->
+</div>
 
-
-<!-- ═══ REPORTS VIEW ═══ -->
 <div class="view" id="view-reports">
   <div class="rpt-header"><h2>Reports</h2><p>Filter your history — find what works</p></div>
   <div class="rpt-builder">
@@ -1920,10 +1966,8 @@ body.map-open .content > #view-map { display: flex; }
     <button class="run-btn" onclick="runReport()">Run Report</button>
   </div>
   <div id="rptResults"></div>
-</div><!-- /view-reports -->
+</div>
 
-
-<!-- ═══ MAP VIEW ═══ -->
 <div class="view" id="view-map">
   <div class="map-tab-filters">
     <select class="map-tab-filter" id="mapFilterSpecies" onchange="renderAllCatchesMap()">
@@ -1936,10 +1980,8 @@ body.map-open .content > #view-map { display: flex; }
     </div>
   </div>
   <div id="allCatchesMap"></div>
-</div><!-- /view-map -->
+</div>
 
-
-<!-- ═══ MOON VIEW ═══ -->
 <div class="view" id="view-moon">
   <div class="moon-header">
     <h2>Solunar Report</h2>
@@ -1954,11 +1996,8 @@ body.map-open .content > #view-map { display: flex; }
   </div>
   <div class="solunar-tiles" id="solunarTiles"></div>
   <div id="moonPhaseGroups"></div>
-</div><!-- /view-moon -->
+</div>
 
-
-
-<!-- CONDITIONS VIEW -->
 <div class="view" id="view-conditions">
   <div style="margin-bottom:6px">
     <h2 style="font-size:18px;font-weight:400;margin-bottom:2px">Current Conditions</h2>
@@ -1972,7 +2011,6 @@ body.map-open .content > #view-map { display: flex; }
   <div id="condContent"><div class="cond-loading">Loading conditions...</div></div>
 </div>
 
-<!-- ═══ SPECIES VIEW ═══ -->
 <div class="view" id="view-species">
   <div class="sp-mgr-hdr">
     <h2>Species List</h2>
@@ -1989,10 +2027,8 @@ body.map-open .content > #view-map { display: flex; }
     </div>
   </div>
   <div id="spMgrList"></div>
-</div><!-- /view-species -->
+</div>
 
-
-<!-- ═══ SETTINGS VIEW ═══ -->
 <div class="view" id="view-settings">
   <div class="settings-section" style="display:none">
     <div class="settings-section-hdr">🌊 WorldTides API Key</div>
@@ -2155,10 +2191,9 @@ body.map-open .content > #view-map { display: flex; }
       <p>Tide lookup requires an internet connection and a WorldTides API key. Each lookup costs 1 credit.</p>
     </div>
   </div>
-</div><!-- /view-settings -->
+</div>
 
-</div><!-- /content -->
-
+</div>
 
 <!-- ════════════════════════════════════════════════════════════
      MODALS  (outside .content so z-index stacking is clean)
@@ -2189,12 +2224,10 @@ body.map-open .content > #view-map { display: flex; }
   </div>
 </div>
 
-<!-- BULK IMPORT MODAL -->
 <div class="bulk-modal-bg" id="bulkModal">
   <div class="bulk-modal">
 
-    <!-- Header -->
-    <div class="bulk-header">
+        <div class="bulk-header">
       <div style="flex:1;min-width:0">
         <h2 id="bulkHeaderTitle">Import Brags</h2>
         <div class="bulk-header-sub" id="bulkHeaderSub">Select photos from your camera roll</div>
@@ -2202,8 +2235,7 @@ body.map-open .content > #view-map { display: flex; }
       <button class="bulk-close" onclick="closeBulkModal()">×</button>
     </div>
 
-    <!-- Progress bar (shown while reading EXIF) -->
-    <div class="bulk-progress-bar-wrap" id="bulkProgressWrap" style="display:none">
+        <div class="bulk-progress-bar-wrap" id="bulkProgressWrap" style="display:none">
       <div class="bulk-progress-bar"><div class="bulk-progress-fill" id="bulkProgressFill"></div></div>
       <div class="bulk-progress-text" id="bulkProgressText">Reading photos...</div>
     </div>
@@ -2217,25 +2249,21 @@ body.map-open .content > #view-map { display: flex; }
       </div>
     </div>
 
-    <!-- Phase 1: Tile grid -->
-    <div id="bulkPhase1" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0;display:none">
+        <div id="bulkPhase1" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0;display:none">
       <div class="bulk-tile-grid" id="bulkTileGrid"></div>
     </div>
 
-    <!-- Phase 2: Review groups -->
-    <div id="bulkPhase2" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0;display:none">
+        <div id="bulkPhase2" style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0;display:none">
       <div class="bulk-content" id="bulkContent"></div>
     </div>
 
-    <!-- Footer -->
-    <div class="bulk-footer" id="bulkFooter">
+        <div class="bulk-footer" id="bulkFooter">
       <button class="bulk-import-btn" id="bulkImportBtn" onclick="startBulkReview()" disabled>Import Brags</button>
       <div class="bulk-footer-hint" id="bulkFooterHint">Long press a photo to start grouping</div>
     </div>
 
   </div>
 </div>
-<!-- Edit Species modal -->
 <div class="modal-bg" id="editSpModal">
   <div class="modal">
     <h2>Edit Species</h2>
@@ -2250,7 +2278,6 @@ body.map-open .content > #view-map { display: flex; }
   </div>
 </div>
 
-<!-- Edit Catch modal -->
 <div class="modal-bg" id="editCatchModal">
   <div class="modal" style="padding-bottom:60px">
     <h2>Edit Catch</h2>
@@ -2332,7 +2359,6 @@ body.map-open .content > #view-map { display: flex; }
   </div>
 </div>
 
-<!-- Photo lightbox -->
 <div class="photo-lightbox" id="photoLightbox">
   <img id="lightboxImg" src="" alt="Catch photo" onclick="lbNext(1)">
   <button class="photo-lightbox-close" onclick="closeLightbox()">×</button>
@@ -2342,7 +2368,6 @@ body.map-open .content > #view-map { display: flex; }
   <button onclick="saveLightboxPhoto()" style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.15);border:none;color:white;font-size:12px;font-family:'Courier New',monospace;padding:8px 20px;border-radius:20px;cursor:pointer;letter-spacing:0.05em;">⬇ Save to Camera Roll</button>
 </div>
 
-<!-- Map picker modal -->
 <div class="map-modal-bg" id="mapModal">
   <div class="map-modal-header">
     <div>
@@ -2372,7 +2397,6 @@ body.map-open .content > #view-map { display: flex; }
   </div>
 </div>
 
-<!-- Photo measurement modal -->
 <div class="measure-modal-bg" id="measureModal">
   <div class="measure-header">
     <div>
@@ -2399,7 +2423,6 @@ body.map-open .content > #view-map { display: flex; }
   </div>
 </div>
 
-<!-- Confirm dialog -->
 <div class="confirm-bg" id="confirmDialog">
   <div class="confirm-box">
     <p id="confirmMsg"></p>
@@ -2410,21 +2433,10 @@ body.map-open .content > #view-map { display: flex; }
   </div>
 </div>
 
-<!-- Toast notification -->
 <div class="toast" id="toast"></div>
 
-
-<!-- ════════════════════════════════════════════════════════════
-     JAVASCRIPT
-     Order: constants → storage → state → utilities → init
-            → UI helpers → GPS → forms → photos → EXIF
-            → map → tide → weather → enrichment → species
-            → catches → reports → moon → export/import
-     ════════════════════════════════════════════════════════════ -->
 <script>
-/* ─────────────────────────────────────────────────────────────
-   CONSTANTS
-   ───────────────────────────────────────────────────────────── */
+
 const DB_CATCHES  = 'bragmaster_catches';
 const DB_SPECIES  = 'bragmaster_species';
 const IDB_NAME    = 'bragmaster_photos_v1';
@@ -2457,9 +2469,6 @@ const DEFAULT_LOCATIONS = [
   {id:'loc3', name:'Yeppoon Boat Ramp',   state:'QLD', lat:-23.1268, lon:150.7441},
 ];
 
-/* ─────────────────────────────────────────────────────────────
-   APP STATE
-   ───────────────────────────────────────────────────────────── */
 let catches          = [];
 let species          = [];
 let locations        = [];
@@ -2485,9 +2494,6 @@ let measureTarget    = 'length';
 let _confirmCallback = null;
 let _idb             = null;
 
-/* ─────────────────────────────────────────────────────────────
-   UTILITIES
-   ───────────────────────────────────────────────────────────── */
 // XSS-safe HTML escape
 function h(str) {
   return String(str||'')
@@ -2577,9 +2583,6 @@ function saveC() {
 function saveSp()  { localStorage.setItem(DB_SPECIES, JSON.stringify(species)); }
 function saveLocs(){ localStorage.setItem('bragmaster_locations', JSON.stringify(locations)); }
 
-/* ─────────────────────────────────────────────────────────────
-   INITIALISATION
-   ───────────────────────────────────────────────────────────── */
 function init() {
   loadBragMatProfile();
   const sc = localStorage.getItem(DB_CATCHES);
@@ -2632,9 +2635,6 @@ function updateNet() {
   else { b.textContent = '◉ Offline — saved locally'; b.classList.add('offline'); }
 }
 
-/* ─────────────────────────────────────────────────────────────
-   VIEW NAVIGATION
-   ───────────────────────────────────────────────────────────── */
 function showView(v) {
   document.querySelectorAll('.view').forEach(e => e.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(e  => e.classList.remove('active'));
@@ -2647,7 +2647,6 @@ function showView(v) {
   if (v === 'species')  renderSpMgr();
   if (v === 'settings') { loadSettingsView(); loadHomeLocSelect(); updateBragMatUI(); }
   if (v === 'newcatch')  { window.scrollTo(0,0); }
-  if (v === 'map')      { document.body.classList.add('map-open'); initMapTabFilters(); setTimeout(renderAllCatchesMap, 100); } else { document.body.classList.remove('map-open'); }
   if (v === 'map')      { document.body.classList.add('map-open'); initMapTabFilters(); setTimeout(renderAllCatchesMap, 100); } else { document.body.classList.remove('map-open'); }
 }
 
@@ -2667,9 +2666,6 @@ function selDir(el, d) {
     `translateX(-50%) translateY(-100%) rotate(${DA[d]||0}deg)`;
 }
 
-/* ─────────────────────────────────────────────────────────────
-   GPS
-   ───────────────────────────────────────────────────────────── */
 function getGPS() {
   const s = document.getElementById('gpsStatus');
   s.style.display = 'block'; s.className = 'gps-status acq'; s.textContent = '⌛ Acquiring…';
@@ -2681,6 +2677,25 @@ function getGPS() {
       s.className = 'gps-status got'; s.textContent = `✓ Fix ±${Math.round(p.coords.accuracy)}m`;
       const st = stateFromGPS(lat, lon);
       if (st && !document.getElementById('catchState').value) document.getElementById('catchState').value = st;
+      // Update visible GPS coordinates display
+      const gpsEl = document.getElementById('gpsDisplay');
+      if (gpsEl) gpsEl.textContent = lat.toFixed(5) + ', ' + lon.toFixed(5);
+      // Lookup nearest boat ramp name
+      lookupBoatRamp(lat, lon);
+      // Lookup depth from GEBCO topography
+      lookupDepthFromGPS(lat, lon).then(depth => {
+        if (depth) {
+          const depthEl = document.getElementById('depth');
+          const depthDisplay = document.getElementById('depthDisplay');
+          const depthTrigger = document.getElementById('depthTrigger');
+          if (depthEl && !depthEl.value) {
+            depthEl.value = depth;
+            if (depthDisplay) depthDisplay.textContent = depth;
+            if (depthTrigger) depthTrigger.textContent = '📏 ~' + depth + 'm (GEBCO)';
+            showToast('📏 Estimated depth: ~' + depth + 'm (GEBCO — tap to correct)');
+          }
+        }
+      });
     },
     () => { s.className = 'gps-status err'; s.textContent = '✗ Could not get location'; },
     {enableHighAccuracy: true, timeout: 15000}
@@ -2709,9 +2724,6 @@ function stateFromGPS(lat, lon) {
   return '';
 }
 
-/* ─────────────────────────────────────────────────────────────
-   MOON PHASE ENGINE
-   ───────────────────────────────────────────────────────────── */
 function getMoonPhase(dateStr, timeStr) {
   const date = new Date(dateStr + 'T' + (timeStr || '12:00') + ':00');
   const knownNewMoon = new Date('2000-01-06T18:14:00Z');
@@ -2759,9 +2771,6 @@ function updateMoonDisplay() {
   }
 }
 
-/* ─────────────────────────────────────────────────────────────
-   SPOT AUTOCOMPLETE
-   ───────────────────────────────────────────────────────────── */
 function getSpotSuggestions(q) {
   const freq = {};
   catches.forEach(c => { if (c.spotName && c.spotName.trim()) { const k = c.spotName.trim(); freq[k] = (freq[k]||0) + 1; } });
@@ -2793,21 +2802,38 @@ function pickSpot(name) {
   document.getElementById('spotDrop').classList.remove('open');
   const loc = locations.find(l => l.name === name);
   if (loc && !document.getElementById('gpsCoords').value) {
-    document.getElementById('gpsCoords').value = loc.lat.toFixed(5) + ', ' + loc.lon.toFixed(5);
+    const lat = loc.lat, lon = loc.lon;
+    document.getElementById('gpsCoords').value = lat.toFixed(5) + ', ' + lon.toFixed(5);
     const gpsS = document.getElementById('gpsStatus');
     gpsS.style.display = 'block'; gpsS.className = 'gps-status got';
     gpsS.textContent = '📍 Location: ' + name;
-    const st = stateFromGPS(loc.lat, loc.lon);
+    const st = stateFromGPS(lat, lon);
     if (st && !document.getElementById('catchState').value) document.getElementById('catchState').value = st;
+    // Update visible GPS display
+    const gpsEl = document.getElementById('gpsDisplay');
+    if (gpsEl) gpsEl.textContent = lat.toFixed(5) + ', ' + lon.toFixed(5);
+    const rampEl = document.getElementById('boatRampDisplay');
+    if (rampEl) rampEl.textContent = name;
+    // Lookup depth from GEBCO
+    lookupDepthFromGPS(lat, lon).then(depth => {
+      if (depth) {
+        const depthEl = document.getElementById('depth');
+        const depthDisplay = document.getElementById('depthDisplay');
+        const depthTrigger = document.getElementById('depthTrigger');
+        if (depthEl && !depthEl.value) {
+          depthEl.value = depth;
+          if (depthDisplay) depthDisplay.textContent = depth;
+          if (depthTrigger) depthTrigger.textContent = '📏 ~' + depth + 'm (GEBCO)';
+          showToast('📏 Estimated depth: ~' + depth + 'm (GEBCO — tap to correct)');
+        }
+      }
+    });
   }
 }
 function schedSpotClose() {
   spotCloseTimer = setTimeout(() => document.getElementById('spotDrop').classList.remove('open'), 200);
 }
 
-/* ─────────────────────────────────────────────────────────────
-   SPECIES AUTOCOMPLETE
-   ───────────────────────────────────────────────────────────── */
 function onSpInput() {
   if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
   const q  = document.getElementById('spSearch').value.toLowerCase().trim();
@@ -2835,13 +2861,14 @@ function pickSp(id, name) {
   document.getElementById('spBadge').style.display = 'block';
   document.getElementById('spBadgeName').textContent = name;
   const btn = document.getElementById('spPickerBtn');
-  if (btn) btn.textContent = '✏️ ' + name + ' — tap to change';
+  if (btn) btn.style.display = 'none';
 }
 function clearSp() {
   selSpId = null; selSpName = '';
   ['spId','spName','spSearch'].forEach(i => { try { document.getElementById(i).value = ''; } catch(e) {} });
   document.getElementById('spBadge').style.display = 'none';
   const btn = document.getElementById('spPickerBtn');
+  if (btn) btn.style.display = '';
   if (btn) btn.textContent = '✏️ Search species';
 }
 function addSpFromLog() {
@@ -2851,9 +2878,6 @@ function addSpFromLog() {
   pickSp(id, name); showToast('"' + name + '" added to species list');
 }
 
-/* ─────────────────────────────────────────────────────────────
-   PHOTO HANDLING
-   ───────────────────────────────────────────────────────────── */
 function makeThumbnail(dataUrl) {
   return new Promise(res => {
     try {
@@ -3051,9 +3075,6 @@ function saveLightboxPhoto() {
   }
 }
 
-/* ─────────────────────────────────────────────────────────────
-   PHOTO MEASUREMENT TOOL
-   ───────────────────────────────────────────────────────────── */
 function openMeasureModal(dataUrl, targetFieldId) {
   measureTarget = targetFieldId || 'length';
   measurePoints = [];
@@ -3147,9 +3168,6 @@ function closeMeasureModal() {
   measurePoints = []; measureImg = null;
 }
 
-/* ─────────────────────────────────────────────────────────────
-   EXIF PHOTO IMPORT
-   ───────────────────────────────────────────────────────────── */
 let numpadFresh = true;
 let numpadTarget = "length"; // first keypress replaces existing value
 
@@ -3157,7 +3175,7 @@ function openSpeciesPicker() {
   const overlay = document.getElementById('speciesPickerOverlay');
   if (overlay) { overlay.style.display = 'flex'; overlay.style.flexDirection = 'column'; }
   const search = document.getElementById('spSearchFull');
-  if (search) { search.value = ''; search.focus(); }
+  if (search) { search.value = ''; setTimeout(() => search.focus(), 100); }
   filterSpeciesPicker();
 }
 
@@ -3170,6 +3188,10 @@ function filterSpeciesPicker() {
   const q = (document.getElementById('spSearchFull').value || '').toLowerCase();
   const list = document.getElementById('speciesPickerList');
   if (!list) return;
+  // Load from localStorage if window.species not ready
+  if (!window.species || window.species.length === 0) {
+    try { window.species = JSON.parse(localStorage.getItem('bragmaster_species') || '[]'); } catch(e) {}
+  }
   const matches = (window.species || []).filter(s =>
     !q || s.name.toLowerCase().includes(q) || (s.nicknames||[]).join(' ').toLowerCase().includes(q)
   );
@@ -3206,6 +3228,50 @@ function addAndPickSpecies(name) {
   window.species.push({id, name:proper, nicknames:[], notes:''});
   saveSp();
   pickSpFromPicker(id, proper);
+}
+
+function openWeightPad() {
+  const overlay = document.getElementById('numpadOverlay');
+  if (overlay) overlay.style.display = 'flex';
+  document.getElementById('numpadLabel').textContent = 'Weight';
+  document.getElementById('numpadUnit').textContent = 'kg';
+  const cur = document.getElementById('weight').value;
+  document.getElementById('numpadDisplay').textContent = cur || '—';
+  numpadTarget = 'weight';
+  numpadFresh = true;
+}
+
+function updateConditionsTile() {
+  const tide = document.getElementById('tide') ? document.getElementById('tide').value : '';
+  const wind = document.getElementById('windSpeed') ? document.getElementById('windSpeed').value : '';
+  const windDir = selWindDir || '';
+  const swell = document.getElementById('swellHeight') ? document.getElementById('swellHeight').value : '';
+  const swellDir = document.getElementById('swellDir') ? document.getElementById('swellDir').value : '';
+  const swellPeriod = document.getElementById('swellPeriod') ? document.getElementById('swellPeriod').value : '';
+
+  const hasData = tide || wind || swell;
+  const loading = document.getElementById('conditionsLoading');
+  const condContent = document.getElementById('conditionsContent');
+  if (!hasData) return;
+  if (loading) loading.style.display = 'none';
+  if (condContent) condContent.style.display = 'block';
+
+  // Tide graphic
+  if (tide) {
+    const tideEl = document.getElementById('condTideGraphic');
+    if (tideEl) tideEl.innerHTML = buildMiniTideCurve({tide});
+  }
+  // Wind
+  const windEl = document.getElementById('condWindDisplay');
+  const windDirEl = document.getElementById('condWindDir');
+  if (windEl) windEl.textContent = wind ? wind + ' km/h' : '—';
+  if (windDirEl) windDirEl.textContent = windDir || '';
+
+  // Swell
+  const swellEl = document.getElementById('condSwellDisplay');
+  const swellDirEl = document.getElementById('condSwellDir');
+  if (swellEl) swellEl.textContent = swell ? swell + 'm' : '—';
+  if (swellDirEl) swellDirEl.textContent = [swellDir, swellPeriod ? swellPeriod+'s' : ''].filter(Boolean).join(' · ');
 }
 
 function openDepthPad() {
@@ -3265,6 +3331,11 @@ function numpad(val) {
     const depthDisplay = document.getElementById('depthDisplay');
     if (depthHidden) depthHidden.value = cur;
     if (depthDisplay) depthDisplay.textContent = v > 0 ? v : '—';
+  } else if (numpadTarget === 'weight') {
+    const wHidden = document.getElementById('weight');
+    const wDisplay = document.getElementById('weightDisplay');
+    if (wHidden) wHidden.value = cur;
+    if (wDisplay) wDisplay.textContent = cur || '—';
   }
 }
 
@@ -3278,7 +3349,11 @@ function numpadDone() {
   } else if (numpadTarget === 'depth') {
     const val = document.getElementById('depth').value;
     const trigger = document.getElementById('depthTrigger');
-    if (trigger) trigger.textContent = val ? '✏️ ' + val + ' m — tap to change' : '✏️ Enter depth';
+    if (trigger) trigger.textContent = val ? '✏️ ' + val + 'm' : '✏️ Edit';
+  } else if (numpadTarget === 'weight') {
+    const val = document.getElementById('weight').value;
+    const trigger = document.getElementById('weightTrigger');
+    if (trigger) trigger.textContent = val ? '✏️ ' + val + 'kg' : '✏️ Edit';
   }
 }
 
@@ -3287,12 +3362,83 @@ function numpadCancel() {
   if (overlay) overlay.style.display = 'none';
 }
 
+async function lookupBoatRamp(lat, lon) {
+  const rampEl = document.getElementById('boatRampDisplay');
+  const gpsEl = document.getElementById('gpsDisplay');
+  if (gpsEl) gpsEl.textContent = lat.toFixed(5) + ', ' + lon.toFixed(5);
+  if (!rampEl) return;
+  try {
+    // Query OpenStreetMap Overpass API for nearest boat ramp
+    const query = '[out:json][timeout:10];(node["leisure"="slipway"](around:15000,'+lat+','+lon+');way["leisure"="slipway"](around:15000,'+lat+','+lon+'););out center 5;';
+    const resp = await fetch('https://overpass-api.de/api/interpreter?data=' + encodeURIComponent(query));
+    const data = await resp.json();
+    if (data.elements && data.elements.length > 0) {
+      const ramp = data.elements[0];
+      const name = ramp.tags?.name || ramp.tags?.description || 'Boat Ramp';
+      rampEl.textContent = name;
+      const sn = document.getElementById('spotName');
+      if (sn && !sn.value) sn.value = name;
+    } else {
+      rampEl.textContent = 'No ramp found nearby';
+    }
+  } catch(e) {
+    rampEl.textContent = 'GPS location detected';
+    console.warn('Boat ramp lookup failed:', e);
+  }
+}
+
 function updateSliderBadge() {
-  const slider = document.getElementById('length');
-  const badge = document.getElementById('aiLengthBadge');
-  if (!slider || !badge) return;
-  const pct = (slider.value - slider.min) / (slider.max - slider.min);
-  badge.style.left = 'calc(' + (pct * 100) + '% + ' + (8 - pct * 16) + 'px)';
+  // Badge is now inline — no positioning needed
+}
+
+function toggleDetail(id) {
+  const el = document.getElementById(id);
+  const chevronId = id.replace('Detail', 'Chevron');
+  const chevron = document.getElementById(chevronId);
+  if (!el) return;
+  const open = el.style.display === 'block';
+  el.style.display = open ? 'none' : 'block';
+  if (chevron) chevron.textContent = open ? '›' : '⌄';
+}
+
+function updateMethodSummary() {
+  const method = document.getElementById('method').value;
+  const disp = document.getElementById('disposition').value;
+  const summary = [method, disp].filter(Boolean).join(' · ');
+  const el = document.getElementById('methodSummary');
+  if (el) el.textContent = summary;
+}
+
+function updateConditionsGraphic() {
+  updateConditionsTile();
+}
+function _updateConditionsGraphicOld() {
+  const tide = document.getElementById('tideLookup');
+  const graphic = document.getElementById('conditionsGraphic');
+  if (!graphic) return;
+  // Read current form values
+  const windSpeed = document.getElementById('windSpeed') ? document.getElementById('windSpeed').value : '';
+  const windDir = selWindDir || '';
+  const weather = selWx || '';
+  const swell = document.getElementById('swellHeight') ? document.getElementById('swellHeight').value : '';
+  const tideVal = document.getElementById('tideState') ? document.getElementById('tideState').value : '';
+  const hasData = windSpeed || windDir || weather || swell || tideVal;
+  if (!hasData) { graphic.style.display = 'none'; return; }
+  graphic.style.display = 'block';
+  // Wind
+  const windEl = document.getElementById('condWindDisplay');
+  if (windEl) windEl.textContent = windSpeed ? '💨 ' + windSpeed + 'km/h ' + windDir : '';
+  // Weather
+  const wxEl = document.getElementById('condWeatherDisplay');
+  if (wxEl) wxEl.textContent = weather ? '🌤 ' + weather : '';
+  // Swell
+  const swellEl = document.getElementById('condSwellDisplay');
+  if (swellEl) swellEl.textContent = swell ? '🌊 ' + swell + 'm swell' : '';
+  // Tide mini curve
+  const tideGraphic = document.getElementById('condTideGraphic');
+  if (tideGraphic && tideVal) {
+    tideGraphic.innerHTML = buildMiniTideCurve({tide: tideVal});
+  }
 }
 
 function setAILength(lengthCm) {
@@ -3366,6 +3512,7 @@ function importFromPhoto(e) {
         rows.push({k:'GPS', v: `${lat}, ${lon}`});
         const derivedState = stateFromGPS(exif.gpsLat, exif.gpsLon);
         if (derivedState) { document.getElementById('catchState').value = derivedState; rows.push({k:'State', v: derivedState}); }
+        document.getElementById('gpsCoords').value = exif.gpsLat.toFixed(5) + ', ' + exif.gpsLon.toFixed(5);
         gotSomething = true;
       }
 
@@ -3376,6 +3523,7 @@ function importFromPhoto(e) {
         if (exif.dateTime && exif.gpsLat !== null && exif.gpsLon !== null) {
           lookupTide(exif.dateTime, exif.gpsLat, exif.gpsLon);
           // Auto-lookup depth from GEBCO
+          lookupBoatRamp(exif.gpsLat, exif.gpsLon);
           lookupDepthFromGPS(exif.gpsLat, exif.gpsLon).then(depth => {
             if (depth) {
               const depthEl = document.getElementById('depth');
@@ -3384,7 +3532,7 @@ function importFromPhoto(e) {
               if (depthEl && !depthEl.value) {
                 depthEl.value = depth;
                 if (depthDisplay) depthDisplay.textContent = depth;
-                if (depthTrigger) depthTrigger.textContent = '📏 ~' + depth + 'm (GEBCO — tap to edit)';
+                if (depthTrigger) depthTrigger.textContent = '📏 ~' + depth + 'm (GEBCO)';
                 showToast('📏 Estimated depth: ~' + depth + 'm (GEBCO — tap to correct)');
               }
             }
@@ -3512,9 +3660,6 @@ function parseExifBlock(view, start, result) {
   readIFD(ifd0);
 }
 
-/* ─────────────────────────────────────────────────────────────
-   MAP PICKER
-   ───────────────────────────────────────────────────────────── */
 let mapInstance = null, mapMarker = null, mapPinLatLon = null;
 let mapTiles = {}, currentMapLayer = 'satellite';
 
@@ -3607,9 +3752,6 @@ function openNavionics() {
   window.open(`https://webapp.navionics.com/#boating&zoom=13&lat=${mapPinLatLon.lat}&lng=${mapPinLatLon.lng}`, '_blank');
 }
 
-/* ─────────────────────────────────────────────────────────────
-   LOCATIONS MANAGER
-   ───────────────────────────────────────────────────────────── */
 function showLocPicker() {
   const wrap = document.getElementById('locPickerWrap');
   const grid = document.getElementById('locPickerGrid');
@@ -3681,9 +3823,6 @@ function deleteLoc(id) {
   });
 }
 
-/* ─────────────────────────────────────────────────────────────
-   SETTINGS VIEW
-   ───────────────────────────────────────────────────────────── */
 function loadSettingsView() {
   renderLocMgr();
   const k = localStorage.getItem('bragmaster_wtkey') || '';
@@ -3745,6 +3884,7 @@ async function lookupTide(exifDateTime, lat, lon) {
         el.className = 'tide-lookup success show';
         el.textContent = `🌊 Tide auto-filled: ${tideState} — ${tideDetail}`;
         document.getElementById('exifRows').innerHTML += `<div class="exif-row"><span class="ek">Tide</span><span class="ev">${tideState}</span></div>`;
+        setTimeout(updateConditionsTile, 100);
       }
     } catch(err) { el.className = 'tide-lookup error show'; el.textContent = '⚠ Tide lookup failed: ' + err.message; console.warn('Tide error:', err); }
   } catch(outerErr) { console.warn('lookupTide outer error:', outerErr); }
@@ -3859,9 +3999,6 @@ async function reverseGeocodeSpot(lat, lon) {
   return parts.slice(0,2).join(', ') || null;
 }
 
-/* ─────────────────────────────────────────────────────────────
-   ENRICH ALL CATCHES
-   ───────────────────────────────────────────────────────────── */
 async function exportThenEnrich() {
   await exportData();
   enrichBackedUp = true;
@@ -3953,9 +4090,6 @@ async function runEnrichment() {
   enrichBackedUp = false;
 }
 
-/* ─────────────────────────────────────────────────────────────
-   SPECIES MANAGER
-   ───────────────────────────────────────────────────────────── */
 function renderSpMgr() {
   const el = document.getElementById('spMgrList');
   if (!species.length) { el.innerHTML = '<div class="no-catches">No species yet.</div>'; return; }
@@ -4009,17 +4143,14 @@ function delSp(id) {
   });
 }
 
-/* ─────────────────────────────────────────────────────────────
-   SAVE CATCH
-   ───────────────────────────────────────────────────────────── */
 async function saveCatch() {
   const btn = document.getElementById('btnSaveCatch');
   if (btn && btn.disabled) return;
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Saving…'; }
   const sName = document.getElementById('spName').value.trim() || selSpName;
-  if (!sName) { 
+  if (!sName) {
     if (btn) { btn.disabled = false; btn.textContent = '✓ Save to Journal'; }
-    showToast('Select or add a species first'); return; 
+    showToast('Select or add a species first'); return;
   }
   // Ensure hidden field is in sync
   if (sName) document.getElementById('spName').value = sName;
@@ -4076,6 +4207,13 @@ async function saveCatch() {
     }
   } catch(e) { console.error('Save error:', e); showToast('⚠ Error saving — please try again'); if (btn) { btn.disabled = false; btn.textContent = '✓ Save to Journal'; } }
 }
+function confirmClearForm() {
+  confirmAction('Clear this entry and start fresh?', () => {
+    clearForm();
+    showToast('Entry cleared');
+  });
+}
+
 function clearForm() {
   ['spotName','gpsCoords','waypointId','waypointName','depth','waterTemp','airTemp','windSpeed','bait','lineWeight','leader','notes']
     .forEach(i => document.getElementById(i).value = '');
@@ -4097,7 +4235,14 @@ function clearForm() {
   const numpadOverlay = document.getElementById('numpadOverlay'); if(numpadOverlay) numpadOverlay.style.display='none';
   const depthHidden = document.getElementById('depth'); if(depthHidden) depthHidden.value='';
   const depthDisplay = document.getElementById('depthDisplay'); if(depthDisplay) depthDisplay.textContent='—';
-  const depthTrigger = document.getElementById('depthTrigger'); if(depthTrigger) depthTrigger.textContent='✏️ Enter depth';
+  const depthTrigger = document.getElementById('depthTrigger'); if(depthTrigger) depthTrigger.textContent='✏️ Edit';
+  const wHidden = document.getElementById('weight'); if(wHidden) wHidden.value='';
+  const wDisplay = document.getElementById('weightDisplay'); if(wDisplay) wDisplay.textContent='—';
+  const wTrigger = document.getElementById('weightTrigger'); if(wTrigger) wTrigger.textContent='✏️ Edit';
+  const rampEl = document.getElementById('boatRampDisplay'); if(rampEl) rampEl.textContent='Detecting from GPS…';
+  const gpsEl = document.getElementById('gpsDisplay'); if(gpsEl) gpsEl.textContent='';
+  const condLoad = document.getElementById('conditionsLoading'); if(condLoad) condLoad.style.display='block';
+  const condContent = document.getElementById('conditionsContent'); if(condContent) condContent.style.display='none';
   const numpadTrigger = document.getElementById('numpadTrigger'); if(numpadTrigger) numpadTrigger.textContent='✏️ Type exact cm';
   const numpadHidden = document.getElementById('lengthNum'); if(numpadHidden) numpadHidden.value='';
   const lenNum = document.getElementById('lengthNum'); if(lenNum) lenNum.value='';
@@ -4108,9 +4253,6 @@ function clearForm() {
   updateMoonDisplay();
 }
 
-/* ─────────────────────────────────────────────────────────────
-   CATCHES LIST
-   ───────────────────────────────────────────────────────────── */
 function filterC(el, f) {
   document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
   el.classList.add('active'); curFilter = f; renderCatches();
@@ -4209,9 +4351,6 @@ async function delCatch(id) {
   });
 }
 
-/* ─────────────────────────────────────────────────────────────
-   EDIT CATCH MODAL
-   ───────────────────────────────────────────────────────────── */
 function openEditCatch(id) {
   const c = catches.find(x => x.id === id); if (!c) return;
   editPhotos = []; renderEditPhotos();
@@ -4295,9 +4434,6 @@ function delCatchFromEdit() {
   closeEditCatch(); delCatch(id);
 }
 
-/* ─────────────────────────────────────────────────────────────
-   CONFIRM DIALOG
-   ───────────────────────────────────────────────────────────── */
 function confirmAction(msg, callback) {
   _confirmCallback = callback;
   document.getElementById('confirmMsg').textContent = msg;
@@ -4306,9 +4442,6 @@ function confirmAction(msg, callback) {
 function confirmYes() { document.getElementById('confirmDialog').classList.remove('open'); if (_confirmCallback) _confirmCallback(); _confirmCallback = null; }
 function confirmNo()  { document.getElementById('confirmDialog').classList.remove('open'); _confirmCallback = null; }
 
-/* ─────────────────────────────────────────────────────────────
-   REPORTS
-   ───────────────────────────────────────────────────────────── */
 function buildRptFilters() {
   const spSel = document.getElementById('rSp');
   spSel.innerHTML = '<option value="">All species</option>';
@@ -4617,7 +4750,6 @@ async function importData(e) {
     e.target.value = '';
   } catch(err) { statusEl.style.color = 'var(--danger)'; statusEl.textContent = '✗ Import failed — ' + err.message; }
 }
-
 
 /* ─────────────────────────────────────────────────────────────
    BRAG MODAL — full view of a single catch
@@ -4947,8 +5079,6 @@ function initMapTabFilters() {
   });
 }
 
-
-
 /* CONDITIONS TAB */
 const WW_KEY = 'NGVkM2ViZmJlMWE3MzI4NjcwNzhlNW';
 const WW_LOCATIONS = [
@@ -5104,7 +5234,6 @@ function fileLastModifiedToExif(file) {
   const pad = n => String(n).padStart(2,'0');
   return d.getFullYear()+':'+pad(d.getMonth()+1)+':'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
 }
-
 
 let bulkTiles        = [];   // [{idx, dataUrl, dateTime, lat, lon, groupId}]
 let bulkGroups       = [];   // [{photoIdxs:[], species, weight, length, method, disposition, rampLocId}]
@@ -5361,7 +5490,6 @@ function renderBulkReview() {
       + '</div>';
   }).join('');
 }
-
 
 function renderBulkLocPicker(gi, g) {
   // Combine saved locations + unique previous catch spots
@@ -5628,7 +5756,6 @@ function getHomeLocation() {
   return locations.find(l => l.name && l.name.toLowerCase().includes('port kembla')) || locations[0] || null;
 }
 
-
 function onEditSpInput(q) {
   const dd = document.getElementById('editSpDrop'); if (!dd) return;
   const ql = q.toLowerCase().trim();
@@ -5659,7 +5786,6 @@ function addEditSp(name) {
 function schedEditSpClose() {
   setTimeout(() => { const dd=document.getElementById('editSpDrop'); if(dd) dd.classList.remove('open'); }, 200);
 }
-
 
 /* CONDITIONS COMPASS BADGE */
 const DIR_DEG = {N:0,NNE:22.5,NE:45,ENE:67.5,E:90,ESE:112.5,SE:135,SSE:157.5,S:180,SSW:202.5,SW:225,WSW:247.5,W:270,WNW:292.5,NW:315,NNW:337.5};
@@ -5807,7 +5933,6 @@ function buildMiniTideCurve(c) {
   return svg;
 }
 
-
 async function savePhotoToRoll(pid, filename) {
   try {
     let dataUrl = null;
@@ -5839,7 +5964,6 @@ async function savePhotoToRoll(pid, filename) {
     showToast('Could not save photo');
   }
 }
-
 
 /* BRAG MAT CALIBRATION + AI MEASUREMENT */
 let bragMatProfile = null; // {description, scaleNotes, imageThumb}
@@ -6029,7 +6153,6 @@ async function measureFishFromPhoto(imageDataUrl, mediaType, state) {
   }
 }
 
-
 function resizeImageForAI(dataUrl, maxPx) {
   return new Promise(res => {
     const img = new Image();
@@ -6161,7 +6284,6 @@ function declineAILength() {
   const accBtn = document.querySelector('[onclick*="acceptAILength"]');
   if (accBtn) accBtn.style.display = 'none';
 }
-
 
 /* AUSTRALIAN FISH REGULATIONS REFERENCE TABLE */
 const AUS_FISH_REGS = {
@@ -6344,7 +6466,6 @@ function acceptAIMeasurement(lengthCm, species, nicknames, legalSize, habitatNot
   }
 }
 
-
 function buildTideCurveSVG(entries, nowMs, dayIndex) {
   const W = 340, H = 120, PAD = 32, CURVE_H = 70;
   const isToday = nowMs !== null;
@@ -6452,7 +6573,6 @@ function buildTideCurveSVG(entries, nowMs, dayIndex) {
     + '</div>';
 }
 
-
 /* GEBCO AUTO-DEPTH FROM GPS */
 async function lookupDepthFromGPS(lat, lon) {
   try {
@@ -6473,12 +6593,8 @@ async function lookupDepthFromGPS(lat, lon) {
   }
 }
 
-/* ─────────────────────────────────────────────────────────────
-   BOOT
-   ───────────────────────────────────────────────────────────── */
 init();
 </script>
-<!-- FULLSCREEN SPECIES PICKER -->
 <div id="speciesPickerOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#0a1628;z-index:9999;flex-direction:column;padding:20px;padding-top:env(safe-area-inset-top,50px);box-sizing:border-box;">
   <div style="font-size:12px;font-family:'Courier New',monospace;color:var(--mist);letter-spacing:2px;text-transform:uppercase;text-align:center;margin-bottom:16px;">Select Species</div>
   <input type="text" id="spSearchFull" placeholder="Type to search…" autocomplete="off"
@@ -6489,7 +6605,6 @@ init();
     style="width:100%;padding:14px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;font-size:16px;font-family:'Courier New',monospace;color:var(--mist);cursor:pointer;margin-top:10px;">← Back to record</button>
 </div>
 
-<!-- FULLSCREEN NUMPAD -->
 <div id="numpadOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:#0a1628;z-index:9999;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;padding-top:env(safe-area-inset-top, 50px);box-sizing:border-box;">
   <div style="width:100%;max-width:360px;">
     <div id="numpadLabel" style="font-size:12px;font-family:'Courier New',monospace;color:var(--mist);letter-spacing:2px;text-transform:uppercase;text-align:center;margin-bottom:12px;">Fish Length</div>
