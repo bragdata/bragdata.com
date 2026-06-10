@@ -1745,15 +1745,26 @@ body.map-open .content > #view-map { display: flex; }
 
         <div style="height:1px;background:rgba(255,255,255,0.08);margin-bottom:14px;"></div>
 
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
-          <div style="font-size:12px;font-family:'Courier New',monospace;color:#7dd3fc;letter-spacing:2px;text-transform:uppercase;min-width:56px;font-weight:700;">Length</div>
-          <div style="display:flex;align-items:baseline;gap:4px;">
-            <span id="lengthDisplay" style="font-size:40px;font-family:Georgia,serif;font-weight:700;color:#e0f7fa;line-height:1;">—</span>
-            <span style="font-size:14px;color:var(--mist);font-family:'Courier New',monospace;">cm</span>
+        <!-- Length + Weight side by side -->
+        <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:10px;">
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+              <div style="font-size:12px;font-family:'Courier New',monospace;color:#7dd3fc;letter-spacing:2px;text-transform:uppercase;font-weight:700;">Length</div>
+              <div id="aiLengthBadge" style="display:none;background:#38bdf8;color:#0e2a4a;font-size:9px;font-family:'Courier New',monospace;font-weight:900;padding:2px 8px;border-radius:20px;letter-spacing:1px;">🤖 AI</div>
+            </div>
+            <div onclick="openNumpad()" id="numpadTrigger" style="cursor:pointer;display:flex;align-items:baseline;gap:4px;">
+              <span id="lengthDisplay" style="font-size:40px;font-family:Georgia,serif;font-weight:700;color:#e0f7fa;line-height:1;">—</span>
+              <span style="font-size:14px;color:var(--mist);font-family:'Courier New',monospace;">cm</span>
+            </div>
           </div>
-          <div id="aiLengthBadge" style="display:none;background:#38bdf8;color:#0e2a4a;font-size:9px;font-family:'Courier New',monospace;font-weight:900;padding:2px 8px;border-radius:20px;letter-spacing:1px;">🤖 AI</div>
-          <button type="button" onclick="openNumpad()" id="numpadTrigger"
-            style="margin-left:auto;padding:8px 12px;border:1px solid rgba(255,255,255,0.15);border-radius:8px;font-size:12px;font-family:'Courier New',monospace;background:rgba(255,255,255,0.06);color:var(--mist);cursor:pointer;">✏️ Edit</button>
+          <div style="flex:1;">
+            <div style="font-size:12px;font-family:'Courier New',monospace;color:#7dd3fc;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:4px;">Weight</div>
+            <div onclick="openWeightPad()" id="weightTrigger" style="cursor:pointer;display:flex;align-items:baseline;gap:4px;">
+              <span id="weightDisplay" style="font-size:40px;font-family:Georgia,serif;font-weight:700;color:#e0f7fa;line-height:1;">—</span>
+              <span style="font-size:14px;color:var(--mist);font-family:'Courier New',monospace;">kg</span>
+            </div>
+          </div>
+          <input type="hidden" id="weight">
         </div>
         <input type="range" id="length" min="0" max="150" step="1" value="0"
           style="width:100%;height:10px;accent-color:#38bdf8;cursor:pointer;"
@@ -1762,30 +1773,15 @@ body.map-open .content > #view-map { display: flex; }
           <span>0</span><span>30</span><span>60</span><span>90</span><span>120</span><span>150cm</span>
         </div>
         <input type="hidden" id="lengthNum">
-
-        <div style="height:1px;background:rgba(255,255,255,0.08);margin-bottom:14px;"></div>
-
-        <div style="display:flex;align-items:center;gap:12px;">
-          <div style="font-size:12px;font-family:'Courier New',monospace;color:#7dd3fc;letter-spacing:2px;text-transform:uppercase;min-width:56px;font-weight:700;">Weight</div>
-          <div style="display:flex;align-items:baseline;gap:4px;">
-            <span id="weightDisplay" style="font-size:40px;font-family:Georgia,serif;font-weight:700;color:#e0f7fa;line-height:1;">—</span>
-            <span style="font-size:14px;color:var(--mist);font-family:'Courier New',monospace;">kg</span>
-          </div>
-          <button type="button" onclick="openWeightPad()" id="weightTrigger"
-            style="margin-left:auto;padding:8px 12px;border:1px solid rgba(255,255,255,0.15);border-radius:8px;font-size:12px;font-family:'Courier New',monospace;background:rgba(255,255,255,0.06);color:var(--mist);cursor:pointer;">✏️ Edit</button>
-          <input type="hidden" id="weight">
-        </div>
       </div>
 
             <div style="background:var(--ink);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;">
         <div style="display:flex;align-items:center;gap:12px;">
           <div style="font-size:12px;font-family:'Courier New',monospace;color:#7dd3fc;letter-spacing:2px;text-transform:uppercase;min-width:56px;font-weight:700;">Depth</div>
-          <div style="display:flex;align-items:baseline;gap:4px;">
+          <div onclick="openDepthPad()" id="depthTrigger" style="cursor:pointer;display:flex;align-items:baseline;gap:4px;">
             <span id="depthDisplay" style="font-size:40px;font-family:Georgia,serif;font-weight:700;color:#e0f7fa;line-height:1;">—</span>
             <span style="font-size:14px;color:var(--mist);font-family:'Courier New',monospace;">m</span>
           </div>
-          <button type="button" onclick="openDepthPad()" id="depthTrigger"
-            style="margin-left:auto;padding:8px 12px;border:1px solid rgba(255,255,255,0.15);border-radius:8px;font-size:12px;font-family:'Courier New',monospace;background:rgba(255,255,255,0.06);color:var(--mist);cursor:pointer;">✏️ Edit</button>
           <input type="hidden" id="depth">
         </div>
       </div>
