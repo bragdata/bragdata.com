@@ -1786,21 +1786,20 @@ body.map-open .content > #view-map { display: flex; }
       </div>
 
             <div style="background:var(--ink);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;">
-        <div style="font-size:12px;font-family:'Courier New',monospace;color:#7dd3fc;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:10px;">Conditions</div>
-        <div id="conditionsLoading" style="font-size:12px;font-family:'Courier New',monospace;color:var(--mist);">Conditions will auto-fill once GPS is set</div>
-        <div id="conditionsContent" style="display:none;">
-          <div id="condTideGraphic" style="margin-bottom:10px;"></div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-            <div style="background:rgba(255,255,255,0.05);border-radius:8px;padding:10px;text-align:center;">
-              <div style="font-size:10px;font-family:'Courier New',monospace;color:var(--mist);margin-bottom:4px;">WIND</div>
-              <div id="condWindDisplay" style="font-size:22px;font-family:Georgia,serif;color:#e0f7fa;font-weight:600;">—</div>
-              <div id="condWindDir" style="font-size:11px;font-family:'Courier New',monospace;color:var(--mist);margin-top:2px;"></div>
-            </div>
-            <div style="background:rgba(255,255,255,0.05);border-radius:8px;padding:10px;text-align:center;">
-              <div style="font-size:10px;font-family:'Courier New',monospace;color:var(--mist);margin-bottom:4px;">SWELL</div>
-              <div id="condSwellDisplay" style="font-size:22px;font-family:Georgia,serif;color:#e0f7fa;font-weight:600;">—</div>
-              <div id="condSwellDir" style="font-size:11px;font-family:'Courier New',monospace;color:var(--mist);margin-top:2px;"></div>
-            </div>
+        <div style="font-size:12px;font-family:'Courier New',monospace;color:#7dd3fc;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:10px;">Wind &amp; Tide</div>
+        <div id="conditionsLoading" style="font-size:12px;font-family:'Courier New',monospace;color:var(--mist);margin-bottom:8px;">Tide will auto-fill from GPS &amp; photo time</div>
+        <div id="condTideGraphic" style="margin-bottom:10px;"></div>
+        <div id="conditionsContent" style="display:none;"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div style="background:rgba(255,255,255,0.05);border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:10px;font-family:'Courier New',monospace;color:var(--mist);margin-bottom:4px;">WIND</div>
+            <div id="condWindDisplay" style="font-size:22px;font-family:Georgia,serif;color:#e0f7fa;font-weight:600;">—</div>
+            <div id="condWindDir" style="font-size:11px;font-family:'Courier New',monospace;color:var(--mist);margin-top:2px;">Auto-fills after save</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.05);border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:10px;font-family:'Courier New',monospace;color:var(--mist);margin-bottom:4px;">SWELL</div>
+            <div id="condSwellDisplay" style="font-size:22px;font-family:Georgia,serif;color:#e0f7fa;font-weight:600;">—</div>
+            <div id="condSwellDir" style="font-size:11px;font-family:'Courier New',monospace;color:var(--mist);margin-top:2px;">Auto-fills after save</div>
           </div>
         </div>
         <input type="hidden" id="waterTemp">
@@ -3256,15 +3255,10 @@ function updateConditionsTile() {
   const swellDir = document.getElementById('swellDir') ? document.getElementById('swellDir').value : '';
   const swellPeriod = document.getElementById('swellPeriod') ? document.getElementById('swellPeriod').value : '';
 
-  const hasData = tide || wind || swell;
-  const loading = document.getElementById('conditionsLoading');
-  const condContent = document.getElementById('conditionsContent');
-  if (!hasData) return;
-  if (loading) loading.style.display = 'none';
-  if (condContent) condContent.style.display = 'block';
-
-  // Tide graphic
+  // Hide loading text once tide data arrives
   if (tide) {
+    const loading = document.getElementById('conditionsLoading');
+    if (loading) loading.style.display = 'none';
     const tideEl = document.getElementById('condTideGraphic');
     if (tideEl) tideEl.innerHTML = buildMiniTideCurve({tide});
   }
