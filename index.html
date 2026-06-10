@@ -3395,7 +3395,7 @@ function updateCatchMap(lat, lon) {
   const wrap = document.getElementById('catchMapWrap');
   const frame = document.getElementById('catchMapFrame');
   if (!wrap || !frame) return;
-  frame.src = `https://www.openstreetmap.org/export/embed.html?bbox=${(lon-0.01).toFixed(5)},${(lat-0.01).toFixed(5)},${(lon+0.01).toFixed(5)},${(lat+0.01).toFixed(5)}&layer=mapnik&marker=${lat.toFixed(5)},${lon.toFixed(5)}`;
+  frame.src = `https://www.openstreetmap.org/export/embed.html?bbox=${(lon-0.05).toFixed(5)},${(lat-0.05).toFixed(5)},${(lon+0.05).toFixed(5)},${(lat+0.05).toFixed(5)}&layer=mapnik&marker=${lat.toFixed(5)},${lon.toFixed(5)}`;
   wrap.style.display = 'block';
 }
 
@@ -6408,14 +6408,17 @@ async function tryAIMeasurement(dataUrl, mediaType, state) {
   resultEl.classList.remove('show');
 
   setTimeout(() => {
+    // Close any open pickers first
+    try { const pd = document.getElementById('spPickerModal'); if(pd) pd.style.display='none'; } catch(e){}
+    try { const dd = document.getElementById('spDrop'); if(dd) dd.classList.remove('open'); } catch(e){}
     acceptAIMeasurement(
       hasLength ? result.length_cm : null,
       result.species || '',
       result.nicknames || '',
       result.legal_size_cm || '',
-      result.habitat_notes || ''
+      result.notes || ''
     );
-  }, 300);
+  }, 500);
 }
 
 // acceptAIMeasurement moved to regulations block
@@ -6642,6 +6645,7 @@ function acceptAIMeasurement(lengthCm, species, nicknames, legalSize, habitatNot
       setAILength(lengthCm);
     }
     // Set species
+    console.log('acceptAIMeasurement called:', species, '| spList length:', (window.species||[]).length);
     if (species && species !== 'unknown') {
       const spList = window.species || [];
       const spLow = species.toLowerCase();
