@@ -1702,6 +1702,19 @@ body.map-open .content > #view-map { display: flex; }
         <div id="heroCatchLength" style="font-size:13px;font-family:'Courier New',monospace;color:#7dd3fc;margin-top:2px;"></div>
       </div>
     </div>
+    <!-- Custom text overlay -->
+    <div id="heroTextOverlay" style="display:none;position:absolute;left:50%;top:16px;transform:translateX(-50%);z-index:3;cursor:grab;touch-action:none;user-select:none;min-width:80px;min-height:36px;overflow:hidden;border:2px dashed rgba(255,255,255,0.4);border-radius:8px;padding:6px 10px;background:rgba(0,0,0,0.4);backdrop-filter:blur(4px);">
+      <div id="heroTextContent" contenteditable="true" style="color:white;font-size:20px;font-family:Georgia,serif;text-align:center;outline:none;min-width:60px;word-break:break-word;line-height:1.3;cursor:text;" placeholder="Type or emoji…"></div>
+    </div>
+  </div>
+  <!-- Hero toolbar -->
+  <div id="heroToolbar" style="display:none;display:flex;gap:8px;padding:8px 0 4px;flex-wrap:wrap;">
+    <label style="display:flex;align-items:center;gap:5px;font-size:11px;font-family:'Courier New',monospace;color:var(--mist);cursor:pointer;background:rgba(255,255,255,0.06);border-radius:6px;padding:5px 10px;">
+      <input type="checkbox" id="overlayToggle" onchange="toggleCatchLabel(this.checked)" checked style="cursor:pointer;"> 🏷 Species
+    </label>
+    <label style="display:flex;align-items:center;gap:5px;font-size:11px;font-family:'Courier New',monospace;color:var(--mist);cursor:pointer;background:rgba(255,255,255,0.06);border-radius:6px;padding:5px 10px;">
+      <input type="checkbox" id="textOverlayToggle" onchange="toggleTextOverlay(this.checked)" style="cursor:pointer;"> ✏️ Text
+    </label>
   </div>
   <div class="ai-measure-result" id="aiMeasureResult"></div>
   <div class="loc-picker-wrap" id="locPickerWrap">
@@ -3355,6 +3368,7 @@ function numpad(val) {
     if (slider) slider.value = Math.min(v, 150);
     if (bigDisplay) bigDisplay.textContent = v > 0 ? v : '—';
     if (lenNum) lenNum.value = cur;
+    updateHeroCatchLabel();
   } else if (numpadTarget === 'depth') {
     const depthHidden = document.getElementById('depth');
     const depthDisplay = document.getElementById('depthDisplay');
@@ -3375,6 +3389,7 @@ function numpadDone() {
     const val = document.getElementById('lengthNum').value;
     const trigger = document.getElementById('numpadTrigger');
     if (trigger) trigger.textContent = val ? '✏️ ' + val + ' cm — tap to change' : '✏️ Type exact cm';
+    updateHeroCatchLabel();
   } else if (numpadTarget === 'depth') {
     const val = document.getElementById('depth').value;
     const trigger = document.getElementById('depthTrigger');
@@ -3487,6 +3502,7 @@ function setAILength(lengthCm) {
   if (num) num.value = lengthCm;
   if (display) display.textContent = lengthCm;
   if (badge) { badge.style.display = 'block'; updateSliderBadge(); }
+  setTimeout(updateHeroCatchLabel, 50);
 }
 
 function startManualEntry() {
@@ -4261,6 +4277,11 @@ function updateHeroSlideshow() {
   wrap.style.display = 'block';
   _heroIndex = 0;
   _heroRotations = new Array(photos.length).fill(0);
+  const tb = document.getElementById('heroToolbar'); if(tb) tb.style.display='flex';
+  // Reset toggles
+  const ot = document.getElementById('overlayToggle'); if(ot) ot.checked=true;
+  const tt = document.getElementById('textOverlayToggle'); if(tt) tt.checked=false;
+  toggleTextOverlay(false);
 
   // Build slides
   const slides = document.getElementById('heroSlides');
@@ -4288,56 +4309,71 @@ function heroSlide(dir) {
   heroGoTo(_heroIndex);
 }
 
-// ── Hero catch label drag ──
+// ── Hero overlays drag ──
 (function() {
-  let dragging = false, startX, startY, origX, origY;
+  let dragging = false, dragEl = null, startX, startY, origX, origY;
 
-  function getLabel() { return document.getElementById('heroCatchLabel'); }
-
-  function onDown(e) {
-    const label = getLabel(); if (!label) return;
-    dragging = true;
-    label.style.cursor = 'grabbing';
+  function onDown(e, el) {
+    if (!el) return;
+    if (_trResizing) return; // don't drag while resizing
+    dragging = true; dragEl = el;
+    el.style.cursor = 'grabbing';
     const t = e.touches ? e.touches[0] : e;
     startX = t.clientX; startY = t.clientY;
-    const rect = label.getBoundingClientRect();
-    const parentRect = label.parentElement.getBoundingClientRect();
+    const rect = el.getBoundingClientRect();
+    const parentRect = el.parentElement.getBoundingClientRect();
     origX = rect.left - parentRect.left;
     origY = rect.top  - parentRect.top;
-    // Switch from transform-based centering to absolute position
-    label.style.transform = 'none';
-    label.style.left = origX + 'px';
-    label.style.bottom = 'auto';
-    label.style.top = origY + 'px';
+    el.style.transform = 'none';
+    el.style.left   = origX + 'px';
+    el.style.bottom = 'auto';
+    el.style.top    = origY + 'px';
     e.preventDefault();
   }
 
   function onMove(e) {
-    if (!dragging) return;
-    const label = getLabel(); if (!label) return;
+    if (!dragging || !dragEl) return;
     const t = e.touches ? e.touches[0] : e;
     const dx = t.clientX - startX, dy = t.clientY - startY;
-    const parent = label.parentElement.getBoundingClientRect();
-    const lb = label.getBoundingClientRect();
-    let newX = origX + dx;
-    let newY = origY + dy;
-    // Clamp within parent
-    newX = Math.max(0, Math.min(newX, parent.width  - lb.width));
-    newY = Math.max(0, Math.min(newY, parent.height - lb.height));
-    label.style.left = newX + 'px';
-    label.style.top  = newY + 'px';
+    const parent = dragEl.parentElement.getBoundingClientRect();
+    const lb = dragEl.getBoundingClientRect();
+    let newX = Math.max(0, Math.min(origX + dx, parent.width  - lb.width));
+    let newY = Math.max(0, Math.min(origY + dy, parent.height - lb.height));
+    dragEl.style.left = newX + 'px';
+    dragEl.style.top  = newY + 'px';
     e.preventDefault();
   }
 
   function onUp() {
-    dragging = false;
-    const label = getLabel(); if (label) label.style.cursor = 'grab';
+    if (dragEl) dragEl.style.cursor = 'grab';
+    dragging = false; dragEl = null;
   }
 
-  document.addEventListener('mousedown',  e => { if (e.target.closest('#heroCatchLabel')) onDown(e); });
-  document.addEventListener('mousemove',  onMove);
-  document.addEventListener('mouseup',    onUp);
-  document.addEventListener('touchstart', e => { if (e.target.closest('#heroCatchLabel')) onDown(e); }, {passive:false});
+  function isBottomRightQuarter(e, el) {
+    if (!el) return false;
+    const rect = el.getBoundingClientRect();
+    const t = e.touches ? e.touches[0] : e;
+    return t.clientX > rect.left + rect.width * 0.6 && t.clientY > rect.top + rect.height * 0.6;
+  }
+
+  document.addEventListener('mousedown', e => {
+    if (e.target.closest('[data-resize]')) return;
+    if (e.target.closest('#heroTextContent')) return; // let text be edited
+    const catchLabel = e.target.closest('#heroCatchLabel');
+    const textOverlay = e.target.closest('#heroTextOverlay');
+    if (catchLabel) onDown(e, catchLabel);
+    else if (textOverlay && !isBottomRightQuarter(e, textOverlay)) onDown(e, textOverlay);
+  });
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup',   onUp);
+  document.addEventListener('touchstart', e => {
+    if (e.target.closest('[data-resize]')) return;
+    if (e.target.closest('#heroTextContent')) return; // let text be edited
+    const catchLabel = e.target.closest('#heroCatchLabel');
+    const textOverlay = e.target.closest('#heroTextOverlay');
+    if (catchLabel) onDown(e, catchLabel);
+    else if (textOverlay && !isBottomRightQuarter(e, textOverlay)) onDown(e, textOverlay);
+  }, {passive:false});
   document.addEventListener('touchmove',  onMove, {passive:false});
   document.addEventListener('touchend',   onUp);
 })();
@@ -4361,13 +4397,15 @@ function showWarn(el, msg) {
 function updateHeroCatchLabel() {
   const label   = document.getElementById('heroCatchLabel');
   const spEl    = document.getElementById('spBadgeName');
-  const lenEl   = document.getElementById('lengthDisplay');
+  const lenNum  = document.getElementById('lengthNum');
+  const lenDisp = document.getElementById('lengthDisplay');
   if (!label) return;
-  const sp  = spEl  ? spEl.textContent.trim()  : '';
-  const len = lenEl ? lenEl.textContent.trim()  : '—';
-  if (!sp && (len === '—' || len === '')) { label.style.display = 'none'; return; }
+  const sp  = spEl    ? spEl.textContent.trim() : '';
+  const slider = document.getElementById('length');
+  const len = (lenNum && lenNum.value) ? lenNum.value : (slider && parseInt(slider.value) > 0 ? slider.value : '');
+  if (!sp && !len) { label.style.display = 'none'; return; }
   document.getElementById('heroCatchSpecies').textContent = sp || '';
-  document.getElementById('heroCatchLength').textContent  = len !== '—' && len ? len + ' cm' : '';
+  document.getElementById('heroCatchLength').textContent  = len && len !== '—' ? len + ' cm' : '';
   // Reset position to bottom-centre
   label.style.transform = 'translateX(-50%)';
   label.style.left   = '50%';
@@ -4375,6 +4413,75 @@ function updateHeroCatchLabel() {
   label.style.top    = 'auto';
   label.style.display = 'block';
 }
+
+function toggleCatchLabel(show) {
+  const label = document.getElementById('heroCatchLabel');
+  if (label) label.style.display = show ? 'block' : 'none';
+}
+
+function toggleTextOverlay(show) {
+  const el = document.getElementById('heroTextOverlay');
+  if (!el) return;
+  if (show) {
+    el.style.display = 'block';
+    el._resizeInit = false; // allow re-init each time
+    initTextResize();
+    setTimeout(() => {
+      const tc = document.getElementById('heroTextContent');
+      if (tc) tc.focus();
+    }, 100);
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+// Make text overlay resizable — scale font with box size
+let _trResizing = false, _trEl, _trStartX, _trStartY, _trStartW, _trStartH;
+
+function initTextResize() {
+  const overlay = document.getElementById('heroTextOverlay');
+  if (!overlay || overlay._resizeInit) return;
+  overlay._resizeInit = true;
+
+  const handle = document.createElement('div');
+  handle.style.cssText = 'position:absolute;bottom:0;right:0;width:22px;height:22px;cursor:se-resize;color:rgba(255,255,255,0.6);font-size:14px;line-height:22px;text-align:center;z-index:10;';
+  handle.setAttribute('data-resize','1');
+  handle.textContent = '⤡';
+  overlay.appendChild(handle);
+
+  function onDown(e) {
+    _trResizing = true; _trEl = overlay;
+    const t = e.touches ? e.touches[0] : e;
+    _trStartX = t.clientX; _trStartY = t.clientY;
+    _trStartW = overlay.offsetWidth; _trStartH = overlay.offsetHeight;
+    e.stopPropagation(); e.preventDefault();
+  }
+  handle.addEventListener('mousedown',  onDown);
+  handle.addEventListener('touchstart', onDown, {passive:false});
+}
+
+document.addEventListener('mousemove', e => {
+  if (!_trResizing || !_trEl) return;
+  const newW = Math.max(80,  _trStartW + (e.clientX - _trStartX));
+  const newH = Math.max(36, _trStartH + (e.clientY - _trStartY));
+  _trEl.style.width  = newW + 'px';
+  _trEl.style.height = newH + 'px';
+  const tc = document.getElementById('heroTextContent');
+  if (tc) tc.style.fontSize = Math.max(12, Math.round(newW / 5)) + 'px';
+});
+document.addEventListener('touchmove', e => {
+  if (!_trResizing || !_trEl) return;
+  const t = e.touches[0];
+  const newW = Math.max(80,  _trStartW + (t.clientX - _trStartX));
+  const newH = Math.max(36, _trStartH + (t.clientY - _trStartY));
+  _trEl.style.width  = newW + 'px';
+  _trEl.style.height = newH + 'px';
+  const tc = document.getElementById('heroTextContent');
+  if (tc) tc.style.fontSize = Math.max(12, Math.round(newW / 5)) + 'px';
+  e.preventDefault();
+}, {passive:false});
+document.addEventListener('mouseup',  () => { _trResizing = false; });
+document.addEventListener('touchend', () => { _trResizing = false; });
 
 function heroRotate() {
   if (!_heroRotations) return;
@@ -4433,7 +4540,7 @@ function clearForm() {
   const _gs = document.getElementById('gpsStatus'); if(_gs) _gs.style.display = 'none'; const _et=document.getElementById('errorsToggle'); if(_et) _et.checked=false; toggleErrorsDisplay(false);
   selWx=''; selWindDir=''; clearSp(); pendingPhotos=[];
   document.getElementById('aiMeasureResult').classList.remove('show');
-  document.getElementById('photoPreviews').innerHTML = ''; window._currentPhotos = []; updateHeroSlideshow();
+  document.getElementById('photoPreviews').innerHTML = ''; window._currentPhotos = []; updateHeroSlideshow(); const _tb=document.getElementById('heroToolbar'); if(_tb) _tb.style.display='none';
   document.getElementById('photoInput').value = '';
   // Show launcher, hide form
   showView('log');
