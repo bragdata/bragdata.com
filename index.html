@@ -1770,7 +1770,7 @@ body.map-open .content > #view-map { display: flex; }
         <div style="display:flex;align-items:flex-start;gap:10px;">
           <span style="font-size:24px;margin-top:2px;">🚢</span>
           <div style="flex:1;">
-            <div id="boatRampDisplay" style="font-size:16px;font-family:Georgia,serif;color:#e0f7fa;margin-bottom:4px;">Detecting from GPS…</div>
+            <div id="boatRampDisplay" style="font-size:16px;font-family:Georgia,serif;color:#e0f7fa;margin-bottom:4px;">Tap GPS to detect location</div>
             <div id="gpsDisplay" style="font-size:11px;font-family:'Courier New',monospace;color:var(--mist);"></div>
           </div>
         </div>
@@ -1786,7 +1786,7 @@ body.map-open .content > #view-map { display: flex; }
 
             <div style="background:var(--ink);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;">
         <div style="font-size:12px;font-family:'Courier New',monospace;color:#7dd3fc;letter-spacing:2px;text-transform:uppercase;font-weight:700;margin-bottom:10px;">Conditions</div>
-        <div id="conditionsLoading" style="font-size:12px;font-family:'Courier New',monospace;color:var(--mist);">Auto-filling from GPS &amp; time…</div>
+        <div id="conditionsLoading" style="font-size:12px;font-family:'Courier New',monospace;color:var(--mist);">Conditions will auto-fill once GPS is set</div>
         <div id="conditionsContent" style="display:none;">
           <div id="condTideGraphic" style="margin-bottom:10px;"></div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
@@ -2672,6 +2672,7 @@ function selDir(el, d) {
 function getGPS() {
   const s = document.getElementById('gpsStatus');
   s.style.display = 'block'; s.className = 'gps-status acq'; s.textContent = '⌛ Acquiring…';
+  const rampDetect = document.getElementById('boatRampDisplay'); if(rampDetect) rampDetect.textContent = 'Detecting from GPS…';
   if (!navigator.geolocation) { s.className = 'gps-status err'; s.textContent = '✗ GPS not available'; return; }
   navigator.geolocation.getCurrentPosition(
     p => {
@@ -3501,7 +3502,12 @@ function importFromPhoto(e) {
       urlReader.readAsDataURL(file);
 
       let exif = {dateTime:null, gpsLat:null, gpsLon:null};
-      try { exif = parseExif(buf); }
+      try {
+        exif = parseExif(buf);
+        console.log('EXIF parse result:', JSON.stringify(exif));
+        console.log('Buffer size:', buf.byteLength, 'File type:', file.type, 'File name:', file.name);
+        showToast('EXIF: date=' + (exif.dateTime||'none') + ' lat=' + (exif.gpsLat||'none'));
+      }
       catch(err) {
         warnEl.textContent = 'Photo added. Could not read EXIF data from this file — fill in date and location manually.';
         warnEl.classList.add('show'); showToast('Photo added'); return;
@@ -3559,6 +3565,10 @@ function importFromPhoto(e) {
         warnEl.textContent = '⚠ No usable data found in this photo. GPS may not have been active when the shot was taken, or data was stripped by a messaging app. Photo has been attached — fill in the details manually.';
         warnEl.classList.add('show');
         showToast('Photo added — no EXIF data found');
+        const condLoad = document.getElementById('conditionsLoading');
+        if (condLoad) condLoad.textContent = 'Add GPS location to auto-fill conditions';
+        const rampEl2 = document.getElementById('boatRampDisplay');
+        if (rampEl2) rampEl2.textContent = 'No GPS in photo — tap GPS or pick a spot';
       }
       e.target.value = '';
     } catch(outerErr) { console.error('importFromPhoto outer error:', outerErr); showToast('Photo import error — please try again'); }
@@ -4253,7 +4263,7 @@ function clearForm() {
   const wHidden = document.getElementById('weight'); if(wHidden) wHidden.value='';
   const wDisplay = document.getElementById('weightDisplay'); if(wDisplay) wDisplay.textContent='—';
   const wTrigger = document.getElementById('weightTrigger'); if(wTrigger) wTrigger.textContent='✏️ Edit';
-  const rampEl = document.getElementById('boatRampDisplay'); if(rampEl) rampEl.textContent='Detecting from GPS…';
+  const rampEl = document.getElementById('boatRampDisplay'); if(rampEl) rampEl.textContent='Tap GPS to detect location';
   const gpsEl = document.getElementById('gpsDisplay'); if(gpsEl) gpsEl.textContent='';
   const mapWrap = document.getElementById('catchMapWrap'); if(mapWrap) { mapWrap.style.display='none'; const f=document.getElementById('catchMapFrame'); if(f) f.src=''; }
   const condLoad = document.getElementById('conditionsLoading'); if(condLoad) condLoad.style.display='block';
