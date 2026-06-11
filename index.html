@@ -3383,17 +3383,15 @@ function numpadDone() {
   if (overlay) overlay.style.display = 'none';
   if (numpadTarget === 'length') {
     const val = document.getElementById('lengthNum').value;
-    const trigger = document.getElementById('numpadTrigger');
-    if (trigger) trigger.textContent = val ? '✏️ ' + val + ' cm — tap to change' : '✏️ Type exact cm';
     updateHeroCatchLabel();
   } else if (numpadTarget === 'depth') {
     const val = document.getElementById('depth').value;
-    const trigger = document.getElementById('depthTrigger');
-    if (trigger) trigger.textContent = val ? '✏️ ' + val + 'm' : '✏️ Edit';
+    const display = document.getElementById('depthDisplay');
+    if (display) display.textContent = val || '—';
   } else if (numpadTarget === 'weight') {
     const val = document.getElementById('weight').value;
-    const trigger = document.getElementById('weightTrigger');
-    if (trigger) trigger.textContent = val ? '✏️ ' + val + 'kg' : '✏️ Edit';
+    const display = document.getElementById('weightDisplay');
+    if (display) display.textContent = val || '—';
   }
 }
 
@@ -4545,7 +4543,8 @@ function clearForm() {
   const numpadOverlay = document.getElementById('numpadOverlay'); if(numpadOverlay) numpadOverlay.style.display='none';
   const depthHidden = document.getElementById('depth'); if(depthHidden) depthHidden.value='';
   const depthDisplay = document.getElementById('depthDisplay'); if(depthDisplay) depthDisplay.textContent='—';
-  const depthTrigger = document.getElementById('depthTrigger'); if(depthTrigger) depthTrigger.textContent='✏️ Edit';
+  const depthDisplay = document.getElementById('depthDisplay'); if(depthDisplay) depthDisplay.textContent='—';
+  const weightDisplay2 = document.getElementById('weightDisplay'); if(weightDisplay2) weightDisplay2.textContent='—';
   const wHidden = document.getElementById('weight'); if(wHidden) wHidden.value='';
   const wDisplay = document.getElementById('weightDisplay'); if(wDisplay) wDisplay.textContent='—';
   const wTrigger = document.getElementById('weightTrigger'); if(wTrigger) wTrigger.textContent='✏️ Edit';
