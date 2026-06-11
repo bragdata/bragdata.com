@@ -1715,6 +1715,9 @@ body.map-open .content > #view-map { display: flex; }
     <label style="display:flex;align-items:center;gap:5px;font-size:11px;font-family:'Courier New',monospace;color:var(--mist);cursor:pointer;background:rgba(255,255,255,0.06);border-radius:6px;padding:5px 10px;">
       <input type="checkbox" id="textOverlayToggle" onchange="toggleTextOverlay(this.checked)" style="cursor:pointer;"> ✏️ Text
     </label>
+    <label id="textOpacityWrap" style="display:none;align-items:center;gap:6px;font-size:11px;font-family:'Courier New',monospace;color:var(--mist);background:rgba(255,255,255,0.06);border-radius:6px;padding:5px 10px;">
+      🌫️ <input type="range" id="textOpacitySlider" min="10" max="100" value="60" style="width:60px;accent-color:#38bdf8;cursor:pointer;" oninput="document.getElementById('heroTextOverlay').style.background='rgba(0,0,0,'+this.value/100+')'">
+    </label>
   </div>
   <div class="ai-measure-result" id="aiMeasureResult"></div>
   <div class="loc-picker-wrap" id="locPickerWrap">
@@ -1911,13 +1914,6 @@ body.map-open .content > #view-map { display: flex; }
   <input type="hidden" id="gpsCoords">
   <input type="hidden" id="waypointId">
   <input type="hidden" id="waypointName">
-  <input type="hidden" id="waterTemp">
-  <input type="hidden" id="airTemp">
-  <input type="hidden" id="windSpeed">
-  <input type="hidden" id="swellHeight">
-  <input type="hidden" id="swellDir">
-  <input type="hidden" id="swellPeriod">
-  <input type="hidden" id="waveHeight">
   <input type="hidden" id="weight">
   <select id="tide" style="display:none"><option value="">—</option><option>Incoming</option><option>High</option><option>Outgoing</option><option>Low</option><option>Slack</option></select>
 
@@ -2721,6 +2717,7 @@ function getGPS() {
       // Lookup nearest boat ramp name
       lookupBoatRamp(lat, lon);
       updateCatchMap(lat, lon);
+      lookupWeatherForForm(lat, lon);
       // Lookup depth from GEBCO topography
       lookupDepthFromGPS(lat, lon).then(depth => {
         if (depth) {
@@ -2854,6 +2851,7 @@ function pickSpot(name) {
     const rampEl = document.getElementById('boatRampDisplay');
     if (rampEl) rampEl.textContent = name;
     updateCatchMap(lat, lon);
+    lookupWeatherForForm(lat, lon);
     // Lookup depth from GEBCO
     lookupDepthFromGPS(lat, lon).then(depth => {
       if (depth) {
@@ -3575,6 +3573,7 @@ function importFromPhoto(e) {
           // Auto-lookup depth from GEBCO
           lookupBoatRamp(exif.gpsLat, exif.gpsLon);
           updateCatchMap(exif.gpsLat, exif.gpsLon);
+          lookupWeatherForForm(exif.gpsLat, exif.gpsLon);
           lookupDepthFromGPS(exif.gpsLat, exif.gpsLon).then(depth => {
             if (depth) {
               const depthEl = document.getElementById('depth');
@@ -3941,6 +3940,53 @@ async function lookupTide(exifDateTime, lat, lon) {
       }
     } catch(err) { el.className = 'tide-lookup error show'; el.textContent = '⚠ Tide lookup failed: ' + err.message; console.warn('Tide error:', err); }
   } catch(outerErr) { console.warn('lookupTide outer error:', outerErr); }
+}
+
+async function lookupWeatherForForm(lat, lon) {
+  try {
+    // Read date and time from form fields — this way it always matches the catch time
+    const dateVal = document.getElementById('catchDate').value;
+    const timeVal = document.getElementById('catchTime').value;
+    if (!dateVal) return; // no date set yet
+
+    const condLoad = document.getElementById('conditionsLoading');
+    if (condLoad) { condLoad.style.display = 'block'; condLoad.textContent = '⌛ Fetching wind & swell…'; }
+
+    const wd = await fetchHistoricalWeather(lat, lon, dateVal, timeVal);
+    if (!wd) {
+      if (condLoad) condLoad.textContent = 'Wind & swell data unavailable for this location';
+      return;
+    }
+
+    // Populate hidden fields so saveCatch picks them up
+    const set = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
+    set('windSpeed',   wd.windSpeed);
+    set('swellHeight', wd.swellHeight);
+    set('swellDir',    wd.swellDir);
+    set('swellPeriod', wd.swellPeriod);
+    set('airTemp',     wd.airTemp);
+    if (wd.weather) { selWx = wd.weather; }
+    if (wd.windDir) { selWindDir = wd.windDir; }
+
+    // Update visible displays
+    const windEl    = document.getElementById('condWindDisplay');
+    const windDirEl = document.getElementById('condWindDir');
+    const swellEl   = document.getElementById('condSwellDisplay');
+    const swellDirEl= document.getElementById('condSwellDir');
+    if (windEl)    windEl.textContent    = wd.windSpeed ? wd.windSpeed + ' km/h' : '—';
+    if (windDirEl) windDirEl.textContent = wd.windDir   ? wd.windDir              : '';
+    if (swellEl)   swellEl.textContent   = wd.swellHeight ? wd.swellHeight + 'm'  : '—';
+    if (swellDirEl) swellDirEl.textContent = [wd.swellDir, wd.swellPeriod ? wd.swellPeriod+'s' : ''].filter(Boolean).join(' · ');
+
+    // Hide loading text
+    if (condLoad) condLoad.style.display = 'none';
+
+    showToast('💨 Wind & swell filled from ' + dateVal);
+  } catch(e) {
+    console.warn('lookupWeatherForForm error:', e);
+    const condLoad = document.getElementById('conditionsLoading');
+    if (condLoad) condLoad.textContent = 'Wind & swell lookup failed';
+  }
 }
 
 async function lookupTideForEnrich(exifDateTime, lat, lon, catchObj) {
@@ -4420,12 +4466,17 @@ function toggleTextOverlay(show) {
     el.style.display = 'block';
     el._resizeInit = false; // allow re-init each time
     initTextResize();
+    const ow = document.getElementById('textOpacityWrap'); if(ow) ow.style.display='flex';
+    // Apply current slider value
+    const sl = document.getElementById('textOpacitySlider');
+    if(sl) el.style.background = 'rgba(0,0,0,' + sl.value/100 + ')';
     setTimeout(() => {
       const tc = document.getElementById('heroTextContent');
       if (tc) tc.focus();
     }, 100);
   } else {
     el.style.display = 'none';
+    const ow = document.getElementById('textOpacityWrap'); if(ow) ow.style.display='none';
   }
 }
 
