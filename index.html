@@ -6748,7 +6748,7 @@ function acceptAIMeasurement(lengthCm, species, nicknames, legalSize, habitatNot
       setAILength(lengthCm);
     }
     // Set species
-    console.log('acceptAIMeasurement called:', species, '| spList length:', (window.species||[]).length);
+    showToast('🐟 AI species: ' + (species||'none') + ' | list: ' + (window.species||[]).length);
     if (species && species !== 'unknown') {
       const spList = window.species || [];
       const spLow = species.toLowerCase();
@@ -6759,6 +6759,7 @@ function acceptAIMeasurement(lengthCm, species, nicknames, legalSize, habitatNot
         return false;
       });
       if (found) {
+        showToast('✓ matched: ' + found.name);
         pickSp(found.id, found.name);
       } else if (spList.length > 0) {
         // Add as new species
